@@ -7,13 +7,16 @@ Simple TODO app for learning PETAL stack.
 + Create and migrate your database with ~mix ecto.setup~
 + Start Phoenix endpoint with ~mix phx.server~ or inside IEx with ~iex -S mix phx.server~
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
-
 Use ~iex -S mix~ to start console.
 
 * Docs
-
 + [[https://hexdocs.pm/ecto/Ecto.html][ecto]]
 + [[https://hexdocs.pm/phoenix/Phoenix.html][phoenix]]
 + [[https://serokell.io/blog/introduction-to-phoenix][intro to phoenix tutorial]]
 + [[https://github.com/antifuchs/elixir-mode][elixir-mode]]
+
+** DONE (P) Phoenix
+** DONE (E) Elixir
+** TODO (T) Tailwind
+** TODO (A) Alpine.js
+** TODO (L) LiveView
