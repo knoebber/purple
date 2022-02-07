@@ -16,3 +16,4 @@ defmodule Petaller.Items.Item do
     |> cast(params, [:description, :priority, :completed])
   end
 end
+

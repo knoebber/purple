@@ -1,0 +1,28 @@
+<h1>Items</h1>
+<%= form_for @changeset, Routes.items_path(@conn, :create), fn f -> %>
+  <label>
+    Description:
+    <%= text_input f, :description %>
+  </label>
+  <label>
+    Priority:
+    <%= select f, :priority, [1, 2, 3, 4, 5] %>
+  </label>
+  <%= submit "Submit" %>
+<% end %>
+
+<%= for item <- @items do %>
+  <h3><%= item.description %></h3>
+  <%= if item.completed do %>
+    <p style="color:green;">Complete:</p>
+      <div>
+        <%=link("Delete", to: "/items/#{item.id}", method: :delete) %>
+      </div>
+  <% else %>
+      <p style="color:red;">TODO:</p>
+      <div>
+        <%=link("Mark as completed", to: "/items/#{item.id}/complete", method: :put) %> |
+        <%=link("Delete", to: "/items/#{item.id}", method: :delete) %>
+      </div>
+  <% end %>
+<% end %>

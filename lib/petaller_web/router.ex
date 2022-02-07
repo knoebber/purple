@@ -25,6 +25,8 @@ defmodule PetallerWeb.Router do
 
     get "/items", ItemsController, :index
     post "/items", ItemsController, :create
+    put "/items/:id/complete", ItemsController, :complete
+    delete "/items/:id", ItemsController, :delete
   end
 
   # Other scopes may use custom stacks.
