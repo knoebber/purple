@@ -11,18 +11,25 @@
   <%= submit "Submit" %>
 <% end %>
 
-<%= for item <- @items do %>
-  <h3><%= item.description %></h3>
-  <%= if item.completed do %>
-    <p style="color:green;">Complete:</p>
-      <div>
-        <%=link("Delete", to: "/items/#{item.id}", method: :delete) %>
-      </div>
-  <% else %>
-      <p style="color:red;">TODO:</p>
-      <div>
-        <%=link("Mark as completed", to: "/items/#{item.id}/complete", method: :put) %> |
-        <%=link("Delete", to: "/items/#{item.id}", method: :delete) %>
-      </div>
-  <% end %>
-<% end %>
+<table>
+  <thead>
+    <tr>
+      <th>Description</th>
+      <th>Priority</th>
+      <th>Created</th>
+      <th>Delete</th>
+      <th>Mark Complete</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= for item <- @items do %>
+      <tr class="table-auto">
+        <td><%= item.description %></td>
+        <td><%= item.priority %></td>
+        <td><%= item.inserted_at %></td>
+        <td><%= link("Delete", to: "/items/#{item.id}", method: :delete) %></td>
+        <td><%= link("Mark Complete", to: "/items/#{item.id}/complete", method: :put) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

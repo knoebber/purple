@@ -61,7 +61,11 @@ config :petaller, PetallerWeb.Endpoint,
       ~r"lib/petaller_web/(live|views)/.*(ex)$",
       ~r"lib/petaller_web/templates/.*(eex)$"
     ]
+  ],
+  watchers: [
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
+
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -72,3 +76,4 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+

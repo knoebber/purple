@@ -17,6 +17,6 @@ Use ~iex -S mix~ to start console.
 
 ** DONE (P) Phoenix
 ** DONE (E) Elixir
-** TODO (T) Tailwind
+** DONE (T) Tailwind
 ** TODO (A) Alpine.js
 ** TODO (L) LiveView
