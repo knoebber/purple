@@ -1,0 +1,21 @@
+<h1>Items</h1>
+<%= form_for @changeset, Routes.items_path(@conn, :create), fn f -> %>
+  <label>
+    Description
+    <%= text_input f, :description %>
+  </label>
+  <label>
+    Proirity:
+    <%= text_input f, :priority %>
+  </label>
+  <%= submit "Submit" %>
+<% end %>
+
+<%= for item <- @items do %>
+  <h3><%= item.description %></h3>
+  <%= if item.completed do %>
+    <p style="color:green;">Complete</p>
+  <% else %>
+    <p style="color:red;">TODO</p>
+  <% end %>
+<% end %>

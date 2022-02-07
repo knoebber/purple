@@ -20,6 +20,13 @@ defmodule PetallerWeb.Router do
     get "/", PageController, :index
   end
 
+  scope "/", PetallerWeb do
+    pipe_through :browser
+
+    get "/items", ItemsController, :index
+    post "/items", ItemsController, :create
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", PetallerWeb do
   #   pipe_through :api
@@ -39,18 +46,6 @@ defmodule PetallerWeb.Router do
       pipe_through :browser
 
       live_dashboard "/dashboard", metrics: PetallerWeb.Telemetry
-    end
-  end
-
-  # Enables the Swoosh mailbox preview in development.
-  #
-  # Note that preview only shows emails that were sent by the same
-  # node running the Phoenix server.
-  if Mix.env() == :dev do
-    scope "/dev" do
-      pipe_through :browser
-
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
 end
