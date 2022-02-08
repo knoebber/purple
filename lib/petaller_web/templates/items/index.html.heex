@@ -1,34 +1,42 @@
-<h1>Items</h1>
-<%= form_for @changeset, Routes.items_path(@conn, :create), fn f -> %>
-  <label>
-    Description:
-    <%= text_input f, :description %>
-  </label>
-  <label>
-    Priority:
-    <%= select f, :priority, [1, 2, 3, 4, 5] %>
-  </label>
-  <%= submit "Submit" %>
-<% end %>
+<h1 class="text-xl font-bold">Items</h1>
 
-<table>
-  <thead>
+<section class="lg:w-1/2 md:w-full">
+  <% form_class = "mb-4 " %>
+  <%= form_for @changeset, Routes.items_path(@conn, :create), [class: form_class], fn f -> %>
+    <div class="flex flex-col">
+      <label>Description</label>
+      <%= text_input f, :description %>
+    </div>
+    <div class="flex flex-col mb-4">
+      <label>Priority</label>
+      <%= select f, :priority, [1, 2, 3, 4, 5] %>
+    </div>
+    <div>
+      <%= submit "Submit", class: "bg-purple-300 p-2 rounded" %>
+    </div>
+  <% end %>
+</section>
+
+<% cell_header_class = "p-4 text-left font-bold" %>
+<% cell_class = "p-4 border-purple-500" %>
+<table class="w-100 shadow-md rounded border-collapse border border-purple-400">
+  <thead class="bg-purple-300">
     <tr>
-      <th>Description</th>
-      <th>Priority</th>
-      <th>Created</th>
-      <th>Delete</th>
-      <th>Mark Complete</th>
+      <th class={cell_header_class}>Description</th>
+      <th class={cell_header_class}>Priority</th>
+      <th class={cell_header_class}>Created</th>
+      <th class={cell_header_class}>Delete</th>
+      <th class={cell_header_class}>Mark Complete</th>
     </tr>
   </thead>
   <tbody>
     <%= for item <- @items do %>
-      <tr class="table-auto">
-        <td><%= item.description %></td>
-        <td><%= item.priority %></td>
-        <td><%= item.inserted_at %></td>
-        <td><%= link("Delete", to: "/items/#{item.id}", method: :delete) %></td>
-        <td><%= link("Mark Complete", to: "/items/#{item.id}/complete", method: :put) %></td>
+      <tr>
+        <td class={cell_class}><%= item.description %></td>
+        <td class={cell_class}><%= item.priority %></td>
+        <td class={cell_class}><%= item.inserted_at %></td>
+        <td class={cell_class}><%= link("Delete", to: "/items/#{item.id}", method: :delete) %></td>
+        <td class={cell_class}><%= link("Mark Complete", to: "/items/#{item.id}/complete", method: :put) %></td>
       </tr>
     <% end %>
   </tbody>

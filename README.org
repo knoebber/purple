@@ -15,8 +15,10 @@ Use ~iex -S mix~ to start console.
 + [[https://serokell.io/blog/introduction-to-phoenix][intro to phoenix tutorial]]
 + [[https://github.com/antifuchs/elixir-mode][elixir-mode]]
 
-** DONE (P) Phoenix
-** DONE (E) Elixir
-** DONE (T) Tailwind
-** TODO (A) Alpine.js
-** TODO (L) LiveView
+** (P) Phoenix
+** (E) Elixir
+** (T) Tailwind
+https://tailwindcss.com/docs
+
+** (A) Alpine.js
+** (L) LiveView
