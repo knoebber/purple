@@ -1,4 +1,4 @@
-<h1 class="text-xl font-bold">Items</h1>
+<h1>Items</h1>
 
 <section class="lg:w-1/2 md:w-full">
   <% form_class = "mb-4 " %>
@@ -22,21 +22,29 @@
 <table class="w-100 shadow-md rounded border-collapse border border-purple-400">
   <thead class="bg-purple-300">
     <tr>
+      <th class={cell_header_class}>Item</th>
       <th class={cell_header_class}>Description</th>
       <th class={cell_header_class}>Priority</th>
       <th class={cell_header_class}>Created</th>
-      <th class={cell_header_class}>Delete</th>
-      <th class={cell_header_class}>Mark Complete</th>
+      <th class={cell_header_class}></th>
+      <th class={cell_header_class}></th>
     </tr>
   </thead>
   <tbody>
     <%= for item <- @items do %>
       <tr>
+        <td class={cell_class}>
+          <%= link("item #{item.id}", to: Routes.items_path(@conn, :get, item.id)) %>
+        </td>
         <td class={cell_class}><%= item.description %></td>
         <td class={cell_class}><%= item.priority %></td>
         <td class={cell_class}><%= item.inserted_at %></td>
-        <td class={cell_class}><%= link("Delete", to: "/items/#{item.id}", method: :delete) %></td>
-        <td class={cell_class}><%= link("Mark Complete", to: "/items/#{item.id}/complete", method: :put) %></td>
+        <td class={cell_class}>
+          <%= link("Delete", to: Routes.items_path(@conn,  :delete, item.id), method: :delete) %>
+        </td>
+        <td class={cell_class}>
+          <%= link("Mark Complete", to: "/items/#{item.id}/complete", method: :put) %>
+        </td>
       </tr>
     <% end %>
   </tbody>

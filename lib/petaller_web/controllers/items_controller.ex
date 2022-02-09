@@ -10,6 +10,11 @@ defmodule PetallerWeb.ItemsController do
     render(conn, "index.html", items: items, changeset: changeset)
   end
 
+  def get(conn, %{"id" => id}) do
+    item = Items.get(id)
+    render(conn, "item.html", item: item)
+  end
+
   def create(conn, %{"item" => params}) do
     Items.create(params)
     redirect(conn, to: "/items")

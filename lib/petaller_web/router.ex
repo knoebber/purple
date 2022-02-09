@@ -25,6 +25,7 @@ defmodule PetallerWeb.Router do
 
     get "/items", ItemsController, :index
     post "/items", ItemsController, :create
+    get "/items/:id", ItemsController, :get
     put "/items/:id/complete", ItemsController, :complete
     delete "/items/:id", ItemsController, :delete
   end

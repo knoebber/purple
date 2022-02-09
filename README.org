@@ -9,16 +9,14 @@ Simple TODO app for learning PETAL stack.
 
 Use ~iex -S mix~ to start console.
 
-* Docs
-+ [[https://hexdocs.pm/ecto/Ecto.html][ecto]]
-+ [[https://hexdocs.pm/phoenix/Phoenix.html][phoenix]]
-+ [[https://serokell.io/blog/introduction-to-phoenix][intro to phoenix tutorial]]
-+ [[https://github.com/antifuchs/elixir-mode][elixir-mode]]
+* (P) Phoenix
++ [[https://serokell.io/blog/introduction-to-phoenix][intro tutorial]]
++ [[https://hexdocs.pm/phoenix/Phoenix.html]]
++ [[https://hexdocs.pm/ecto/Ecto.html]]
+* (E) Elixir
++ [[https://github.com/antifuchs/elixir-mode]]
+* (T) Tailwind
++ https://tailwindcss.com/docs
 
-** (P) Phoenix
-** (E) Elixir
-** (T) Tailwind
-https://tailwindcss.com/docs
-
-** (A) Alpine.js
-** (L) LiveView
+* (A) Alpine.js
+* (L) LiveView
