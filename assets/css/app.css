@@ -2,12 +2,23 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-h1 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    line-height: 1.75rem;
+@layer base {
+    h1 {
+        @apply text-2xl;
+        @apply font-bold;
+    }
+
+    a {
+        @apply underline;
+    }
 }
 
-a {
-    text-decoration: underline;
+@layer components {
+    .window {
+        @apply shadow-md;
+        @apply rounded;
+        @apply border-collapse;
+        @apply border;
+        @apply border-purple-400;
+    }
 }
