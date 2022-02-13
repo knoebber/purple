@@ -14,6 +14,7 @@ defmodule Petaller.Items.Item do
   def changeset(item, params) do
     item
     |> cast(params, [:description, :priority, :completed])
+    |> validate_required([:description, :priority, :completed])
   end
 end
 

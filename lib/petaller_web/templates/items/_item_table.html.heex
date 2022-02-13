@@ -1,0 +1,36 @@
+<% cell_header_class = "p-4 text-left font-bold" %>
+<% cell_class = "p-4 border-purple-500" %>
+<table class="window">
+  <thead class="bg-purple-300">
+    <tr>
+      <th class={cell_header_class}>Item</th>
+      <th class={cell_header_class}>Description</th>
+      <th class={cell_header_class}>Priority</th>
+      <th class={cell_header_class}>Created</th>
+      <th class={cell_header_class}></th>
+      <th class={cell_header_class}></th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= for item <- @items do %>
+      <tr>
+        <td class={cell_class}>
+          <%= link("item #{item.id}", to: Routes.items_path(@conn, :get, item.id)) %>
+        </td>
+        <td class={cell_class}><%= item.description %></td>
+        <td class={cell_class}><%= item.priority %></td>
+        <td class={cell_class}><%= item.inserted_at %></td>
+        <td class={cell_class}>
+          <%= if item.completed do %>
+            <%= link("Set Incomplete", to: "/items/#{item.id}/incomplete", method: :put) %>
+          <%= else %>
+            <%= link("Set Complete", to: "/items/#{item.id}/complete", method: :put) %>
+          <% end %>
+        </td>
+        <td class={cell_class}>
+          <%= link("Delete", to: Routes.items_path(@conn,  :delete, item.id), method: :delete) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

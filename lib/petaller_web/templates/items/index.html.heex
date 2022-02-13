@@ -1,5 +1,6 @@
 <h1>Items</h1>
-
+<hr />
+<h2>Create</h2>
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
   <% form_class = "p-4" %>
   <%= form_for @changeset, Routes.items_path(@conn, :create), [class: form_class], fn f -> %>
@@ -17,35 +18,8 @@
   <% end %>
 </section>
 
-<% cell_header_class = "p-4 text-left font-bold" %>
-<% cell_class = "p-4 border-purple-500" %>
-<table class="w-100 window">
-  <thead class="bg-purple-300">
-    <tr>
-      <th class={cell_header_class}>Item</th>
-      <th class={cell_header_class}>Description</th>
-      <th class={cell_header_class}>Priority</th>
-      <th class={cell_header_class}>Created</th>
-      <th class={cell_header_class}></th>
-      <th class={cell_header_class}></th>
-    </tr>
-  </thead>
-  <tbody>
-    <%= for item <- @items do %>
-      <tr>
-        <td class={cell_class}>
-          <%= link("item #{item.id}", to: Routes.items_path(@conn, :get, item.id)) %>
-        </td>
-        <td class={cell_class}><%= item.description %></td>
-        <td class={cell_class}><%= item.priority %></td>
-        <td class={cell_class}><%= item.inserted_at %></td>
-        <td class={cell_class}>
-          <%= link("Delete", to: Routes.items_path(@conn,  :delete, item.id), method: :delete) %>
-        </td>
-        <td class={cell_class}>
-          <%= link("Mark Complete", to: "/items/#{item.id}/complete", method: :put) %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<h2>Incomplete</h2>
+<%= render "_item_table.html", conn: @conn, items: @incomplete_items %>
+<h2>Complete</h2>
+<%= render "_item_table.html", conn: @conn, items: @completed_items %>
+

@@ -13,6 +13,7 @@ Use ~iex -S mix~ to start console.
 + [[https://serokell.io/blog/introduction-to-phoenix][intro tutorial]]
 + [[https://hexdocs.pm/phoenix/Phoenix.html]]
 + [[https://hexdocs.pm/ecto/Ecto.html]]
+    + https://hexdocs.pm/ecto/getting-started.html
 * (E) Elixir
 + [[https://github.com/antifuchs/elixir-mode]]
 * (T) Tailwind

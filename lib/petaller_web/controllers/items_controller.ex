@@ -5,9 +5,14 @@ defmodule PetallerWeb.ItemsController do
   alias Petaller.Items.Item
 
   def index(conn, _params) do
-    items = Items.list()
+    completed_items = Items.list_completed()
+    incomplete_items = Items.list_incomplete()
     changeset = Item.changeset(%Item{}, %{})
-    render(conn, "index.html", items: items, changeset: changeset)
+    render(conn, "index.html",
+      completed_items: completed_items,
+      incomplete_items: incomplete_items,
+      changeset: changeset,
+    )
   end
 
   def get(conn, %{"id" => id}) do
@@ -20,8 +25,13 @@ defmodule PetallerWeb.ItemsController do
     redirect(conn, to: "/items")
   end
 
-  def complete(conn, %{"id" => id}) do
-    Items.complete(id)
+  def set_complete(conn, %{"id" => id}) do
+    Items.set_complete(id, true)
+    redirect(conn, to: "/items")
+  end
+
+  def set_incomplete(conn, %{"id" => id}) do
+    Items.set_complete(id, false)
     redirect(conn, to: "/items")
   end
 
