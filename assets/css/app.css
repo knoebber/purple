@@ -19,6 +19,9 @@
 }
 
 @layer components {
+    nav > a {
+        @apply ml-3
+    }
     .window {
         @apply shadow-md;
         @apply rounded;
