@@ -13,18 +13,19 @@
   </thead>
   <tbody>
     <%= for item <- @items do %>
+      <% update_completed_at_path = Routes.items_path(@conn, :update_completed_at, item.id) %>
       <tr>
         <td class={cell_class}>
-          <%= link("item #{item.id}", to: Routes.items_path(@conn, :get, item.id)) %>
+          <%= link("item #{item.id}", to: Routes.items_path(@conn, :show, item.id)) %>
         </td>
         <td class={cell_class}><%= item.description %></td>
         <td class={cell_class}><%= item.priority %></td>
         <td class={cell_class}><%= item.inserted_at %></td>
         <td class={cell_class}>
-          <%= if item.completed do %>
-            <%= link("Set Incomplete", to: "/items/#{item.id}/incomplete", method: :put) %>
+          <%= if item.completed_at do %>
+            <%= link("Set Incomplete", to: update_completed_at_path, method: :delete) %>
           <%= else %>
-            <%= link("Set Complete", to: "/items/#{item.id}/complete", method: :put) %>
+            <%= link("Set Complete", to: update_completed_at_path, method: :post) %>
           <% end %>
         </td>
         <td class={cell_class}>

@@ -12,8 +12,12 @@ Use ~iex -S mix~ to start console.
 * (P) Phoenix
 + [[https://serokell.io/blog/introduction-to-phoenix][intro tutorial]]
 + [[https://hexdocs.pm/phoenix/Phoenix.html]]
+
+** Ecto
 + [[https://hexdocs.pm/ecto/Ecto.html]]
-    + https://hexdocs.pm/ecto/getting-started.html
++ https://hexdocs.pm/ecto/getting-started.html
++ ~mix ecto.gen.migration add_weather_table~
++ ~mix ecto.migrate~
 * (E) Elixir
 + [[https://github.com/antifuchs/elixir-mode]]
 * (T) Tailwind

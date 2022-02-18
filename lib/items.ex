@@ -13,23 +13,24 @@ defmodule Petaller.Items do
     Repo.get(Item, id)
   end
 
-  def set_complete(id, complete) do
-    item = Repo.get(Item, id)
-    item = Ecto.Changeset.change item, completed: complete
-    Repo.update(item)
+  def set_completed_at(id, is_complete) do
+    Item
+    |> Repo.get(id)
+    |> Item.changeset(%{completed_at: (if is_complete do NaiveDateTime.utc_now else nil end)})
+    |> Repo.update
   end
 
   def list_incomplete() do
     Item
-    |> where(completed: false)
-    |> order_by(desc: :id)
+    |> where([i], is_nil(i.completed_at))
+    |> order_by(:priority)
     |> Repo.all
   end
 
   def list_completed() do
     Item
-    |> where(completed: true)
-    |> order_by(desc: :id)
+    |> where([i], not is_nil(i.completed_at))
+    |> order_by(desc: :completed_at)
     |> Repo.all
   end
 

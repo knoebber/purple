@@ -20,14 +20,14 @@ defmodule PetallerWeb.Router do
     get "/", PageController, :index
   end
 
-  scope "/", PetallerWeb do
+  scope "/items", PetallerWeb do
     pipe_through :browser
 
-    get "/items", ItemsController, :index
-    post "/items", ItemsController, :create
-    get "/items/:id", ItemsController, :get
-    put "/items/:id/complete", ItemsController, :set_complete
-    put "/items/:id/incomplete", ItemsController, :set_incomplete
+    get "/", ItemsController, :index
+    post "/", ItemsController, :create
+    get "/:id", ItemsController, :show
+    post "/:id/complete", ItemsController, :update_completed_at
+    delete "/:id/complete", ItemsController, :update_completed_at
     delete "/items/:id", ItemsController, :delete
   end
 

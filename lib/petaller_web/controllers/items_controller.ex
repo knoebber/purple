@@ -11,11 +11,11 @@ defmodule PetallerWeb.ItemsController do
     render(conn, "index.html",
       completed_items: completed_items,
       incomplete_items: incomplete_items,
-      changeset: changeset,
+      changeset: changeset
     )
   end
 
-  def get(conn, %{"id" => id}) do
+  def show(conn, %{"id" => id}) do
     item = Items.get(id)
     render(conn, "item.html", item: item)
   end
@@ -25,13 +25,8 @@ defmodule PetallerWeb.ItemsController do
     redirect(conn, to: "/items")
   end
 
-  def set_complete(conn, %{"id" => id}) do
-    Items.set_complete(id, true)
-    redirect(conn, to: "/items")
-  end
-
-  def set_incomplete(conn, %{"id" => id}) do
-    Items.set_complete(id, false)
+  def update_completed_at(conn, %{"id" => id}) do
+    Items.set_completed_at(id, conn.method == "POST")
     redirect(conn, to: "/items")
   end
 

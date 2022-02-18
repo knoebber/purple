@@ -6,15 +6,15 @@ defmodule Petaller.Items.Item do
   schema "items" do
     field :description, :string
     field :priority, :integer, default: 3
-    field :completed, :boolean, default: false
+    field :completed_at, :naive_datetime
 
     timestamps()
   end
 
   def changeset(item, params) do
     item
-    |> cast(params, [:description, :priority, :completed])
-    |> validate_required([:description, :priority, :completed])
+    |> cast(params, [:description, :priority, :completed_at])
+    |> validate_required([:description, :priority])
   end
 end
 
