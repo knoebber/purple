@@ -1,8 +1,7 @@
 <h1>Items</h1>
 <h2>Create</h2>
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
-  <% form_class = "p-4" %>
-  <%= form_for @changeset, Routes.items_path(@conn, :create), [class: form_class], fn f -> %>
+  <%= form_for @changeset, Routes.items_path(@conn, :create), [class: "p-4"], fn f -> %>
     <div class="flex flex-col">
       <label>Description</label>
       <%= text_input f, :description %>

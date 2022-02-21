@@ -5,9 +5,22 @@
     <%= @item.description %>
   </div>
   <div>
-    Completed: <%= @item.completed %>
+    Completed: <%= @item.completed_at %>
   </div>
   <div>
-    <%= @item.inserted_at %>
+    Created: <%= @item.inserted_at %>
   </div>
 </section>
+<section class="lg:w-1/2 md:w-full window mt-2 mb-2">
+  <%= form_for @changeset, Routes.items_path(@conn, :create_entry, @item.id), [class: "p-4"], fn f -> %>
+    <div class="flex flex-col">
+      <label>Content</label>
+      <%= text_input f, :content %>
+      <%= hidden_input f, :item_id, value: @item.id %>
+    </div>
+    <div>
+      <%= submit "Submit", class: "bg-purple-300 p-2 rounded" %>
+    </div>
+  <% end %>
+</section>
+
