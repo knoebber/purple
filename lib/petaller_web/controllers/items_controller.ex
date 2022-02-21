@@ -36,7 +36,8 @@ defmodule PetallerWeb.ItemsController do
   end
 
   def create_entry(conn, %{"id" => id, "item_entry" => params}) do
-    Items.create_entry(params)
+    Map.put(params, "item_id", id)
+    |> Items.create_entry
     redirect(conn, to: item_path(conn, id))
   end
 

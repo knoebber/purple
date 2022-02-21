@@ -10,8 +10,8 @@ defmodule Petaller.Items do
   end
 
   def create_entry(params) do
-    %Item{}
-    |> Item.changeset(params)
+    %ItemEntry{}
+    |> ItemEntry.changeset(params)
     |> Repo.insert()
   end
 

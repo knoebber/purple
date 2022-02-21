@@ -16,11 +16,19 @@
     <div class="flex flex-col">
       <label>Content</label>
       <%= text_input f, :content %>
-      <%= hidden_input f, :item_id, value: @item.id %>
     </div>
     <div>
       <%= submit "Submit", class: "bg-purple-300 p-2 rounded" %>
     </div>
   <% end %>
 </section>
-
+<%= for entry <- @item.entries do %>
+  <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
+    <%= entry.content %>
+    <div>
+      <i>
+        <%= entry.inserted_at %>
+      </i>
+    </div>
+  </section>
+<% end %>
