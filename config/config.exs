@@ -7,6 +7,9 @@
 # General application configuration
 import Config
 
+# Timezone support
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+
 config :petaller,
   ecto_repos: [Petaller.Repo]
 

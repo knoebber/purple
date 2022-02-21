@@ -31,6 +31,8 @@ iex(34)> Repo.all(Item)
 #+end_src
 * (E) Elixir
 + [[https://github.com/antifuchs/elixir-mode]]
++ https://elixirschool.com/en/lessons/basics/sigils
++ See keys in struct: ~|> Map.keys~
 * (T) Tailwind
 + https://tailwindcss.com/docs
 

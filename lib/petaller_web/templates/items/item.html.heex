@@ -4,7 +4,7 @@
   <div class="flex justify-between">
     <%= render "_set_completed_at.html", conn: @conn, item: @item %>
     <i>
-      <%= @item.inserted_at %>
+      <%= format_date(@item.inserted_at) %>
     </i>
   </div>
   <div>
@@ -34,7 +34,7 @@
   <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
     <div class="flex flex-row-reverse">
       <i>
-        <%= entry.inserted_at %>
+        <%= format_date(entry.inserted_at) %>
       </i>
     </div>
     <pre>
