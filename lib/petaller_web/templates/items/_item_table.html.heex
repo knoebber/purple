@@ -1,35 +1,28 @@
-<% cell_header_class = "p-4 text-left font-bold" %>
-<% cell_class = "p-4 border-purple-500" %>
 <table class="window">
   <thead class="bg-purple-300">
     <tr>
-      <th class={cell_header_class}>Item</th>
-      <th class={cell_header_class}>Description</th>
-      <th class={cell_header_class}>Priority</th>
-      <th class={cell_header_class}>Created</th>
-      <th class={cell_header_class}></th>
-      <th class={cell_header_class}></th>
+      <th class="cell-header">Item</th>
+      <th class="cell-header">Description</th>
+      <th class="cell-header">Priority</th>
+      <th class="cell-header">Created</th>
+      <th class="cell-header"></th>
+      <th class="cell-header"></th>
     </tr>
   </thead>
   <tbody>
     <%= for item <- @items do %>
-      <% update_completed_at_path = Routes.items_path(@conn, :update_completed_at, item.id) %>
       <tr>
-        <td class={cell_class}>
+        <td class="cell">
           <%= link("item #{item.id}", to: Routes.items_path(@conn, :show, item.id)) %>
         </td>
-        <td class={cell_class}><%= item.description %></td>
-        <td class={cell_class}><%= item.priority %></td>
-        <td class={cell_class}><%= item.inserted_at %></td>
-        <td class={cell_class}>
-          <%= if item.completed_at do %>
-            <%= link("Set Incomplete", to: update_completed_at_path, method: :delete) %>
-          <%= else %>
-            <%= link("Set Complete", to: update_completed_at_path, method: :post) %>
-          <% end %>
+        <td class="cell"><%= item.description %></td>
+        <td class="cell"><%= item.priority %></td>
+        <td class="cell"><%= item.inserted_at %></td>
+        <td class="cell">
+          <%= render "_set_completed_at.html", conn: @conn, item: item %>
         </td>
-        <td class={cell_class}>
-          <%= link("Delete", to: Routes.items_path(@conn,  :delete, item.id), method: :delete) %>
+        <td class="cell">
+          <%= render "_delete_item.html", conn: @conn, item: item %>
         </td>
       </tr>
     <% end %>

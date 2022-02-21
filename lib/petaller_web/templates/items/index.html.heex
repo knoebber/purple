@@ -1,7 +1,7 @@
 <h1>Items</h1>
-<h2>Create</h2>
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
   <%= form_for @changeset, Routes.items_path(@conn, :create), [class: "p-4"], fn f -> %>
+    <strong>New Item</strong>
     <div class="flex flex-col">
       <label>Description</label>
       <%= text_input f, :description %>
@@ -16,8 +16,7 @@
   <% end %>
 </section>
 
-<h2>Incomplete</h2>
+<h2 class="mb-2">Incomplete</h2>
 <%= render "_item_table.html", conn: @conn, items: @incomplete_items %>
-<h2>Complete</h2>
+<h2 class="mt-2 mb-2">Complete</h2>
 <%= render "_item_table.html", conn: @conn, items: @completed_items %>
-

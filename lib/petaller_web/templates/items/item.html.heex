@@ -1,21 +1,29 @@
 <h1>Item <%= @item.id %></h1>
 
-<section class="p-4 w-100 window">
-  <div>
-    <%= @item.description %>
+<section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
+  <div class="flex justify-between">
+    <%= render "_set_completed_at.html", conn: @conn, item: @item %>
+    <i>
+      <%= @item.inserted_at %>
+    </i>
   </div>
   <div>
-    Completed: <%= @item.completed_at %>
+    <strong>
+      <%= @item.description %>
+    </strong>
   </div>
   <div>
-    Created: <%= @item.inserted_at %>
+    <%= if @item.completed_at do %>
+      <i>completed at <%= @item.completed_at %></i>
+    <% end %>
   </div>
 </section>
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
   <%= form_for @changeset, Routes.items_path(@conn, :create_entry, @item.id), [class: "p-4"], fn f -> %>
-    <div class="flex flex-col">
+    <strong>Create Entry</strong>
+    <div class="flex flex-col mb-2">
       <label>Content</label>
-      <%= text_input f, :content %>
+      <%= textarea f, :content %>
     </div>
     <div>
       <%= submit "Submit", class: "bg-purple-300 p-2 rounded" %>
@@ -24,11 +32,13 @@
 </section>
 <%= for entry <- @item.entries do %>
   <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
-    <%= entry.content %>
-    <div>
+    <div class="flex flex-row-reverse">
       <i>
         <%= entry.inserted_at %>
       </i>
     </div>
+    <pre>
+      <%= entry.content %>
+    </pre>
   </section>
 <% end %>
