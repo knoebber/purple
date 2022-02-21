@@ -1,6 +1,6 @@
 defmodule Petaller.Items do
-  alias Petaller.Items.Item
   alias Petaller.Repo
+  alias Petaller.{Item,ItemEntry}
   import Ecto.Query
 
   def create(params) do
@@ -9,8 +9,19 @@ defmodule Petaller.Items do
     |> Repo.insert()
   end
 
+  def create_entry(params) do
+    %Item{}
+    |> Item.changeset(params)
+    |> Repo.insert()
+  end
+
   def get(id) do
-    Repo.get(Item, id)
+    # TODO: catch pattern match error here when not found
+    [item] = Item
+    |> where([i], i.id == ^id)
+    |> Repo.all
+    |> Repo.preload(:entries)
+    item
   end
 
   def set_completed_at(id, is_complete) do
@@ -27,7 +38,7 @@ defmodule Petaller.Items do
     |> Repo.all
   end
 
-  def list_completed() do
+  def list_complete() do
     Item
     |> where([i], not is_nil(i.completed_at))
     |> order_by(desc: :completed_at)
