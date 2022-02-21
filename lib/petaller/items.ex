@@ -34,7 +34,7 @@ defmodule Petaller.Items do
   def list_incomplete() do
     Item
     |> where([i], is_nil(i.completed_at))
-    |> order_by(:priority)
+    |> order_by(asc: :priority, desc: :inserted_at)
     |> Repo.all
   end
 
