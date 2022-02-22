@@ -1,0 +1,6 @@
+<% path = Routes.items_path(@conn, :pin, @item.id) %>
+<%= if @item.is_pinned do %>
+  <%= link("📌", to: path, method: :delete) %>
+<% else %>
+  <%= link("📌", to: path, method: :put) %>
+<% end %>

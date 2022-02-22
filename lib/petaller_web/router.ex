@@ -27,8 +27,10 @@ defmodule PetallerWeb.Router do
     post "/", ItemsController, :create
     get "/:id", ItemsController, :show
     delete "/:id", ItemsController, :delete
+    put "/:id/pin", ItemsController, :pin
+    delete "/:id/pin", ItemsController, :pin
     post "/:id/entry", ItemsController, :create_entry
-    post "/:id/complete", ItemsController, :update_completed_at
+    put "/:id/complete", ItemsController, :update_completed_at
     delete "/:id/complete", ItemsController, :update_completed_at
   end
 

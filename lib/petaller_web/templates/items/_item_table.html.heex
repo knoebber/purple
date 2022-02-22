@@ -7,6 +7,7 @@
       <th class="cell-header">Created</th>
       <th class="cell-header"></th>
       <th class="cell-header"></th>
+      <th class="cell-header"></th>
     </tr>
   </thead>
   <tbody>
@@ -18,6 +19,9 @@
         <td class="cell"><%= item.description %></td>
         <td class="cell"><%= item.priority %></td>
         <td class="cell"><i><%= format_date(item.inserted_at) %></i></td>
+        <td class="cell">
+          <%= render "_pin.html", conn: @conn, item: item %>
+        </td>
         <td class="cell">
           <%= render "_set_completed_at.html", conn: @conn, item: item %>
         </td>

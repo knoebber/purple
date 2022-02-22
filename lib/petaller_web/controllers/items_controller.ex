@@ -12,20 +12,17 @@ defmodule PetallerWeb.ItemsController do
   end
 
   def index(conn, _params) do
-    completed_items = Items.list_complete()
-    incomplete_items = Items.list_incomplete()
-    changeset = Item.changeset(%Item{}, %{})
     render(conn, "index.html",
-      completed_items: completed_items,
-      incomplete_items: incomplete_items,
-      changeset: changeset
+      changeset: Item.changeset(%Item{}, %{}),
+      complete_items: Items.list_complete(),
+      incomplete_items: Items.list_incomplete(),
+      pinned_items: Items.list_pinned()
     )
   end
 
   def show(conn, %{"id" => id}) do
-    item = Items.get(id)
     render(conn, "item.html",
-      item: item,
+      item: Items.get(id),
       changeset: ItemEntry.changeset(%ItemEntry{}, %{})
     )
   end
@@ -42,7 +39,12 @@ defmodule PetallerWeb.ItemsController do
   end
 
   def update_completed_at(conn, %{"id" => id}) do
-    Items.set_completed_at(id, conn.method == "POST")
+    Items.set_completed_at(id, conn.method == "PUT")
+    redirect(conn, to: items_path(conn))
+  end
+
+  def pin(conn, %{"id" => id}) do
+    Items.pin(id, conn.method == "PUT")
     redirect(conn, to: items_path(conn))
   end
 

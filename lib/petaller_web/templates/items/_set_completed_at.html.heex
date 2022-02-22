@@ -1,6 +1,6 @@
-<% update_completed_at_path = Routes.items_path(@conn, :update_completed_at, @item.id) %>
+<% path = Routes.items_path(@conn, :update_completed_at, @item.id) %>
 <%= if @item.completed_at do %>
-  <%= link("Set Incomplete", to: update_completed_at_path, method: :delete) %>
+  <%= link("Set Incomplete", to: path, method: :delete) %>
 <% else %>
-  <%= link("Set Complete", to: update_completed_at_path, method: :post) %>
+  <%= link("Set Complete", to: path, method: :put) %>
 <% end %>
