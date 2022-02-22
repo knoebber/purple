@@ -16,6 +16,10 @@
     a {
         @apply underline;
     }
+
+    li {
+        @apply list-disc;
+    }
 }
 
 @layer components {

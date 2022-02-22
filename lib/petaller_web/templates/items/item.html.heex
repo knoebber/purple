@@ -37,8 +37,6 @@
         <%= format_date(entry.inserted_at) %>
       </i>
     </div>
-    <pre>
-      <%= entry.content %>
-    </pre>
+    <%= md(entry.content) %>
   </section>
 <% end %>

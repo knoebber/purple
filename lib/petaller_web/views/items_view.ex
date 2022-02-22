@@ -6,4 +6,10 @@ defmodule PetallerWeb.ItemsView do
     |> DateTime.shift_zone!("America/Anchorage")
     |> Calendar.strftime("%m/%d/%Y %I:%M%P")
   end
+
+  def md(markdown) do
+    Earmark.as_html!(markdown)
+    |> HtmlSanitizeEx.markdown_html
+    |> raw
+  end
 end

@@ -33,10 +33,12 @@ defmodule Petaller.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:earmark, "~> 1.4.20"},
       {:ecto_sql, "~> 3.6"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 0.18"},
+      {:html_sanitize_ex, "~> 1.4.2"},
       {:jason, "~> 1.2"},
       {:phoenix, "~> 1.6.6"},
       {:phoenix_ecto, "~> 4.4"},
