@@ -7,7 +7,9 @@ defmodule Petaller.Item do
     field :priority, :integer, default: 3
     field :completed_at, :naive_datetime
     field :is_pinned, :boolean, default: false
+
     has_many :entries, Petaller.ItemEntry
+    many_to_many :tags, Petaller.Tag, join_through: Petaller.ItemTag
 
     timestamps()
   end

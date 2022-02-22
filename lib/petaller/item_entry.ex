@@ -4,6 +4,7 @@ defmodule Petaller.ItemEntry do
 
   schema "item_entries" do
     field :content, :string
+
     belongs_to :item, Petaller.Item
 
     timestamps()
@@ -12,7 +13,7 @@ defmodule Petaller.ItemEntry do
   def changeset(item_entry, attrs) do
     item_entry
     |> cast(attrs, [:content, :item_id])
-    |> assoc_constraint(:item)
     |> validate_required([:content, :item_id])
+    |> assoc_constraint(:item)
   end
 end
