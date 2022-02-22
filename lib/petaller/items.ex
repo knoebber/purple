@@ -1,6 +1,6 @@
 defmodule Petaller.Items do
   alias Petaller.Repo
-  alias Petaller.{Item,ItemEntry}
+  alias Petaller.{Item, ItemEntry}
   import Ecto.Query
 
   def create(params) do
@@ -16,33 +16,39 @@ defmodule Petaller.Items do
   end
 
   def get(id) do
-    # TODO: catch pattern match error here when not found
-    [item] = Item
-    |> where([i], i.id == ^id)
-    |> Repo.all
-    |> Repo.preload(:entries)
-    item
+    res =
+      Item
+      |> where([i], i.id == ^id)
+      |> Repo.all()
+      |> Repo.preload(:entries)
+      |> case do
+        [item] -> item
+        [] -> raise "item not found"
+      end
   end
 
   def set_completed_at(id, is_complete) do
     Item
-    |> Repo.get(id)
-    |> Item.changeset(%{completed_at: (if is_complete do NaiveDateTime.utc_now else nil end)})
-    |> Repo.update
+    |> Repo.get!(id)
+    |> Item.changeset(%{
+      completed_at: if(is_complete, do: NaiveDateTime.utc_now(), else: nil),
+      is_pinned: false
+    })
+    |> Repo.update()
   end
 
   def pin(id, is_pinned) do
     Item
-    |> Repo.get(id)
+    |> Repo.get!(id)
     |> Item.changeset(%{is_pinned: is_pinned})
-    |> Repo.update
+    |> Repo.update()
   end
 
   def list_pinned() do
     Item
     |> where([i], i.is_pinned == true)
     |> order_by(asc: :priority, desc: :updated_at)
-    |> Repo.all
+    |> Repo.all()
   end
 
   def list_incomplete() do
@@ -50,7 +56,7 @@ defmodule Petaller.Items do
     |> where([i], is_nil(i.completed_at))
     |> where([i], i.is_pinned == false)
     |> order_by(asc: :priority, desc: :inserted_at)
-    |> Repo.all
+    |> Repo.all()
   end
 
   def list_complete() do
@@ -58,12 +64,18 @@ defmodule Petaller.Items do
     |> where([i], not is_nil(i.completed_at))
     |> where([i], i.is_pinned == false)
     |> order_by(desc: :completed_at)
-    |> Repo.all
+    |> Repo.all()
   end
 
   def delete(id) do
-    Item
-    |> Repo.get(id)
-    |> Repo.delete
+    Repo.transaction(fn ->
+      ItemEntry
+      |> where([ie], ie.item_id == ^id)
+      |> Repo.delete_all()
+
+      Item
+      |> Repo.get!(id)
+      |> Repo.delete!()
+    end)
   end
 end
