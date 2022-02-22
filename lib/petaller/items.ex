@@ -19,7 +19,7 @@ defmodule Petaller.Items do
     Item
     |> where([i], i.id == ^id)
     |> Repo.all()
-    |> Repo.preload(:entries)
+    |> Repo.preload(entries: from(e in ItemEntry, order_by: [desc: e.inserted_at]))
     |> case do
       [item] -> item
       [] -> raise "item not found"
