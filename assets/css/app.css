@@ -33,6 +33,7 @@
         @apply border-collapse;
         @apply border;
         @apply border-purple-400;
+	@apply bg-purple-100;
     }
 
     .cell-header {
