@@ -18,7 +18,7 @@
         </td>
         <td class="cell"><%= item.description %></td>
         <td class="cell"><%= item.priority %></td>
-        <td class="cell"><i><%= format_date(item.inserted_at) %></i></td>
+        <td class="cell"><%= format_date(item.inserted_at) %></td>
         <td class="cell">
           <%= render "_pin.html", conn: @conn, item: item %>
         </td>

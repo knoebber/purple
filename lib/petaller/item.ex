@@ -4,7 +4,7 @@ defmodule Petaller.Item do
 
   schema "items" do
     field :description, :string
-    field :priority, :integer, default: 1
+    field :priority, :integer, default: 3
     field :completed_at, :naive_datetime
     field :is_pinned, :boolean, default: false
     has_many :entries, Petaller.ItemEntry
