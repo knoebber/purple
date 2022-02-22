@@ -16,15 +16,14 @@ defmodule Petaller.Items do
   end
 
   def get(id) do
-    res =
-      Item
-      |> where([i], i.id == ^id)
-      |> Repo.all()
-      |> Repo.preload(:entries)
-      |> case do
-        [item] -> item
-        [] -> raise "item not found"
-      end
+    Item
+    |> where([i], i.id == ^id)
+    |> Repo.all()
+    |> Repo.preload(:entries)
+    |> case do
+      [item] -> item
+      [] -> raise "item not found"
+    end
   end
 
   def set_completed_at(id, is_complete) do
