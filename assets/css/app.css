@@ -27,6 +27,12 @@
     li {
         @apply list-disc;
     }
+
+    button[type="submit"] {
+        @apply bg-purple-300;
+        @apply p-2;
+        @apply rounded;
+    }
 }
 
 @layer components {
@@ -60,5 +66,17 @@
 
     .flash-info {
         @apply bg-teal-500;
+    }
+
+    .invalid-feedback {
+        @apply font-bold;
+    }
+
+    .alert {
+        @apply font-bold;
+    }
+
+    .alert-danger {
+        @apply text-red-400;
     }
 }

@@ -15,9 +15,8 @@
       <%= if @current_user do %>
         <%= link "Items", to: Routes.items_path(@conn, :index) %>
         <%= link "Guess", to: "/guess" %>
-        <%= link "Settings", to: Routes.user_settings_path(@conn, :edit) %>
+        <%= link @current_user.email, to: Routes.user_settings_path(@conn, :edit) %>
         <%= link "Log out", to: Routes.user_session_path(@conn, :delete), method: :delete %>
-        <%= @current_user.email %>
       <% else %>
         <%= link "Register", to: Routes.user_registration_path(@conn, :new) %>
         <%= link "Log in", to: Routes.user_session_path(@conn, :new) %>

@@ -20,13 +20,13 @@
 </section>
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
   <%= form_for @changeset, Routes.items_path(@conn, :create_entry, @item.id), [class: "p-4"], fn f -> %>
-    <strong>Create Entry</strong>
+    <h2>Create Entry</h2>
     <div class="flex flex-col mb-2">
       <label>Content</label>
       <%= textarea f, :content %>
     </div>
     <div>
-      <%= submit "Submit", class: "bg-purple-300 p-2 rounded" %>
+      <%= submit "Submit" %>
     </div>
   <% end %>
 </section>

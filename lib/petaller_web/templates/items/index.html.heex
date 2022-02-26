@@ -1,7 +1,7 @@
 <h1>Items</h1>
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
   <%= form_for @changeset, Routes.items_path(@conn, :create), [class: "p-4"], fn f -> %>
-    <strong>New Item</strong>
+    <h2>New Item</h2>
     <div class="flex flex-col">
       <label>Description</label>
       <%= text_input f, :description %>
@@ -11,7 +11,7 @@
       <%= select f, :priority, [1, 2, 3, 4, 5] %>
     </div>
     <div>
-      <%= submit "Submit", class: "bg-purple-300 p-2 rounded" %>
+      <%= submit "Submit" %>
     </div>
   <% end %>
 </section>
