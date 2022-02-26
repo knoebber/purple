@@ -1,11 +1,11 @@
-defmodule Petaller.Tag do
+defmodule Petaller.Items.Tag do
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "tags" do
     field :name, :string
 
-    many_to_many :items, Petaller.Item, join_through: Petaller.ItemTag
+    many_to_many :items, Petaller.Items.Item, join_through: Petaller.Items.ItemTag
     timestamps()
   end
 

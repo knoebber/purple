@@ -1,4 +1,4 @@
-defmodule Petaller.Item do
+defmodule Petaller.Items.Item do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -8,8 +8,8 @@ defmodule Petaller.Item do
     field :completed_at, :naive_datetime
     field :is_pinned, :boolean, default: false
 
-    has_many :entries, Petaller.ItemEntry
-    many_to_many :tags, Petaller.Tag, join_through: Petaller.ItemTag
+    has_many :entries, Petaller.Items.Entry
+    many_to_many :tags, Petaller.Items.Tag, join_through: Petaller.Items.ItemTag
 
     timestamps()
   end

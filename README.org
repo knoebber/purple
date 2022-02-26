@@ -33,6 +33,7 @@ iex(34)> Repo.all(Item)
 + [[https://github.com/antifuchs/elixir-mode]]
 + https://elixirschool.com/en/lessons/basics/sigils
 + See keys in struct: ~|> Map.keys~
++ See exported functions: ~exports Enum~
 * (T) Tailwind
 + https://tailwindcss.com/docs
 

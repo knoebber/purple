@@ -1,11 +1,11 @@
-defmodule Petaller.ItemEntry do
+defmodule Petaller.Items.Entry do
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "item_entries" do
     field :content, :string
 
-    belongs_to :item, Petaller.Item
+    belongs_to :item, Petaller.Items.Item
 
     timestamps()
   end

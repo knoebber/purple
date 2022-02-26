@@ -1,10 +1,10 @@
-defmodule Petaller.ItemTag do
+defmodule Petaller.Items.ItemTag do
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "item_tags" do
-    belongs_to :item, Petaller.Item
-    belongs_to :tag, Petaller.Tag
+    belongs_to :item, Petaller.Items.Item
+    belongs_to :tag, Petaller.Items.Tag
 
     timestamps()
   end

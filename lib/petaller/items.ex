@@ -1,7 +1,16 @@
 defmodule Petaller.Items do
   alias Petaller.Repo
-  alias Petaller.{Item, ItemEntry}
+  alias Petaller.Items.{Entry, Item, Tag, ItemTag}
+
   import Ecto.Query
+
+  def change(%Item{} = item, attrs \\ %{}) do
+    Item.changeset(item, attrs)
+  end
+
+  def change_entry(%Entry{} = entry, attrs \\ %{}) do
+    Entry.changeset(entry, attrs)
+  end
 
   def create(params) do
     %Item{}
@@ -10,8 +19,8 @@ defmodule Petaller.Items do
   end
 
   def create_entry(params) do
-    %ItemEntry{}
-    |> ItemEntry.changeset(params)
+    %Entry{}
+    |> Entry.changeset(params)
     |> Repo.insert()
   end
 
@@ -19,7 +28,7 @@ defmodule Petaller.Items do
     Item
     |> where([i], i.id == ^id)
     |> Repo.all()
-    |> Repo.preload(entries: from(e in ItemEntry, order_by: [desc: e.inserted_at]))
+    |> Repo.preload(entries: from(e in Entry, order_by: [desc: e.inserted_at]))
     |> case do
       [item] -> item
       [] -> raise "item not found"
@@ -68,8 +77,8 @@ defmodule Petaller.Items do
 
   def delete(id) do
     Repo.transaction(fn ->
-      ItemEntry
-      |> where([ie], ie.item_id == ^id)
+      Entry
+      |> where([e], e.item_id == ^id)
       |> Repo.delete_all()
 
       Item
