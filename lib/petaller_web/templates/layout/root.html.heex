@@ -12,7 +12,16 @@
   <body class="bg-fuchsia-200">
     <nav class="flex py-8 bg-purple-300 border border-purple-400">
       <%= link "Home", to: "/" %>
-      <%= link "Items", to: Routes.items_path(@conn, :index) %>
+      <%= if @current_user do %>
+        <%= link "Items", to: Routes.items_path(@conn, :index) %>
+        <%= link "Guess", to: "/guess" %>
+        <%= link "Settings", to: Routes.user_settings_path(@conn, :edit) %>
+        <%= link "Log out", to: Routes.user_session_path(@conn, :delete), method: :delete %>
+        <%= @current_user.email %>
+      <% else %>
+        <%= link "Register", to: Routes.user_registration_path(@conn, :new) %>
+        <%= link "Log in", to: Routes.user_session_path(@conn, :new) %>
+      <% end %>
     </nav>
     <%= @inner_content %>
   </body>

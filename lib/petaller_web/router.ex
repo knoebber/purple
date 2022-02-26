@@ -1,6 +1,8 @@
 defmodule PetallerWeb.Router do
   use PetallerWeb, :router
 
+  import PetallerWeb.UserAuth
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,37 +10,16 @@ defmodule PetallerWeb.Router do
     plug :put_root_layout, {PetallerWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-  end
-
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
-
-  scope "/", PetallerWeb do
-    pipe_through :browser
-
-    get "/", PageController, :index
-    live "/guess", WrongLive
-  end
-
-  scope "/items", PetallerWeb do
-    pipe_through :browser
-
-    get "/", ItemsController, :index
-    post "/", ItemsController, :create
-    get "/:id", ItemsController, :show
-    delete "/:id", ItemsController, :delete
-    put "/:id/pin", ItemsController, :pin
-    delete "/:id/pin", ItemsController, :pin
-    post "/:id/entry", ItemsController, :create_entry
-    put "/:id/complete", ItemsController, :update_completed_at
-    delete "/:id/complete", ItemsController, :update_completed_at
+    plug :fetch_current_user
   end
 
   # Other scopes may use custom stacks.
   # scope "/api", PetallerWeb do
   #   pipe_through :api
   # end
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
 
   # Enables LiveDashboard only for development
   #
@@ -55,5 +36,52 @@ defmodule PetallerWeb.Router do
 
       live_dashboard "/dashboard", metrics: PetallerWeb.Telemetry
     end
+  end
+
+  ## Authentication routes
+  scope "/", PetallerWeb do
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
+
+    get "/users/register", UserRegistrationController, :new
+    post "/users/register", UserRegistrationController, :create
+    get "/users/log_in", UserSessionController, :new
+    post "/users/log_in", UserSessionController, :create
+    get "/users/reset_password", UserResetPasswordController, :new
+    post "/users/reset_password", UserResetPasswordController, :create
+    get "/users/reset_password/:token", UserResetPasswordController, :edit
+    put "/users/reset_password/:token", UserResetPasswordController, :update
+  end
+
+  ## Protected routes
+  scope "/", PetallerWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    get "/users/settings", UserSettingsController, :edit
+    put "/users/settings", UserSettingsController, :update
+    get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+
+    get "/items/", ItemsController, :index
+    post "/items/", ItemsController, :create
+    get "/items/:id", ItemsController, :show
+    delete "/items/:id", ItemsController, :delete
+    put "/items/:id/pin", ItemsController, :pin
+    delete "/items/:id/pin", ItemsController, :pin
+    post "/items/:id/entry", ItemsController, :create_entry
+    put "/items/:id/complete", ItemsController, :update_completed_at
+    delete "/items/:id/complete", ItemsController, :update_completed_at
+
+    live "/guess", WrongLive
+  end
+
+  # Unprotected routes
+  scope "/", PetallerWeb do
+    pipe_through [:browser]
+
+    get "/", PageController, :index
+    delete "/users/log_out", UserSessionController, :delete
+    get "/users/confirm", UserConfirmationController, :new
+    post "/users/confirm", UserConfirmationController, :create
+    get "/users/confirm/:token", UserConfirmationController, :edit
+    post "/users/confirm/:token", UserConfirmationController, :update
   end
 end
