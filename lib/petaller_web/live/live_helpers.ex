@@ -27,13 +27,17 @@ defmodule PetallerWeb.LiveHelpers do
     assigns = assign_new(assigns, :return_to, fn -> nil end)
 
     ~H"""
-    <div id="modal" class="phx-modal fade-in" phx-remove={hide_modal()}>
+    <div
+      class="fixed inset-0 z-30 flex items-center justify-center overflow-auto bg-black bg-opacity-50"
+      id="modal"
+      phx-remove={hide_modal()}
+    >
       <div
+        class="max-w-3xl px-6 py-4 mx-auto window"
         id="modal-content"
-        class="phx-modal-content fade-in-scale"
         phx-click-away={JS.dispatch("click", to: "#close")}
-        phx-window-keydown={JS.dispatch("click", to: "#close")}
         phx-key="escape"
+        phx-window-keydown={JS.dispatch("click", to: "#close")}
       >
         <%= if @return_to do %>
           <%= live_patch("✖",
@@ -45,7 +49,6 @@ defmodule PetallerWeb.LiveHelpers do
         <% else %>
           <a id="close" href="#" class="phx-modal-close" phx-click={hide_modal()}>✖</a>
         <% end %>
-
         <%= render_slot(@inner_block) %>
       </div>
     </div>
@@ -54,7 +57,7 @@ defmodule PetallerWeb.LiveHelpers do
 
   defp hide_modal(js \\ %JS{}) do
     js
-    |> JS.hide(to: "#modal", transition: "fade-out")
-    |> JS.hide(to: "#modal-content", transition: "fade-out-scale")
+    |> JS.hide(to: "#modal")
+    |> JS.hide(to: "#modal-content")
   end
 end
