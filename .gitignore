@@ -32,3 +32,4 @@ petaller-*.tar
 npm-debug.log
 /assets/node_modules/
 
+book_examples/

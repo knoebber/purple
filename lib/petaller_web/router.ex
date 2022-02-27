@@ -69,11 +69,24 @@ defmodule PetallerWeb.Router do
     post "/items/:id/entry", ItemsController, :create_entry
     put "/items/:id/complete", ItemsController, :update_completed_at
     delete "/items/:id/complete", ItemsController, :update_completed_at
-
-    live "/guess", WrongLive
   end
 
-  # Unprotected routes
+  ## Protected live routes
+  scope "/", PetallerWeb do
+    pipe_through [:browser]
+
+    live_session :default, on_mount: PetallerWeb.UserAuthLive do
+      live "/guess", WrongLive
+
+      live "/runs", RunLive.Index, :index
+      live "/runs/new", RunLive.Index, :new
+      live "/runs/:id/edit", RunLive.Index, :edit
+      live "/runs/:id", RunLive.Show, :show
+      live "/runs/:id/show/edit", RunLive.Show, :edit
+    end
+  end
+
+  ## Unprotected routes
   scope "/", PetallerWeb do
     pipe_through [:browser]
 

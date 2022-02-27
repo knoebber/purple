@@ -1,0 +1,51 @@
+<h1>Runs</h1>
+<%= if @live_action in [:new, :edit] do %>
+  <.modal return_to={Routes.run_index_path(@socket, :index)}>
+    <.live_component
+      module={PetallerWeb.RunLive.FormComponent}
+      id={@run.id || :new}
+      title={@page_title}
+      action={@live_action}
+      run={@run}
+      return_to={Routes.run_index_path(@socket, :index)}
+    />
+  </.modal>
+<% end %>
+<table class="window">
+  <thead class="bg-purple-300">
+    <tr>
+      <th>Miles</th>
+      <th>Seconds</th>
+      <th>Description</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="runs">
+    <%= for run <- @runs do %>
+      <tr id={"run-#{run.id}"}>
+        <td>
+          <%= live_redirect(run.miles, to: Routes.run_show_path(@socket, :show, run)) %>
+        </td>
+        <td>
+          <%= run.seconds %>
+        </td>
+        <td>
+          <%= run.description %>
+        </td>
+        <td>
+          <%= live_patch("Edit", to: Routes.run_index_path(@socket, :edit, run)) %>
+        </td>
+        <td>
+          <%= link("Delete",
+            phx_click: "delete",
+            phx_value_id: run.id,
+            data: [confirm: "Are you sure?"],
+            to: "#"
+          ) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<span><%= live_patch("New Run", to: Routes.run_index_path(@socket, :new)) %></span>

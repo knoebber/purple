@@ -39,6 +39,7 @@ defmodule Petaller.MixProject do
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 0.18"},
+      {:heex_formatter, github: "feliperenan/heex_formatter", runtime: Mix.env() == :dev},
       {:html_sanitize_ex, "~> 1.4.2"},
       {:jason, "~> 1.2"},
       {:phoenix, "~> 1.6.6"},

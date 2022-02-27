@@ -1,32 +1,38 @@
 <table class="window">
   <thead class="bg-purple-300">
     <tr>
-      <th class="cell-header">Item</th>
-      <th class="cell-header">Description</th>
-      <th class="cell-header">Priority</th>
-      <th class="cell-header">Created</th>
-      <th class="cell-header"></th>
-      <th class="cell-header"></th>
-      <th class="cell-header"></th>
+      <th>Item</th>
+      <th>Description</th>
+      <th>Priority</th>
+      <th>Created</th>
+      <th></th>
+      <th></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
     <%= for item <- @items do %>
       <tr>
-        <td class="cell">
+        <td>
           <%= link("item #{item.id}", to: Routes.items_path(@conn, :show, item.id)) %>
         </td>
-        <td class="cell"><%= item.description %></td>
-        <td class="cell"><%= item.priority %></td>
-        <td class="cell"><%= format_date(item.inserted_at) %></td>
-        <td class="cell">
-          <%= render "_pin.html", conn: @conn, item: item %>
+        <td>
+          <%= item.description %>
         </td>
-        <td class="cell">
-          <%= render "_set_completed_at.html", conn: @conn, item: item %>
+        <td>
+          <%= item.priority %>
         </td>
-        <td class="cell">
-          <%= render "_delete_item.html", conn: @conn, item: item %>
+        <td>
+          <%= format_date(item.inserted_at) %>
+        </td>
+        <td>
+          <%= render("_pin.html", conn: @conn, item: item) %>
+        </td>
+        <td>
+          <%= render("_set_completed_at.html", conn: @conn, item: item) %>
+        </td>
+        <td>
+          <%= render("_delete_item.html", conn: @conn, item: item) %>
         </td>
       </tr>
     <% end %>

@@ -28,6 +28,17 @@
         @apply list-disc;
     }
 
+    th {
+        @apply font-bold;
+        @apply p-4;
+        @apply text-left;
+    }
+
+    td {
+        @apply border-purple-500;
+        @apply p-4;
+    }
+
     button[type="submit"] {
         @apply bg-purple-300;
         @apply p-2;
@@ -49,15 +60,16 @@
         @apply shadow-md;
     }
 
-    .cell-header {
+    .flash {
         @apply font-bold;
+        @apply rounded;
+        @apply shadow-md;
         @apply p-4;
-        @apply text-left;
+        @apply mb-2;
     }
 
-    .cell {
-        @apply border-purple-500;
-        @apply p-4;
+    .flash:empty {
+        @apply hidden;
     }
 
     .flash-error {
