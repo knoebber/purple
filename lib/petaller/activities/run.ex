@@ -3,7 +3,7 @@ defmodule Petaller.Activities.Run do
   import Ecto.Changeset
 
   schema "runs" do
-    field :description, :string
+    field :description, :string, default: ""
     field :miles, :float
     field :seconds, :integer
 
@@ -14,6 +14,6 @@ defmodule Petaller.Activities.Run do
   def changeset(run, attrs) do
     run
     |> cast(attrs, [:miles, :seconds, :description])
-    |> validate_required([:miles, :seconds, :description])
+    |> validate_required([:miles, :seconds])
   end
 end
