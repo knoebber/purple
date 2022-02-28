@@ -61,11 +61,17 @@
     }
 
     .flash {
+        /* TODO: info and empty flashes will be at same absolute location */
+        @apply absolute;
+        @apply right-5;
+        @apply top-5;
+
         @apply font-bold;
+        @apply mb-2;
+        @apply p-4;
         @apply rounded;
         @apply shadow-md;
-        @apply p-4;
-        @apply mb-2;
+        @apply z-30;
     }
 
     .flash:empty {
