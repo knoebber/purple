@@ -1,25 +1,30 @@
 <section>
   <h2><%= @title %></h2>
-  <.form
-    let={f}
-    for={@changeset}
-    id="run-form"
-    phx-target={@myself}
-    phx-change="validate"
-    phx-submit="save"
-  >
+  <.form let={f} for={@changeset} id="run-form" phx-target={@myself} phx-submit="save">
     <div class="flex flex-col mb-2">
       <%= label(f, :miles) %>
       <%= number_input(f, :miles, step: "any") %>
       <%= error_tag(f, :miles) %>
-
-      <%= label(f, :seconds) %>
-      <%= number_input(f, :seconds) %>
+      <div class="flex mt-2">
+        <%= label(f, :hours, class: "w-1/3") %>
+        <%= label(f, :minutes, class: "w-1/3") %>
+        <%= label(f, :minute_seconds, "Seconds", class: "w-1/3") %>
+      </div>
+      <div class="flex mb-2">
+        <%= number_input(f, :hours, class: "w-1/3") %>
+        &nbsp;
+        <%= number_input(f, :minutes, class: "w-1/3") %>
+        &nbsp;
+        <%= number_input(f, :minute_seconds, class: "w-1/3") %>
+      </div>
+      <%= error_tag(f, :hours) %>
+      <%= error_tag(f, :minutes) %>
+      <%= error_tag(f, :minute_seconds) %>
       <%= error_tag(f, :seconds) %>
 
       <%= label(f, :description) %>
-      <%= textarea(f, :description, cols: 50) %>
-      <%= error_tag(f, :description) %>
+      <%= textarea(f, :description) %>
+      <p class="mt-2">Pace: <strong>N/A</strong></p>
     </div>
     <div>
       <%= submit("Save", phx_disable_with: "Saving...") %>

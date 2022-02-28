@@ -4,6 +4,14 @@ defmodule PetallerWeb.LiveHelpers do
 
   alias Phoenix.LiveView.JS
 
+  def format_duration(hours, minutes, seconds) do
+    Enum.map(
+      [hours, minutes, seconds],
+      fn n -> Integer.to_string(n) |> String.pad_leading(2, "0") end
+    )
+    |> Enum.join(":")
+  end
+
   @doc """
   Renders a live component inside a modal.
 
@@ -28,26 +36,26 @@ defmodule PetallerWeb.LiveHelpers do
 
     ~H"""
     <div
-      class="fixed inset-0 z-30 flex items-center justify-center overflow-auto bg-black bg-opacity-50"
+      class="fixed inset-0 z-2 flex items-center justify-center overflow-auto bg-black bg-opacity-50"
       id="modal"
       phx-remove={hide_modal()}
     >
       <div
-        class="max-w-3xl px-6 py-4 mx-auto window"
+        class="px-6 py-4 mx-auto window w-5/6 md:w-1/2 lg:w-1/3"
         id="modal-content"
         phx-click-away={JS.dispatch("click", to: "#close")}
         phx-key="escape"
         phx-window-keydown={JS.dispatch("click", to: "#close")}
       >
         <%= if @return_to do %>
-          <%= live_patch("✖",
+          <%= live_patch("",
             to: @return_to,
             id: "close",
             class: "phx-modal-close",
             phx_click: hide_modal()
           ) %>
         <% else %>
-          <a id="close" href="#" class="phx-modal-close" phx-click={hide_modal()}>✖</a>
+          <a id="close" href="#" class="phx-modal-close" phx-click={hide_modal()}></a>
         <% end %>
         <%= render_slot(@inner_block) %>
       </div>

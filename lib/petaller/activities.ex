@@ -8,6 +8,15 @@ defmodule Petaller.Activities do
 
   alias Petaller.Activities.Run
 
+  defp run_select(query) do
+    query
+    |> select_merge(%{
+      hours: fragment("seconds/3600"),
+      minutes: fragment("(seconds/60) % 60"),
+      minute_seconds: fragment("seconds % 60")
+    })
+  end
+
   @doc """
   Returns the list of runs.
 
@@ -18,7 +27,9 @@ defmodule Petaller.Activities do
 
   """
   def list_runs do
-    Repo.all(Run)
+    Run
+    |> run_select
+    |> Repo.all()
   end
 
   @doc """
@@ -35,7 +46,11 @@ defmodule Petaller.Activities do
       ** (Ecto.NoResultsError)
 
   """
-  def get_run!(id), do: Repo.get!(Run, id)
+  def get_run!(id) do
+    Run
+    |> run_select
+    |> Repo.get!(id)
+  end
 
   @doc """
   Creates a run.

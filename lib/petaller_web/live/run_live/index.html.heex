@@ -15,7 +15,7 @@
   <thead class="bg-purple-300">
     <tr>
       <th>Miles</th>
-      <th>Seconds</th>
+      <th>Duration</th>
       <th>Description</th>
       <th></th>
       <th></th>
@@ -28,7 +28,7 @@
           <%= live_redirect(run.miles, to: Routes.run_show_path(@socket, :show, run)) %>
         </td>
         <td>
-          <%= run.seconds %>
+          <%= format_duration(run.hours, run.minutes, run.minute_seconds) %>
         </td>
         <td>
           <%= run.description %>
