@@ -34,7 +34,7 @@ defmodule Petaller.Activities do
 
   @doc """
   Gets a single run.
-
+  _
   Raises `Ecto.NoResultsError` if the Run does not exist.
 
   ## Examples

@@ -3,28 +3,39 @@ defmodule PetallerWeb.RunLive.FormComponent do
 
   alias Petaller.Activities
 
-  @impl true
   def update(%{run: run} = assigns, socket) do
     changeset = Activities.change_run(run)
 
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:changeset, changeset)}
+     |> assign(:changeset, changeset)
+     |> assign(:duration_in_seconds, run.seconds)
+     |> assign(:miles, run.miles)}
   end
 
-  @impl true
-  def handle_event("validate", %{"run" => run_params}, socket) do
+  def handle_event("save", %{"run" => run_params}, socket) do
+    save_run(socket, socket.assigns.action, run_params)
+  end
+
+  def handle_event("calculate-pace", %{"run" => run_params}, socket) do
     changeset =
       socket.assigns.run
       |> Activities.change_run(run_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, assign(socket, :changeset, changeset)}
-  end
+    if changeset.valid? do
+      duration_in_seconds = Ecto.Changeset.get_field(changeset, :seconds)
+      miles = Ecto.Changeset.get_field(changeset, :miles)
 
-  def handle_event("save", %{"run" => run_params}, socket) do
-    save_run(socket, socket.assigns.action, run_params)
+      {:noreply,
+       socket
+       |> assign(:changeset, changeset)
+       |> assign(:duration_in_seconds, duration_in_seconds)
+       |> assign(:miles, miles)}
+    else
+      {:noreply, assign(socket, :changeset, changeset)}
+    end
   end
 
   defp save_run(socket, :edit, run_params) do

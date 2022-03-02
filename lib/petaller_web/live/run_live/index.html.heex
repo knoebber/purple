@@ -1,4 +1,8 @@
-<h1>Runs</h1>
+<div class="flex">
+  <%= live_patch(to: Routes.run_index_path(@socket, :new), class: "text-xl") do %>
+    <h1>Add Run</h1>
+  <% end %>
+</div>
 <%= if @live_action in [:new, :edit] do %>
   <.modal return_to={Routes.run_index_path(@socket, :index)}>
     <.live_component
@@ -11,12 +15,13 @@
     />
   </.modal>
 <% end %>
-<table class="window">
+<table class="window mt-2">
   <thead class="bg-purple-300">
     <tr>
       <th>Miles</th>
       <th>Duration</th>
-      <th>Description</th>
+      <th>Pace</th>
+      <th>Date</th>
       <th></th>
       <th></th>
     </tr>
@@ -31,7 +36,7 @@
           <%= format_duration(run.hours, run.minutes, run.minute_seconds) %>
         </td>
         <td>
-          <%= run.description %>
+          <%= format_pace(run.miles, run.seconds) %>
         </td>
         <td>
           <%= live_patch("Edit", to: Routes.run_index_path(@socket, :edit, run)) %>
@@ -48,4 +53,3 @@
     <% end %>
   </tbody>
 </table>
-<span><%= live_patch("New Run", to: Routes.run_index_path(@socket, :new)) %></span>
