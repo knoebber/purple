@@ -4,6 +4,7 @@ defmodule PetallerWeb.LiveHelpers do
 
   alias Phoenix.LiveView.JS
 
+  # TODO move to run.
   def format_pace(miles, duration_in_seconds) do
     seconds_per_mile = floor(duration_in_seconds / miles)
     minutes_per_mile = div(seconds_per_mile, 60)

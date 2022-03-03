@@ -59,16 +59,6 @@ defmodule PetallerWeb.Router do
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
-
-    get "/items/", ItemsController, :index
-    post "/items/", ItemsController, :create
-    get "/items/:id", ItemsController, :show
-    delete "/items/:id", ItemsController, :delete
-    put "/items/:id/pin", ItemsController, :pin
-    delete "/items/:id/pin", ItemsController, :pin
-    post "/items/:id/entry", ItemsController, :create_entry
-    put "/items/:id/complete", ItemsController, :update_completed_at
-    delete "/items/:id/complete", ItemsController, :update_completed_at
   end
 
   ## Protected live routes
@@ -83,6 +73,12 @@ defmodule PetallerWeb.Router do
       live "/runs/:id/edit", RunLive.Index, :edit
       live "/runs/:id", RunLive.Show, :show
       live "/runs/:id/show/edit", RunLive.Show, :edit
+
+      live "/items", ItemLive.Index, :index
+      live "/items/new", ItemLive.Index, :new
+      live "/items/:id/edit", ItemLive.Index, :edit
+      live "/items/:id", ItemLive.Show, :show
+      live "/items/:id/show/edit", ItemLive.Show, :edit
     end
   end
 

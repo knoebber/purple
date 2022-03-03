@@ -13,7 +13,7 @@
     <nav class="flex py-8 bg-purple-300 border border-purple-400">
       <%= link "Home", to: "/" %>
       <%= if @current_user do %>
-        <%= link "Items", to: Routes.items_path(@conn, :index) %>
+        <%= link "Items", to: "/items" %>
         <%= link "Guess", to: "/guess" %>
         <%= link "Runs", to: "/runs" %>
         <%= link @current_user.email, to: Routes.user_settings_path(@conn, :edit) %>

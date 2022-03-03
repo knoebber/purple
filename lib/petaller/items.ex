@@ -24,7 +24,7 @@ defmodule Petaller.Items do
     |> Repo.insert()
   end
 
-  def get(id) do
+  def get!(id) do
     Item
     |> where([i], i.id == ^id)
     |> Repo.all()
