@@ -1,8 +1,8 @@
-<h1>Item <%= @item.id %></h1>
+<h1><%= @page_title %></h1>
 
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
   <div class="flex justify-between">
-    <.set_completed_at item={@item} />
+    <Components.toggle_complete item={@item} />
     <i>
       <%= @item.inserted_at %>
     </i>
@@ -19,7 +19,7 @@
   </div>
 </section>
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
-  FORM WIP
+  FORM TODO
 </section>
 <%= for entry <- @item.entries do %>
   <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">

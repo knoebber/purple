@@ -3,6 +3,9 @@ defmodule PetallerWeb.RunLive.Show do
 
   alias Petaller.Activities
 
+  defp page_title(:show), do: "Show Run"
+  defp page_title(:edit), do: "Edit Run"
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok, socket}
@@ -15,7 +18,4 @@ defmodule PetallerWeb.RunLive.Show do
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:run, Activities.get_run!(id))}
   end
-
-  defp page_title(:show), do: "Show Run"
-  defp page_title(:edit), do: "Edit Run"
 end

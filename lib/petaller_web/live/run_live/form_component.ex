@@ -3,6 +3,33 @@ defmodule PetallerWeb.RunLive.FormComponent do
 
   alias Petaller.Activities
 
+  defp save_run(socket, :edit, run_params) do
+    case Activities.update_run(socket.assigns.run, run_params) do
+      {:ok, _run} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Run updated")
+         |> push_redirect(to: socket.assigns.return_to)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :changeset, changeset)}
+    end
+  end
+
+  defp save_run(socket, :new, run_params) do
+    case Activities.create_run(run_params) do
+      {:ok, _run} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Run created")
+         |> push_redirect(to: socket.assigns.return_to)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
+  end
+
+  @impl true
   def update(%{run: run} = assigns, socket) do
     changeset = Activities.change_run(run)
 
@@ -14,10 +41,12 @@ defmodule PetallerWeb.RunLive.FormComponent do
      |> assign(:miles, run.miles)}
   end
 
+  @impl true
   def handle_event("save", %{"run" => run_params}, socket) do
     save_run(socket, socket.assigns.action, run_params)
   end
 
+  @impl true
   def handle_event("calculate-pace", %{"run" => run_params}, socket) do
     changeset =
       socket.assigns.run
@@ -35,32 +64,6 @@ defmodule PetallerWeb.RunLive.FormComponent do
        |> assign(:miles, miles)}
     else
       {:noreply, assign(socket, :changeset, changeset)}
-    end
-  end
-
-  defp save_run(socket, :edit, run_params) do
-    case Activities.update_run(socket.assigns.run, run_params) do
-      {:ok, _run} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Run updated successfully")
-         |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
-    end
-  end
-
-  defp save_run(socket, :new, run_params) do
-    case Activities.create_run(run_params) do
-      {:ok, _run} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Run created successfully")
-         |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
     end
   end
 end

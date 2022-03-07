@@ -1,29 +1,15 @@
 defmodule PetallerWeb.ItemLive.Components do
+  import Phoenix.HTML.Link
+  alias PetallerWeb.Router.Helpers, as: Routes
   use Phoenix.Component
 
-  def set_completed_at(assigns) do
+  def toggle_complete(assigns) do
     ~H"""
-    <%= if @item.completed_at do %>
-      Set incomplete
-    <% else %>
-      Set complete
-    <% end %>
-    """
-  end
-
-  def toggle_pin(assigns) do
-    ~H"""
-    <%= if assigns.item.is_pinned do %>
-      unpin 📌
-    <% else %>
-      pin 📌
-    <% end %>
-    """
-  end
-
-  def delete_item(assigns) do
-    ~H"""
-    DELETE <%= @item.id %>
+    <%= link(if(@item.completed_at, do: "Set Incomplete", else: "Set Complete"),
+      phx_click: "toggle_complete",
+      phx_value_id: @item.id,
+      to: "#"
+    ) %>
     """
   end
 
@@ -45,25 +31,34 @@ defmodule PetallerWeb.ItemLive.Components do
         <%= for item <- @items do %>
           <tr>
             <td>
-              show (live redirect) <%= item.id %>
+              <%= live_redirect(item.id, to: Routes.item_show_path(@socket, :show, item)) %>
             </td>
             <td>
-              <%= item.description %>
+              <%= live_patch(item.description, to: Routes.item_index_path(@socket, :edit, item)) %>
             </td>
             <td>
-              <%= item.priority %>
+              <%= live_patch(item.priority, to: Routes.item_index_path(@socket, :edit, item)) %>
             </td>
             <td>
               <%= item.inserted_at %>
             </td>
             <td>
-              <.toggle_pin item={item} />
+              <%= link("📌",
+                phx_click: "toggle_pin",
+                phx_value_id: item.id,
+                to: "#"
+              ) %>
             </td>
             <td>
-              <.set_completed_at item={item} />
+              <.toggle_complete item={item} />
             </td>
             <td>
-              <.delete_item item={item} />
+              <%= link("Delete",
+                phx_click: "delete",
+                phx_value_id: item.id,
+                data: [confirm: "Are you sure?"],
+                to: "#"
+              ) %>
             </td>
           </tr>
         <% end %>

@@ -24,7 +24,13 @@ defmodule Petaller.Items do
     |> Repo.insert()
   end
 
-  def get!(id) do
+  def update(%Item{} = item, params) do
+    item
+    |> Item.changeset(params)
+    |> Repo.update()
+  end
+
+  def get_with_entries!(id) do
     Item
     |> where([i], i.id == ^id)
     |> Repo.all()
@@ -35,19 +41,28 @@ defmodule Petaller.Items do
     end
   end
 
-  def set_completed_at(id, is_complete) do
+  def get!(id) do
     Item
     |> Repo.get!(id)
+  end
+
+  def set_completed_at(%Item{} = item, true) do
+    item
     |> Item.changeset(%{
-      completed_at: if(is_complete, do: NaiveDateTime.utc_now(), else: nil),
+      completed_at: NaiveDateTime.utc_now(),
       is_pinned: false
     })
     |> Repo.update()
   end
 
-  def pin(id, is_pinned) do
-    Item
-    |> Repo.get!(id)
+  def set_completed_at(%Item{} = item, false) do
+    item
+    |> Item.changeset(%{completed_at: nil})
+    |> Repo.update()
+  end
+
+  def set_pinned(%Item{} = item, is_pinned) do
+    item
     |> Item.changeset(%{is_pinned: is_pinned})
     |> Repo.update()
   end
@@ -75,15 +90,13 @@ defmodule Petaller.Items do
     |> Repo.all()
   end
 
-  def delete(id) do
+  def delete!(%Item{} = item) do
     Repo.transaction(fn ->
       Entry
-      |> where([e], e.item_id == ^id)
+      |> where([e], e.item_id == ^item.id)
       |> Repo.delete_all()
 
-      Item
-      |> Repo.get!(id)
-      |> Repo.delete!()
+      Repo.delete(item)
     end)
   end
 end
