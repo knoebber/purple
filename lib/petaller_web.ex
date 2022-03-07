@@ -22,7 +22,6 @@ defmodule PetallerWeb do
       use Phoenix.Controller, namespace: PetallerWeb
 
       import Plug.Conn
-      import PetallerWeb.Gettext
       alias PetallerWeb.Router.Helpers, as: Routes
     end
   end
@@ -80,7 +79,6 @@ defmodule PetallerWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import PetallerWeb.Gettext
     end
   end
 
@@ -97,7 +95,6 @@ defmodule PetallerWeb do
       import Phoenix.View
 
       import PetallerWeb.ErrorHelpers
-      import PetallerWeb.Gettext
       alias PetallerWeb.Router.Helpers, as: Routes
     end
   end
