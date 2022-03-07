@@ -1,7 +1,5 @@
 defmodule PetallerWeb.ItemLive.Components do
-  import Phoenix.HTML.Link
-  alias PetallerWeb.Router.Helpers, as: Routes
-  use Phoenix.Component
+  use PetallerWeb, :component
 
   def toggle_complete(assigns) do
     ~H"""
@@ -40,7 +38,7 @@ defmodule PetallerWeb.ItemLive.Components do
               <%= live_patch(item.priority, to: Routes.item_index_path(@socket, :edit, item)) %>
             </td>
             <td>
-              <%= item.inserted_at %>
+              <%= format_date(item.inserted_at) %>
             </td>
             <td>
               <%= link("📌",
@@ -66,18 +64,4 @@ defmodule PetallerWeb.ItemLive.Components do
     </table>
     """
   end
-
-  """
-  def format_date(naive_dt) do
-    DateTime.from_naive!(naive_dt, "Etc/UTC")
-    |> DateTime.shift_zone!("America/Anchorage")
-    |> Calendar.strftime("%m/%d/%Y %I:%M%P")
-  end
-
-  def md(markdown) do
-    Earmark.as_html!(markdown)
-    |> HtmlSanitizeEx.markdown_html()
-    |> raw
-  end
-  """
 end

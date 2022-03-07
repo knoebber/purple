@@ -44,6 +44,7 @@ defmodule PetallerWeb.ItemLive.FormComponent do
     save_item(socket, socket.assigns.action, item_params)
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <section>

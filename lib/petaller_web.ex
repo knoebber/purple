@@ -95,6 +95,7 @@ defmodule PetallerWeb do
       import Phoenix.View
 
       import PetallerWeb.ErrorHelpers
+      import PetallerWeb.Formatters
       alias PetallerWeb.Router.Helpers, as: Routes
     end
   end
