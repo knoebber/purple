@@ -1,52 +1,58 @@
-defmodule Petaller.Items do
+defmodule Petaller.Board do
   alias Petaller.Repo
-  alias Petaller.Items.{Entry, Item, Tag, ItemTag}
+  alias Petaller.Board.{ItemEntry, Item}
 
   import Ecto.Query
 
-  def change(%Item{} = item, attrs \\ %{}) do
+  def change_item(%Item{} = item, attrs \\ %{}) do
     Item.changeset(item, attrs)
   end
 
-  def change_entry(%Entry{} = entry, attrs \\ %{}) do
-    Entry.changeset(entry, attrs)
+  def change_item_entry(%ItemEntry{} = entry, attrs \\ %{}) do
+    ItemEntry.changeset(entry, attrs)
   end
 
-  def create(params) do
+  def create_item(params) do
     %Item{}
     |> Item.changeset(params)
     |> Repo.insert()
   end
 
-  def create_entry(params) do
-    %Entry{}
-    |> Entry.changeset(params)
+  def create_item_entry(params) do
+    %ItemEntry{}
+    |> ItemEntry.changeset(params)
     |> Repo.insert()
   end
 
-  def update(%Item{} = item, params) do
+  def update_item(%Item{} = item, params) do
     item
     |> Item.changeset(params)
     |> Repo.update()
   end
 
-  def get_with_entries!(id) do
+  def update_item_entry(%ItemEntry{} = entry, params) do
+    entry
+    |> ItemEntry.changeset(params)
+    |> Repo.update()
+  end
+
+  def get_item_with_entries!(id) do
     Item
     |> where([i], i.id == ^id)
     |> Repo.all()
-    |> Repo.preload(entries: from(e in Entry, order_by: [desc: e.inserted_at]))
+    |> Repo.preload(entries: from(e in ItemEntry, order_by: [desc: e.inserted_at]))
     |> case do
       [item] -> item
       [] -> raise "item not found"
     end
   end
 
-  def get!(id) do
+  def get_item!(id) do
     Item
     |> Repo.get!(id)
   end
 
-  def set_completed_at(%Item{} = item, true) do
+  def set_item_complete(%Item{} = item, true) do
     item
     |> Item.changeset(%{
       completed_at: NaiveDateTime.utc_now(),
@@ -55,26 +61,26 @@ defmodule Petaller.Items do
     |> Repo.update()
   end
 
-  def set_completed_at(%Item{} = item, false) do
+  def set_item_complete(%Item{} = item, false) do
     item
     |> Item.changeset(%{completed_at: nil})
     |> Repo.update()
   end
 
-  def set_pinned(%Item{} = item, is_pinned) do
+  def pin_item(%Item{} = item, is_pinned) do
     item
     |> Item.changeset(%{is_pinned: is_pinned})
     |> Repo.update()
   end
 
-  def list_pinned() do
+  def list_pinned_items() do
     Item
     |> where([i], i.is_pinned == true)
     |> order_by(asc: :priority, desc: :updated_at)
     |> Repo.all()
   end
 
-  def list_incomplete() do
+  def list_incomplete_items() do
     Item
     |> where([i], is_nil(i.completed_at))
     |> where([i], i.is_pinned == false)
@@ -82,7 +88,7 @@ defmodule Petaller.Items do
     |> Repo.all()
   end
 
-  def list_complete() do
+  def list_complete_items() do
     Item
     |> where([i], not is_nil(i.completed_at))
     |> where([i], i.is_pinned == false)
@@ -90,9 +96,9 @@ defmodule Petaller.Items do
     |> Repo.all()
   end
 
-  def delete!(%Item{} = item) do
+  def delete_item!(%Item{} = item) do
     Repo.transaction(fn ->
-      Entry
+      ItemEntry
       |> where([e], e.item_id == ^item.id)
       |> Repo.delete_all()
 

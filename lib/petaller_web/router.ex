@@ -66,19 +66,17 @@ defmodule PetallerWeb.Router do
     pipe_through [:browser]
 
     live_session :default, on_mount: PetallerWeb.UserAuthLive do
-      live "/guess", WrongLive
-
       live "/runs", RunLive.Index, :index
       live "/runs/new", RunLive.Index, :new
       live "/runs/:id/edit", RunLive.Index, :edit
       live "/runs/:id", RunLive.Show, :show
       live "/runs/:id/show/edit", RunLive.Show, :edit
 
-      live "/items", ItemLive.Index, :index
-      live "/items/new", ItemLive.Index, :new
-      live "/items/:id/edit", ItemLive.Index, :edit
-      live "/items/:id", ItemLive.Show, :show
-      live "/items/:id/show/edit", ItemLive.Show, :edit
+      live "/board", BoardLive.Index, :index
+      live "/board/new_item", BoardLive.Index, :new
+      live "/board/item/:id/edit", BoardLive.Index, :edit
+      live "/board/item/:id/show", BoardLive.Show, :show
+      live "/board/item/:id/show/edit", BoardLive.Show, :edit
     end
   end
 

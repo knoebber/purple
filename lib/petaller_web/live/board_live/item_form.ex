@@ -1,10 +1,10 @@
 defmodule PetallerWeb.ItemLive.FormComponent do
   use PetallerWeb, :live_component
 
-  alias Petaller.Items
+  alias Petaller.Board
 
-  defp save_item(socket, :edit, item_params) do
-    case Items.update(socket.assigns.item, item_params) do
+  defp save_item(socket, :edit, params) do
+    case Board.update_item(socket.assigns.item, params) do
       {:ok, _item} ->
         {:noreply,
          socket
@@ -16,8 +16,8 @@ defmodule PetallerWeb.ItemLive.FormComponent do
     end
   end
 
-  defp save_item(socket, :new, item_params) do
-    case Items.create(item_params) do
+  defp save_item(socket, :new, params) do
+    case Board.create_item(params) do
       {:ok, _item} ->
         {:noreply,
          socket
@@ -31,7 +31,7 @@ defmodule PetallerWeb.ItemLive.FormComponent do
 
   @impl true
   def update(%{item: item} = assigns, socket) do
-    changeset = Items.change(item)
+    changeset = Board.change_item(item)
 
     {:ok,
      socket

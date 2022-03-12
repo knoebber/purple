@@ -1,4 +1,4 @@
-defmodule PetallerWeb.ItemLive.Components do
+defmodule PetallerWeb.BoardLive.Components do
   use PetallerWeb, :component
 
   def toggle_complete(assigns) do
@@ -29,13 +29,13 @@ defmodule PetallerWeb.ItemLive.Components do
         <%= for item <- @items do %>
           <tr>
             <td>
-              <%= live_redirect(item.id, to: Routes.item_show_path(@socket, :show, item)) %>
+              <%= live_redirect(item.id, to: Routes.board_show_path(@socket, :show, item)) %>
             </td>
             <td>
-              <%= live_patch(item.description, to: Routes.item_index_path(@socket, :edit, item)) %>
+              <%= live_patch(item.description, to: Routes.board_index_path(@socket, :edit, item)) %>
             </td>
             <td>
-              <%= live_patch(item.priority, to: Routes.item_index_path(@socket, :edit, item)) %>
+              <%= live_patch(item.priority, to: Routes.board_index_path(@socket, :edit, item)) %>
             </td>
             <td>
               <%= format_date(item.inserted_at) %>
