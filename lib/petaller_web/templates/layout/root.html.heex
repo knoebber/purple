@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <%= csrf_meta_tag() %>
-    <%= live_title_tag assigns[:page_title] || "Petaller", suffix: " · Phoenix Framework" %>
+    <%= live_title_tag assigns[:page_title] || "<MISSING TITLE>", suffix: " · Petaller" %>
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")}/>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
   </head>
@@ -13,8 +13,7 @@
     <nav class="flex py-8 bg-purple-300 border border-purple-400">
       <%= link "Home", to: "/" %>
       <%= if @current_user do %>
-        <%= link "Items", to: "/items" %>
-        <%= link "Guess", to: "/guess" %>
+        <%= link "Board", to: "/board" %>
         <%= link "Runs", to: "/runs" %>
         <%= link @current_user.email, to: Routes.user_settings_path(@conn, :edit) %>
         <%= link "Log out", to: Routes.user_session_path(@conn, :delete), method: :delete %>

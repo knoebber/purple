@@ -5,7 +5,7 @@ defmodule PetallerWeb.UserSessionController do
   alias PetallerWeb.UserAuth
 
   def new(conn, _params) do
-    render(conn, "new.html", error_message: nil)
+    render(conn, "new.html", error_message: nil, page_title: "Login")
   end
 
   def create(conn, %{"user" => user_params}) do
@@ -15,7 +15,7 @@ defmodule PetallerWeb.UserSessionController do
       UserAuth.log_in_user(conn, user, user_params)
     else
       # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
-      render(conn, "new.html", error_message: "Invalid email or password")
+      render(conn, "new.html", error_message: "Invalid email or password", page_title: "Login")
     end
   end
 
