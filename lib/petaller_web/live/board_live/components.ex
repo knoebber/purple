@@ -29,7 +29,7 @@ defmodule PetallerWeb.BoardLive.Components do
         <%= for item <- @items do %>
           <tr>
             <td>
-              <%= live_redirect(item.id, to: Routes.board_show_path(@socket, :show_item, item)) %>
+              <%= live_redirect(item.id, to: Routes.board_show_item_path(@socket, :show_item, item)) %>
             </td>
             <td>
               <%= live_patch(item.description, to: Routes.board_index_path(@socket, :edit_item, item)) %>

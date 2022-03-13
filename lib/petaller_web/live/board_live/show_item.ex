@@ -1,4 +1,4 @@
-defmodule PetallerWeb.BoardLive.Show do
+defmodule PetallerWeb.BoardLive.ShowItem do
   use PetallerWeb, :live_view
 
   alias Petaller.Board
@@ -62,10 +62,24 @@ defmodule PetallerWeb.BoardLive.Show do
   def render(assigns) do
     ~H"""
     <h1><%= @page_title %></h1>
-
+    <%= if @live_action == :edit_item do %>
+      <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)}>
+        <.live_component
+          module={PetallerWeb.BoardLive.ItemForm}
+          id={@item.id}
+          title={@page_title}
+          action={@live_action}
+          item={@item}
+          return_to={Routes.board_show_item_path(@socket, :show_item, @item)}
+        />
+      </.modal>
+    <% end %>
     <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
       <div class="flex justify-between">
-        <Components.toggle_complete item={@item} />
+        <div>
+          <Components.toggle_complete item={@item} />
+          | <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
+        </div>
         <i>
           <%= format_date(@item.inserted_at) %>
         </i>
