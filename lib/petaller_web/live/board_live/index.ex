@@ -5,13 +5,13 @@ defmodule PetallerWeb.BoardLive.Index do
   alias Petaller.Board.Item
   alias PetallerWeb.BoardLive.Components
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
+  defp apply_action(socket, :edit_item, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Item #{id}")
     |> assign(:item, Board.get_item!(id))
   end
 
-  defp apply_action(socket, :new, _params) do
+  defp apply_action(socket, :new_item, _params) do
     socket
     |> assign(:page_title, "New Item")
     |> assign(:item, %Item{})
@@ -43,7 +43,7 @@ defmodule PetallerWeb.BoardLive.Index do
   @impl true
   def handle_event("toggle_complete", %{"id" => id}, socket) do
     item = Board.get_item!(id)
-    Board.set_item_complete(item, !item.completed_at)
+    Board.set_item_complete!(item, !item.completed_at)
     {:noreply, load_items(socket)}
   end
 
@@ -66,14 +66,14 @@ defmodule PetallerWeb.BoardLive.Index do
   def render(assigns) do
     ~H"""
     <div class="flex">
-      <%= live_patch(to: Routes.board_index_path(@socket, :new), class: "text-xl") do %>
+      <%= live_patch(to: Routes.board_index_path(@socket, :new_item), class: "text-xl") do %>
         <h1>Add Item</h1>
       <% end %>
     </div>
-    <%= if @live_action in [:new, :edit] do %>
+    <%= if @live_action in [:new_item, :edit_item] do %>
       <.modal return_to={Routes.board_index_path(@socket, :index)}>
         <.live_component
-          module={PetallerWeb.ItemLive.FormComponent}
+          module={PetallerWeb.BoardLive.ItemForm}
           id={@item.id || :new}
           title={@page_title}
           action={@live_action}

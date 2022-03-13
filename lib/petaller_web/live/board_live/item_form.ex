@@ -1,9 +1,9 @@
-defmodule PetallerWeb.ItemLive.FormComponent do
+defmodule PetallerWeb.BoardLive.ItemForm do
   use PetallerWeb, :live_component
 
   alias Petaller.Board
 
-  defp save_item(socket, :edit, params) do
+  defp save_item(socket, :edit_item, params) do
     case Board.update_item(socket.assigns.item, params) do
       {:ok, _item} ->
         {:noreply,
@@ -16,7 +16,7 @@ defmodule PetallerWeb.ItemLive.FormComponent do
     end
   end
 
-  defp save_item(socket, :new, params) do
+  defp save_item(socket, :new_item, params) do
     case Board.create_item(params) do
       {:ok, _item} ->
         {:noreply,
@@ -49,12 +49,14 @@ defmodule PetallerWeb.ItemLive.FormComponent do
     ~H"""
     <section>
       <h2><%= @title %></h2>
-      <.form for={@changeset} id="item-form" let={f} phx-submit="save" phx-target={@myself}>
+      <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :description) %>
           <%= text_input(f, :description) %>
+          <%= error_tag(f, :description) %>
           <%= label(f, :priority) %>
           <%= select(f, :priority, 1..5) %>
+          <%= error_tag(f, :priority) %>
         </div>
         <%= submit("Save", phx_disable_with: "Saving...") %>
       </.form>

@@ -29,13 +29,13 @@ defmodule PetallerWeb.BoardLive.Components do
         <%= for item <- @items do %>
           <tr>
             <td>
-              <%= live_redirect(item.id, to: Routes.board_show_path(@socket, :show, item)) %>
+              <%= live_redirect(item.id, to: Routes.board_show_path(@socket, :show_item, item)) %>
             </td>
             <td>
-              <%= live_patch(item.description, to: Routes.board_index_path(@socket, :edit, item)) %>
+              <%= live_patch(item.description, to: Routes.board_index_path(@socket, :edit_item, item)) %>
             </td>
             <td>
-              <%= live_patch(item.priority, to: Routes.board_index_path(@socket, :edit, item)) %>
+              <%= live_patch(item.priority, to: Routes.board_index_path(@socket, :edit_item, item)) %>
             </td>
             <td>
               <%= format_date(item.inserted_at) %>

@@ -2,61 +2,36 @@ defmodule PetallerWeb.BoardLive.ItemEntryForm do
   use PetallerWeb, :live_component
 
   alias Petaller.Board
-
-  defp save_item_entry(socket, :edit, params) do
-    case Board.update_item_entry(socket.assigns.item, params) do
-      {:ok, _item} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Entry updated")
-         |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
-    end
-  end
-
-  defp save_item_entry(socket, :new, params) do
-    case Board.create_item_entry(params) do
-      {:ok, _item} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Entry created")
-         |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
-    end
-  end
+  alias Petaller.Board.ItemEntry
 
   @impl true
-  def update(%{item_entry: item_entry} = assigns, socket) do
-    changeset = Board.change_item_entry(item_entry)
-
+  def update(assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:changeset, changeset)}
+     |> assign(:changeset, Board.change_item_entry(%ItemEntry{}))}
   end
 
   @impl true
   def handle_event("save", %{"item_entry" => params}, socket) do
-    save_item_entry(socket, socket.assigns.action, params)
+    IO.inspect(["entry save:", socket.assigns])
+    send(self(), {:updated_item_entry, socket.assigns.entry, params})
+    {:noreply, socket}
   end
 
   @impl true
   def render(assigns) do
     ~H"""
-    <section>
-      <h2><%= @title %></h2>
-      <.form for={@changeset} id="item-form" let={f} phx-submit="save" phx-target={@myself}>
+    <div>
+      <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <%= label(f, :description) %>
-          <%= textarea(f, :description) %>
+          <%= hidden_input(f, :item_id, value: @item_id) %>
+          <%= label(f, :content) %>
+          <%= textarea(f, :content) %>
         </div>
         <%= submit("Save", phx_disable_with: "Saving...") %>
       </.form>
-    </section>
+    </div>
     """
   end
 end

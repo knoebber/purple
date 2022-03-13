@@ -36,9 +36,20 @@ defmodule Petaller.Board do
     |> Repo.update()
   end
 
-  def get_item_with_entries!(id) do
+  def get_item!(id) do
     Item
-    |> where([i], i.id == ^id)
+    |> Repo.get!(id)
+  end
+
+  def get_item_entries(item_id) do
+    ItemEntry
+    |> where([ie], ie.item_id == ^item_id)
+    |> Repo.all()
+  end
+
+  def get_item_with_entries!(item_id) do
+    Item
+    |> where([i], i.id == ^item_id)
     |> Repo.all()
     |> Repo.preload(entries: from(e in ItemEntry, order_by: [desc: e.inserted_at]))
     |> case do
@@ -47,24 +58,19 @@ defmodule Petaller.Board do
     end
   end
 
-  def get_item!(id) do
-    Item
-    |> Repo.get!(id)
-  end
-
-  def set_item_complete(%Item{} = item, true) do
+  def set_item_complete!(%Item{} = item, true) do
     item
     |> Item.changeset(%{
       completed_at: NaiveDateTime.utc_now(),
       is_pinned: false
     })
-    |> Repo.update()
+    |> Repo.update!()
   end
 
-  def set_item_complete(%Item{} = item, false) do
+  def set_item_complete!(%Item{} = item, false) do
     item
     |> Item.changeset(%{completed_at: nil})
-    |> Repo.update()
+    |> Repo.update!()
   end
 
   def pin_item(%Item{} = item, is_pinned) do
