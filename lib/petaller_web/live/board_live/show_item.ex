@@ -43,9 +43,6 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   @impl true
   def handle_info({:updated_item_entry, entry, params}, socket) do
-    IO.puts("handle_info")
-    IO.inspect(params)
-
     case save_entry(socket, entry, params) do
       {:ok, item} ->
         {:noreply,
@@ -61,7 +58,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   @impl true
   def render(assigns) do
     ~H"""
-    <h1><%= @page_title %></h1>
+    <h1><%= "Item #{@item.id}: #{@item.description}" %></h1>
     <%= if @live_action == :edit_item do %>
       <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)}>
         <.live_component
@@ -77,17 +74,16 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
       <div class="flex justify-between">
         <div>
+          Complete:&nbsp;
           <Components.toggle_complete item={@item} />
-          | <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
+          &nbsp;
+          |
+          &nbsp;
+          <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
         </div>
         <i>
-          <%= format_date(@item.inserted_at) %>
+          created at <%= format_date(@item.inserted_at) %>
         </i>
-      </div>
-      <div>
-        <strong>
-          <%= @item.description %>
-        </strong>
       </div>
       <div>
         <%= if @item.completed_at do %>

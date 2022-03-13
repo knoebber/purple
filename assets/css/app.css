@@ -44,6 +44,10 @@
         @apply p-2;
         @apply rounded;
     }
+
+    input[type="checkbox"] {
+        @apply cursor-pointer;
+    }
 }
 
 @layer components {

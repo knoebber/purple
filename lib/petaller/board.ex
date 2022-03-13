@@ -61,8 +61,7 @@ defmodule Petaller.Board do
   def set_item_complete!(%Item{} = item, true) do
     item
     |> Item.changeset(%{
-      completed_at: NaiveDateTime.utc_now(),
-      is_pinned: false
+      completed_at: NaiveDateTime.utc_now()
     })
     |> Repo.update!()
   end
