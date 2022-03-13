@@ -33,12 +33,33 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   end
 
   @impl true
-  def handle_event("toggle_complete", %{"id" => item_id}, socket) do
-    item = Board.get_item!(item_id)
+  def handle_event("toggle_complete", _, socket) do
+    item = socket.assigns.item
 
     {:noreply,
      socket
      |> assign(:item, Board.set_item_complete!(item, !item.completed_at))}
+  end
+
+  @impl true
+  def handle_event("delete_self", _, socket) do
+    Board.delete_item!(socket.assigns.item)
+
+    {:noreply,
+     socket
+     |> put_flash(:info, "Item deleted")
+     |> push_redirect(to: Routes.board_index_path(socket, :index))}
+  end
+
+  @impl true
+  def handle_event("delete_entry", %{"id" => id}, socket) do
+    {entry_id, _} = Integer.parse(id)
+    Board.delete_entry!(%ItemEntry{id: entry_id})
+
+    {:noreply,
+     socket
+     |> put_flash(:info, "Item deleted")
+     |> assign(:entries, Board.get_item_entries(socket.assigns.item.id))}
   end
 
   @impl true
@@ -73,13 +94,19 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     <% end %>
     <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
       <div class="flex justify-between">
-        <div>
-          Complete:&nbsp;
-          <Components.toggle_complete item={@item} />
-          &nbsp;
-          |
-          &nbsp;
+        <div class="inline-links">
+          <span>
+            Complete:
+            <Components.toggle_complete item={@item} />
+          </span>
+          <span>|</span>
           <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
+          <span>|</span>
+          <%= link("Delete",
+            phx_click: "delete_self",
+            data: [confirm: "Are you sure?"],
+            to: "#"
+          ) %>
         </div>
         <i>
           created at <%= format_date(@item.inserted_at) %>
@@ -100,13 +127,25 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       />
     </section>
     <%= for entry <- @entries do %>
-      <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
-        <div class="flex flex-row-reverse">
+      <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
+        <div class="flex justify-between bg-purple-300 p-1">
+          <div class="inline-links">
+            <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
+            <span>|</span>
+            <%= link("Delete",
+              phx_click: "delete_entry",
+              phx_value_id: entry.id,
+              data: [confirm: "Are you sure?"],
+              to: "#"
+            ) %>
+          </div>
           <i>
             <%= format_date(entry.inserted_at) %>
           </i>
         </div>
-        <%= markdown_to_html(entry.content) %>
+        <div class="p-4">
+          <%= markdown_to_html(entry.content) %>
+        </div>
       </section>
     <% end %>
     """

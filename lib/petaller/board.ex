@@ -101,13 +101,17 @@ defmodule Petaller.Board do
     |> Repo.all()
   end
 
+  def delete_entry!(%ItemEntry{} = item_entry) do
+    Repo.delete!(item_entry)
+  end
+
   def delete_item!(%Item{} = item) do
     Repo.transaction(fn ->
       ItemEntry
       |> where([e], e.item_id == ^item.id)
       |> Repo.delete_all()
 
-      Repo.delete(item)
+      Repo.delete!(item)
     end)
   end
 end

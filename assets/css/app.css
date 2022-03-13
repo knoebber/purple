@@ -101,4 +101,8 @@
     .alert-danger {
         @apply text-red-400;
     }
+
+    .inline-links > * {
+        @apply mr-2;
+    }
 }
