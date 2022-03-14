@@ -9,16 +9,6 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
   defp page_title(_, :edit_item_entry), do: "Edit Item Entry"
 
-  defp save_entry(socket, entry, params) do
-    case socket.assigns.live_action do
-      :edit_item_entry ->
-        Board.update_item_entry(entry, params)
-
-      _ ->
-        Board.create_item_entry(params)
-    end
-  end
-
   defp assign_params(socket, item_id) do
     socket
     |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
@@ -28,21 +18,22 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :new_entry, %ItemEntry{})}
+    {:ok, assign(socket, :new_entry_changeset, Board.change_item_entry(%ItemEntry{}))}
   end
 
   @impl true
   def handle_params(%{"id" => item_id, "entry_id" => entry_id}, _, socket) do
-    editable_entry_id =
-      case Integer.parse(entry_id) do
-        {i, _} -> i
-        _ -> -1
-      end
+    socket = assign_params(socket, item_id)
+
+    editable_entry =
+      Enum.find(socket.assigns.entries, %ItemEntry{}, fn e ->
+        Integer.to_string(e.id) == entry_id
+      end)
 
     {:noreply,
      socket
-     |> assign_params(item_id)
-     |> assign(:editable_entry_id, editable_entry_id)}
+     |> assign(:editable_entry, editable_entry)
+     |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))}
   end
 
   @impl true
@@ -81,55 +72,84 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   end
 
   @impl true
-  def handle_info({:updated_item_entry, entry, params}, socket) do
-    case save_entry(socket, entry, params) do
+  def handle_event("update_entry", %{"item_entry" => params}, socket) do
+    case Board.update_item_entry(socket.assigns.editable_entry, params) do
       {:ok, entry} ->
         {:noreply,
          socket
-         |> assign(:entries, Board.get_item_entries(entry.item_id))
-         |> put_flash(:info, "Entry saved")}
+         |> put_flash(:info, "Entry saved")
+         |> push_redirect(to: Routes.board_show_item_path(socket, :show_item, entry.item_id))}
 
       _ ->
         {:noreply, put_flash(socket, :error, "Failed to save entry")}
     end
   end
 
-  defp item_component(assigns) do
+  @impl true
+  def handle_event("create_entry", %{"item_entry" => params}, socket) do
+    case Board.create_item_entry(params) do
+      {:ok, entry} ->
+        {:noreply,
+         socket
+         |> assign(:entries, Board.get_item_entries(entry.item_id))
+         |> put_flash(:info, "Entry created")}
+
+      _ ->
+        {:noreply, put_flash(socket, :error, "Failed to create entry")}
+    end
+  end
+
+  defp entry_form(assigns) do
     ~H"""
-    <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
-      <div class="flex justify-between">
-        <div class="inline-links">
-          <span>
-            Complete:
-            <Components.toggle_complete item={@item} />
-          </span>
-          <span>|</span>
-          <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
-          <span>|</span>
-          <%= link("Delete",
-            phx_click: "delete_self",
-            data: [confirm: "Are you sure?"],
-            to: "#"
-          ) %>
-        </div>
-        <i>
-          created at <%= format_date(@item.inserted_at) %>
-        </i>
+    <.form for={@changeset} let={f} phx-submit={@action} class="p-4">
+      <div class="flex flex-col mb-2">
+        <%= hidden_input(f, :item_id, value: @item_id) %>
+        <%= label(f, :content) %>
+        <%= textarea(f, :content) %>
       </div>
-      <div>
-        <%= if @item.completed_at do %>
-          <i>completed at <%= format_date(@item.completed_at) %></i>
-        <% end %>
-      </div>
-    </section>
+      <%= submit("Save", phx_disable_with: "Saving...") %>
+    </.form>
     """
   end
 
-  defp entry_component(assigns) do
+  defp item_controls(assigns) do
     ~H"""
-    <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
-      <div class="flex justify-between bg-purple-300 p-1">
-        <div class="inline-links">
+    <div class="flex justify-between">
+      <div class="inline-links">
+        <span>
+          Complete:
+          <Components.toggle_complete item={@item} />
+        </span>
+        <span>|</span>
+        <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
+        <span>|</span>
+        <%= link("Delete",
+          phx_click: "delete_self",
+          data: [confirm: "Are you sure?"],
+          to: "#"
+        ) %>
+      </div>
+      <i>
+        <%= format_date(@item.updated_at) %>
+      </i>
+    </div>
+    <div>
+      <%= if @item.completed_at do %>
+        <i>completed at <%= format_date(@item.completed_at) %></i>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp entry_header(assigns) do
+    ~H"""
+    <div class="flex justify-between bg-purple-300 p-1">
+      <div class="inline-links">
+        <%= if @editing do %>
+          <%= live_patch("Cancel",
+            to: Routes.board_show_item_path(@socket, :show_item, @item.id)
+          ) %>
+        <% else %>
           <%= live_patch("Edit",
             to: Routes.board_show_item_path(@socket, :edit_item_entry, @item.id, @entry.id)
           ) %>
@@ -140,15 +160,12 @@ defmodule PetallerWeb.BoardLive.ShowItem do
             data: [confirm: "Are you sure?"],
             to: "#"
           ) %>
-        </div>
-        <i>
-          <%= format_date(@entry.inserted_at) %>
-        </i>
+        <% end %>
       </div>
-      <div class="p-4">
-        <%= markdown_to_html(@entry.content) %>
-      </div>
-    </section>
+      <i>
+        <%= format_date(@entry.updated_at) %>
+      </i>
+    </div>
     """
   end
 
@@ -168,24 +185,24 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         />
       </.modal>
     <% end %>
-    <.item_component socket={@socket} item={@item} />
-    <.live_component
-      module={PetallerWeb.BoardLive.ItemEntryForm}
-      id="create-item-entry"
-      entry={@new_entry}
-      item_id={@item.id}
-    />
+    <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
+      <.item_controls socket={@socket} item={@item} />
+    </section>
+    <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
+      <.entry_form action="create_entry" changeset={@new_entry_changeset} item_id={@item.id} />
+    </section>
     <%= for entry <- @entries do %>
-      <%= if @live_action == :edit_item_entry and @editable_entry_id == entry.id do %>
-        <.live_component
-          module={PetallerWeb.BoardLive.ItemEntryForm}
-          id={"edit-item-entry-#{entry.id}"}
-          entry={entry}
-          item_id={@item.id}
-        />
-      <% else %>
-        <.entry_component socket={@socket} entry={entry} item={@item} />
-      <% end %>
+      <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
+        <%= if @live_action == :edit_item_entry and @editable_entry.id == entry.id do %>
+          <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
+          <.entry_form action="update_entry" changeset={@entry_update_changeset} item_id={@item.id} />
+        <% else %>
+          <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
+          <div class="p-4">
+            <%= markdown_to_html(entry.content) %>
+          </div>
+        <% end %>
+      </section>
     <% end %>
     """
   end
