@@ -19,30 +19,35 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     end
   end
 
+  defp assign_params(socket, item_id) do
+    socket
+    |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
+    |> assign(:item, Board.get_item!(item_id))
+    |> assign(:entries, Board.get_item_entries(item_id))
+  end
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok, assign(socket, :new_entry, %ItemEntry{})}
   end
 
   @impl true
-  def handle_params(%{"id" => item_id}, _, socket) do
+  def handle_params(%{"id" => item_id, "entry_id" => entry_id}, _, socket) do
+    editable_entry_id =
+      case Integer.parse(entry_id) do
+        {i, _} -> i
+        _ -> -1
+      end
+
     {:noreply,
      socket
-     |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
-     |> assign(:item, Board.get_item!(item_id))
-     |> assign(:entries, Board.get_item_entries(item_id))}
+     |> assign_params(item_id)
+     |> assign(:editable_entry_id, editable_entry_id)}
   end
 
   @impl true
-  def handle_params(%{"id" => item_id, "entry_id" => entry_id}, _, socket) do
-    entries = Board.get_item_entries(item_id)
-
-    {:noreply,
-     socket
-     |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
-     |> assign(:item, Board.get_item!(item_id))
-     |> assign(:entries, entries)
-     |> assign(:editable_entry, Enum.find(entries, fn e -> e.id == entry_id end))}
+  def handle_params(%{"id" => item_id}, _, socket) do
+    {:noreply, assign_params(socket, item_id)}
   end
 
   @impl true
@@ -78,10 +83,10 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   @impl true
   def handle_info({:updated_item_entry, entry, params}, socket) do
     case save_entry(socket, entry, params) do
-      {:ok, item} ->
+      {:ok, entry} ->
         {:noreply,
          socket
-         |> assign(:entries, Board.get_item_entries(item.item_id))
+         |> assign(:entries, Board.get_item_entries(entry.item_id))
          |> put_flash(:info, "Entry saved")}
 
       _ ->
@@ -164,16 +169,23 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       </.modal>
     <% end %>
     <.item_component socket={@socket} item={@item} />
-    <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
-      <.live_component
-        module={PetallerWeb.BoardLive.ItemEntryForm}
-        id="create-item-entry"
-        entry={@new_entry}
-        item_id={@item.id}
-      />
-    </section>
+    <.live_component
+      module={PetallerWeb.BoardLive.ItemEntryForm}
+      id="create-item-entry"
+      entry={@new_entry}
+      item_id={@item.id}
+    />
     <%= for entry <- @entries do %>
-      <.entry_component socket={@socket} entry={entry} item={@item} />
+      <%= if @live_action == :edit_item_entry and @editable_entry_id == entry.id do %>
+        <.live_component
+          module={PetallerWeb.BoardLive.ItemEntryForm}
+          id={"edit-item-entry-#{entry.id}"}
+          entry={entry}
+          item_id={@item.id}
+        />
+      <% else %>
+        <.entry_component socket={@socket} entry={entry} item={@item} />
+      <% end %>
     <% end %>
     """
   end
