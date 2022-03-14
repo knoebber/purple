@@ -44,6 +44,7 @@ defmodule Petaller.Board do
   def get_item_entries(item_id) do
     ItemEntry
     |> where([ie], ie.item_id == ^item_id)
+    |> order_by(desc: :inserted_at)
     |> Repo.all()
   end
 
