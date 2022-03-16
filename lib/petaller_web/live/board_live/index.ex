@@ -71,7 +71,7 @@ defmodule PetallerWeb.BoardLive.Index do
       <% end %>
     </div>
     <%= if @live_action in [:new_item, :edit_item] do %>
-      <.modal return_to={Routes.board_index_path(@socket, :index)}>
+      <.modal return_to={Routes.board_index_path(@socket, :index)} title={@page_title}>
         <.live_component
           module={PetallerWeb.BoardLive.ItemForm}
           id={@item.id || :new}

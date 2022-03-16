@@ -27,37 +27,35 @@ defmodule PetallerWeb.LiveHelpers do
     assigns = assign_new(assigns, :return_to, fn -> nil end)
 
     ~H"""
-    <div
-      class="fixed inset-0 z-2 flex items-center justify-center overflow-auto bg-black bg-opacity-50"
-      id="modal"
+    <dialog
+      id="dialog"
+      open
+      phx-hook="Dialog"
       phx-remove={hide_modal()}
+      class="p-0 mx-auto w-5/6 md:w-1/2 lg:w-1/3 drop-shadow-2xl window"
+      phx-click-away={JS.dispatch("click", to: "#close")}
     >
-      <div
-        class="px-6 py-4 mx-auto window w-5/6 md:w-1/2 lg:w-1/3"
-        id="modal-content"
-        phx-click-away={JS.dispatch("click", to: "#close")}
-        phx-key="escape"
-        phx-window-keydown={JS.dispatch("click", to: "#close")}
-      >
+      <div class="flex justify-between bg-purple-300 p-2">
+        <h2><%= @title %></h2>
         <%= if @return_to do %>
-          <%= live_patch("",
+          <%= live_patch("❌",
             to: @return_to,
             id: "close",
-            class: "phx-modal-close",
+            class: "phx-modal-close no-underline",
             phx_click: hide_modal()
           ) %>
         <% else %>
-          <a id="close" href="#" class="phx-modal-close" phx-click={hide_modal()}></a>
+          <a id="close" href="#" class="phx-modal-close no-underline" phx-click={hide_modal()}>❌</a>
         <% end %>
+      </div>
+      <div class="p-2">
         <%= render_slot(@inner_block) %>
       </div>
-    </div>
+    </dialog>
     """
   end
 
   defp hide_modal(js \\ %JS{}) do
-    js
-    |> JS.hide(to: "#modal")
-    |> JS.hide(to: "#modal-content")
+    JS.hide(js, to: "#dialog")
   end
 end

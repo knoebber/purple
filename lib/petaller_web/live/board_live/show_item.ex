@@ -174,11 +174,10 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     ~H"""
     <h1><%= "Item #{@item.id}: #{@item.description}" %></h1>
     <%= if @live_action == :edit_item do %>
-      <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)}>
+      <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)} title={@page_title}>
         <.live_component
           module={PetallerWeb.BoardLive.ItemForm}
           id={@item.id}
-          title={@page_title}
           action={@live_action}
           item={@item}
           return_to={Routes.board_show_item_path(@socket, :show_item, @item)}
