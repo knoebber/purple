@@ -39,6 +39,9 @@
           <%= format_pace(run.miles, run.seconds) %>
         </td>
         <td>
+          <%= format_date(run.inserted_at) %>
+        </td>
+        <td>
           <%= live_patch("Edit", to: Routes.run_index_path(@socket, :edit, run)) %>
         </td>
         <td>
