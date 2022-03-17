@@ -38,6 +38,11 @@ const hooks = {
           }
         });
     }
+  },
+  EntryForm: {
+    mounted() {
+      document.querySelector("#entry-form").focus();
+    }
   }
 }
 

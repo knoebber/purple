@@ -7,6 +7,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   defp page_title(item_id, :show_item), do: "Item #{item_id}"
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
+  defp page_title(_, :create_item_entry), do: "Create Item Entry"
   defp page_title(_, :edit_item_entry), do: "Edit Item Entry"
 
   defp assign_params(socket, item_id) do
@@ -105,7 +106,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       <div class="flex flex-col mb-2">
         <%= hidden_input(f, :item_id, value: @item_id) %>
         <%= label(f, :content) %>
-        <%= textarea(f, :content) %>
+        <%= textarea(f, :content, phx_hook: "EntryForm", id: "entry-form") %>
       </div>
       <%= submit("Save", phx_disable_with: "Saving...") %>
     </.form>
@@ -122,6 +123,12 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         </span>
         <span>|</span>
         <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
+        <%= if @live_action != :create_item_entry do %>
+          <span>|</span>
+          <%= live_patch("Add Entry",
+            to: Routes.board_show_item_path(@socket, :create_item_entry, @item)
+          ) %>
+        <% end %>
         <span>|</span>
         <%= link("Delete",
           phx_click: "delete_self",
@@ -185,11 +192,19 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       </.modal>
     <% end %>
     <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
-      <.item_controls socket={@socket} item={@item} />
+      <.item_controls live_action={@live_action} socket={@socket} item={@item} />
     </section>
-    <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
-      <.entry_form action="create_entry" changeset={@new_entry_changeset} item_id={@item.id} />
-    </section>
+
+    <%= if @live_action == :create_item_entry do %>
+      <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
+        <%= live_patch("Cancel",
+          to: Routes.board_show_item_path(@socket, :show_item, @item.id),
+          class: "p-2"
+        ) %>
+        <.entry_form action="create_entry" changeset={@new_entry_changeset} item_id={@item.id} />
+      </section>
+    <% end %>
+
     <%= for entry <- @entries do %>
       <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
         <%= if @live_action == :edit_item_entry and @editable_entry.id == entry.id do %>
