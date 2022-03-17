@@ -197,7 +197,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
           <.entry_form action="update_entry" changeset={@entry_update_changeset} item_id={@item.id} />
         <% else %>
           <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
-          <div class="p-4">
+          <div class="m-8">
             <%= markdown_to_html(entry.content) %>
           </div>
         <% end %>

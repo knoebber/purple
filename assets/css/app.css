@@ -24,8 +24,12 @@
         @apply underline;
     }
 
-    li {
+    ul {
         @apply list-disc;
+    }
+
+    ol {
+        @apply list-decimal;
     }
 
     th {
@@ -37,6 +41,18 @@
     td {
         @apply border-purple-500;
         @apply p-4;
+    }
+
+    hr {
+        @apply bg-black;
+    }
+
+    pre, textarea {
+        @apply bg-white;
+        @apply border-purple-400;
+        @apply border;
+        @apply p-3;
+        @apply rounded;
     }
 
     button[type="submit"] {
