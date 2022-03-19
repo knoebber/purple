@@ -21,7 +21,15 @@ defmodule PetallerWeb.Formatters do
   end
 
   def markdown_to_html(markdown) do
-    Earmark.as_html!(markdown)
+    add_target = fn node ->
+      Earmark.AstTools.merge_atts_in_node(node, target: "_blank")
+    end
+
+    processors = [
+      {"a", add_target}
+    ]
+
+    Earmark.as_html!(markdown, registered_processors: processors)
     |> HtmlSanitizeEx.markdown_html()
     |> Phoenix.HTML.raw()
   end
