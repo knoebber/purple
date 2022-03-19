@@ -32,7 +32,6 @@ const hooks = {
         .querySelectorAll('input, select')
         .forEach((element) => {
           if (!focus && element.type !== 'hidden') {
-            console.log(element, focus);
             focus = true;
             element.focus();
           }

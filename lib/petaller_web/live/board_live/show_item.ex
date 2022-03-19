@@ -113,46 +113,15 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     """
   end
 
-  defp item_controls(assigns) do
-    ~H"""
-    <div class="flex justify-between">
-      <div class="inline-links">
-        <span>
-          Complete:
-          <Components.toggle_complete item={@item} />
-        </span>
-        <span>|</span>
-        <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
-        <%= if @live_action != :create_item_entry do %>
-          <span>|</span>
-          <%= live_patch("Add Entry",
-            to: Routes.board_show_item_path(@socket, :create_item_entry, @item)
-          ) %>
-        <% end %>
-        <span>|</span>
-        <%= link("Delete",
-          phx_click: "delete_self",
-          data: [confirm: "Are you sure?"],
-          to: "#"
-        ) %>
-      </div>
-      <i>
-        <%= format_date(@item.updated_at) %>
-      </i>
-    </div>
-    <div>
-      <%= if @item.completed_at do %>
-        <i>completed at <%= format_date(@item.completed_at) %></i>
-      <% end %>
-    </div>
-    """
-  end
-
   defp entry_header(assigns) do
     ~H"""
     <div class="flex justify-between bg-purple-300 p-1">
       <div class="inline-links">
         <%= if @editing do %>
+          <strong>
+            Edit Entry
+          </strong>
+          <span>|</span>
           <%= live_patch("Cancel",
             to: Routes.board_show_item_path(@socket, :show_item, @item.id)
           ) %>
@@ -176,10 +145,43 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     """
   end
 
+  defp item_header(assigns) do
+    ~H"""
+    <div class="flex justify-between bg-purple-300 p-1">
+      <div class="inline-links">
+        <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
+        <%= if @live_action != :create_item_entry do %>
+          <span>|</span>
+          <%= live_patch("Add Entry",
+            to: Routes.board_show_item_path(@socket, :create_item_entry, @item)
+          ) %>
+        <% end %>
+        <span>|</span>
+        <%= link("Delete",
+          phx_click: "delete_self",
+          data: [confirm: "Are you sure?"],
+          to: "#"
+        ) %>
+      </div>
+      <i>
+        <%= format_date(@item.updated_at) %>
+      </i>
+    </div>
+    """
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
-    <h1><%= "Item #{@item.id}: #{@item.description}" %></h1>
+    <div class="flex items-center">
+      <h1>
+        <%= "Item #{@item.id}: " %>
+        <%= live_patch(@item.description, to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
+      </h1>
+      <%= live_patch to: Routes.board_show_item_path(@socket, :create_item_entry, @item) do %>
+        <button disabled={@live_action == :create_item_entry} class="btn p-1 ml-2">➕</button>
+      <% end %>
+    </div>
     <%= if @live_action == :edit_item do %>
       <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)} title={@page_title}>
         <.live_component
@@ -191,16 +193,17 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         />
       </.modal>
     <% end %>
-    <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
-      <.item_controls live_action={@live_action} socket={@socket} item={@item} />
-    </section>
-
     <%= if @live_action == :create_item_entry do %>
       <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
-        <%= live_patch("Cancel",
-          to: Routes.board_show_item_path(@socket, :show_item, @item.id),
-          class: "p-2"
-        ) %>
+        <div class="flex justify-between bg-purple-300 p-1">
+          <div class="inline-links">
+            <strong>New Entry</strong>
+            <span>|</span>
+            <%= live_patch("Cancel",
+              to: Routes.board_show_item_path(@socket, :show_item, @item.id)
+            ) %>
+          </div>
+        </div>
         <.entry_form action="create_entry" changeset={@new_entry_changeset} item_id={@item.id} />
       </section>
     <% end %>

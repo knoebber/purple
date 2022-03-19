@@ -44,7 +44,7 @@
     }
 
     hr {
-        @apply bg-black;
+        @apply border-black;
     }
 
     pre, textarea {
@@ -78,6 +78,13 @@
         @apply border;
         @apply rounded;
         @apply shadow-md;
+    }
+
+    .btn {
+        @apply window;
+        @apply hover:bg-purple-200;
+        @apply disabled:opacity-75;
+        @apply disabled:hover:bg-purple-100;
     }
 
     .flash {
