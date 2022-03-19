@@ -27,13 +27,19 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     socket = assign_params(socket, item_id)
 
     editable_entry =
-      Enum.find(socket.assigns.entries, %ItemEntry{}, fn e ->
+      Enum.find(socket.assigns.entries, %ItemEntry{content: ""}, fn e ->
         Integer.to_string(e.id) == entry_id
       end)
+
+    entry_rows =
+      editable_entry.content
+      |> String.split("\n")
+      |> length()
 
     {:noreply,
      socket
      |> assign(:editable_entry, editable_entry)
+     |> assign(:entry_rows, entry_rows + 1)
      |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))}
   end
 
@@ -106,7 +112,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       <div class="flex flex-col mb-2">
         <%= hidden_input(f, :item_id, value: @item_id) %>
         <%= label(f, :content) %>
-        <%= textarea(f, :content, phx_hook: "EntryForm", id: "entry-form") %>
+        <%= textarea(f, :content, phx_hook: "EntryForm", id: "entry-form", rows: @rows) %>
       </div>
       <%= submit("Save", phx_disable_with: "Saving...") %>
     </.form>
@@ -204,7 +210,12 @@ defmodule PetallerWeb.BoardLive.ShowItem do
             ) %>
           </div>
         </div>
-        <.entry_form action="create_entry" changeset={@new_entry_changeset} item_id={@item.id} />
+        <.entry_form
+          rows={5}
+          action="create_entry"
+          changeset={@new_entry_changeset}
+          item_id={@item.id}
+        />
       </section>
     <% end %>
 
@@ -212,7 +223,12 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
         <%= if @live_action == :edit_item_entry and @editable_entry.id == entry.id do %>
           <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
-          <.entry_form action="update_entry" changeset={@entry_update_changeset} item_id={@item.id} />
+          <.entry_form
+            rows={@entry_rows}
+            action="update_entry"
+            changeset={@entry_update_changeset}
+            item_id={@item.id}
+          />
         <% else %>
           <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
           <div class="m-8">
