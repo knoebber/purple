@@ -3,7 +3,6 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   alias Petaller.Board
   alias Petaller.Board.ItemEntry
-  alias PetallerWeb.BoardLive.Components
 
   defp page_title(item_id, :show_item), do: "Item #{item_id}"
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
@@ -17,6 +16,12 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     |> assign(:entries, Board.get_item_entries(item_id))
   end
 
+  defp get_entry(socket, entry_id) do
+    Enum.find(socket.assigns.entries, %ItemEntry{}, fn e ->
+      Integer.to_string(e.id) == entry_id
+    end)
+  end
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok, assign(socket, :new_entry_changeset, Board.change_item_entry(%ItemEntry{}))}
@@ -26,10 +31,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   def handle_params(%{"id" => item_id, "entry_id" => entry_id}, _, socket) do
     socket = assign_params(socket, item_id)
 
-    editable_entry =
-      Enum.find(socket.assigns.entries, %ItemEntry{content: ""}, fn e ->
-        Integer.to_string(e.id) == entry_id
-      end)
+    editable_entry = get_entry(socket, entry_id)
 
     entry_rows =
       editable_entry.content
@@ -49,22 +51,10 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   end
 
   @impl true
-  def handle_event("toggle_complete", _, socket) do
-    item = socket.assigns.item
-
-    {:noreply,
-     socket
-     |> assign(:item, Board.set_item_complete!(item, !item.completed_at))}
-  end
-
-  @impl true
-  def handle_event("delete_self", _, socket) do
-    Board.delete_item!(socket.assigns.item)
-
-    {:noreply,
-     socket
-     |> put_flash(:info, "Item deleted")
-     |> push_redirect(to: Routes.board_index_path(socket, :index))}
+  def handle_event("toggle_entry_collapse", %{"id" => id}, socket) do
+    entry = get_entry(socket, id)
+    Board.collapse_item_entries([id], !entry.is_collapsed)
+    {:noreply, assign(socket, :entries, Board.get_item_entries(socket.assigns.item.id))}
   end
 
   @impl true
@@ -74,7 +64,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
     {:noreply,
      socket
-     |> put_flash(:info, "Item deleted")
+     |> put_flash(:info, "Entry deleted")
      |> assign(:entries, Board.get_item_entries(socket.assigns.item.id))}
   end
 
@@ -132,6 +122,12 @@ defmodule PetallerWeb.BoardLive.ShowItem do
             to: Routes.board_show_item_path(@socket, :show_item, @item.id)
           ) %>
         <% else %>
+          <%= link(if(@entry.is_collapsed, do: "[+]", else: "[-]"),
+            phx_click: "toggle_entry_collapse",
+            phx_value_id: @entry.id,
+            to: "#",
+            class: "no-underline font-mono"
+          ) %>
           <%= live_patch("Edit",
             to: Routes.board_show_item_path(@socket, :edit_item_entry, @item.id, @entry.id)
           ) %>
@@ -151,31 +147,6 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     """
   end
 
-  defp item_header(assigns) do
-    ~H"""
-    <div class="flex justify-between bg-purple-300 p-1">
-      <div class="inline-links">
-        <%= live_patch("Edit", to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
-        <%= if @live_action != :create_item_entry do %>
-          <span>|</span>
-          <%= live_patch("Add Entry",
-            to: Routes.board_show_item_path(@socket, :create_item_entry, @item)
-          ) %>
-        <% end %>
-        <span>|</span>
-        <%= link("Delete",
-          phx_click: "delete_self",
-          data: [confirm: "Are you sure?"],
-          to: "#"
-        ) %>
-      </div>
-      <i>
-        <%= format_date(@item.updated_at) %>
-      </i>
-    </div>
-    """
-  end
-
   @impl true
   def render(assigns) do
     ~H"""
@@ -185,7 +156,9 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         <%= live_patch(@item.description, to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
       </h1>
       <%= live_patch to: Routes.board_show_item_path(@socket, :create_item_entry, @item) do %>
-        <button disabled={@live_action == :create_item_entry} class="btn p-1 ml-2">➕</button>
+        <button disabled={@live_action == :create_item_entry} class="btn p-1 ml-2">
+          Create Entry
+        </button>
       <% end %>
     </div>
     <%= if @live_action == :edit_item do %>
@@ -231,9 +204,11 @@ defmodule PetallerWeb.BoardLive.ShowItem do
           />
         <% else %>
           <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
-          <div class="m-8">
-            <%= markdown_to_html(entry.content) %>
-          </div>
+          <%= unless entry.is_collapsed do %>
+            <div class="m-8">
+              <%= markdown_to_html(entry.content) %>
+            </div>
+          <% end %>
         <% end %>
       </section>
     <% end %>

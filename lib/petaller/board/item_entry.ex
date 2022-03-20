@@ -3,7 +3,8 @@ defmodule Petaller.Board.ItemEntry do
   import Ecto.Changeset
 
   schema "item_entries" do
-    field :content, :string
+    field :content, :string, default: ""
+    field :is_collapsed, :boolean, default: false
 
     belongs_to :item, Petaller.Board.Item
 
@@ -12,7 +13,7 @@ defmodule Petaller.Board.ItemEntry do
 
   def changeset(item_entry, attrs) do
     item_entry
-    |> cast(attrs, [:content, :item_id])
+    |> cast(attrs, [:content, :item_id, :is_collapsed])
     |> validate_required([:content, :item_id])
     |> assoc_constraint(:item)
   end

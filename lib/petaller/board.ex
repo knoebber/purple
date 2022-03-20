@@ -79,6 +79,12 @@ defmodule Petaller.Board do
     |> Repo.update()
   end
 
+  def collapse_item_entries(entry_ids, is_collapsed) do
+    ItemEntry
+    |> where([ie], ie.id in ^entry_ids)
+    |> Repo.update_all(set: [is_collapsed: is_collapsed])
+  end
+
   def list_pinned_items() do
     Item
     |> where([i], i.is_pinned == true)
