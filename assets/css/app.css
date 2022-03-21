@@ -3,6 +3,10 @@
 @import "tailwindcss/utilities";
 
 @layer base {
+    html {
+        overflow-y: scroll;
+    }
+
     main {
         @apply container;
         @apply mb-4;
@@ -72,7 +76,7 @@
     }
 
     .window {
-	@apply bg-purple-100;
+        @apply bg-purple-100;
         @apply border-collapse;
         @apply border-purple-400;
         @apply border;
@@ -127,5 +131,18 @@
 
     .inline-links > * {
         @apply mr-2;
+    }
+
+    .markdown-content {
+        @apply m-8;
+    }
+
+    .markdown-content hr {
+        @apply mb-2;
+        @apply mt-2;
+    }
+
+    .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+        @apply mb-2;
     }
 }

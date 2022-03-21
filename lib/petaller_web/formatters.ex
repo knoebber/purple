@@ -20,6 +20,10 @@ defmodule PetallerWeb.Formatters do
     |> Calendar.strftime("%m/%d/%Y %I:%M%P")
   end
 
+  def strip_markdown(markdown) do
+    Regex.replace(~r/[#`*\n]/, markdown, "")
+  end
+
   def markdown_to_html(markdown) do
     add_target = fn node ->
       Earmark.AstTools.merge_atts_in_node(node, target: "_blank")

@@ -140,6 +140,11 @@ defmodule PetallerWeb.BoardLive.ShowItem do
           ) %>
         <% end %>
       </div>
+      <%= if @entry.is_collapsed do %>
+        <strong class="whitespace-nowrap overflow-hidden text-ellipsis w-1/2 text-purple-900">
+          <%= String.slice(strip_markdown(@entry.content), 0, 100) %>
+        </strong>
+      <% end %>
       <i>
         <%= format_date(@entry.updated_at) %>
       </i>
@@ -205,7 +210,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         <% else %>
           <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
           <%= unless entry.is_collapsed do %>
-            <div class="m-8">
+            <div class="markdown-content">
               <%= markdown_to_html(entry.content) %>
             </div>
           <% end %>
