@@ -44,19 +44,8 @@ defmodule Petaller.Board do
   def get_item_entries(item_id) do
     ItemEntry
     |> where([ie], ie.item_id == ^item_id)
-    |> order_by(desc: :inserted_at)
+    |> order_by(asc: :sort_order, desc: :inserted_at)
     |> Repo.all()
-  end
-
-  def get_item_with_entries!(item_id) do
-    Item
-    |> where([i], i.id == ^item_id)
-    |> Repo.all()
-    |> Repo.preload(entries: from(e in ItemEntry, order_by: [desc: e.inserted_at]))
-    |> case do
-      [item] -> item
-      [] -> raise "item not found"
-    end
   end
 
   def set_item_complete!(%Item{} = item, true) do
@@ -83,6 +72,16 @@ defmodule Petaller.Board do
     ItemEntry
     |> where([ie], ie.id in ^entry_ids)
     |> Repo.update_all(set: [is_collapsed: is_collapsed])
+  end
+
+  def save_item_entry_sort_order(entries) do
+    Repo.transaction(fn ->
+      Enum.each(entries, fn entry ->
+        ItemEntry
+        |> where([ie], ie.id == ^entry.id)
+        |> Repo.update_all(set: [sort_order: entry.sort_order])
+      end)
+    end)
   end
 
   def list_pinned_items() do

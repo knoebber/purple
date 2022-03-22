@@ -17,8 +17,8 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   end
 
   defp get_entry(socket, entry_id) do
-    Enum.find(socket.assigns.entries, %ItemEntry{}, fn e ->
-      Integer.to_string(e.id) == entry_id
+    Enum.find(socket.assigns.entries, %ItemEntry{}, fn entry ->
+      Integer.to_string(entry.id) == entry_id
     end)
   end
 
@@ -96,13 +96,35 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     end
   end
 
+  @impl true
+  def handle_event("save_sort_order", %{"list" => [_ | _] = entry_ids}, socket) do
+    IO.inspect(entry_ids)
+
+    Board.save_item_entry_sort_order(
+      entry_ids
+      |> Enum.with_index()
+      |> Enum.map(fn {entry_id, i} ->
+        Map.put(
+          Enum.find(socket.assigns.entries, fn entry ->
+            Integer.to_string(entry.id) == entry_id
+          end),
+          :sort_order,
+          i
+        )
+      end)
+    )
+
+    {:noreply, socket}
+  end
+
   defp entry_form(assigns) do
     ~H"""
     <.form for={@changeset} let={f} phx-submit={@action} class="p-4">
       <div class="flex flex-col mb-2">
         <%= hidden_input(f, :item_id, value: @item_id) %>
+        <%= hidden_input(f, :is_collapsed, value: false) %>
         <%= label(f, :content) %>
-        <%= textarea(f, :content, phx_hook: "EntryForm", id: "entry-form", rows: @rows) %>
+        <%= textarea(f, :content, phx_hook: "AutoFocus", id: "entry-form", rows: @rows) %>
       </div>
       <%= submit("Save", phx_disable_with: "Saving...") %>
     </.form>
@@ -111,7 +133,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   defp entry_header(assigns) do
     ~H"""
-    <div class="flex justify-between bg-purple-300 p-1">
+    <div class="cursor-move flex justify-between bg-purple-300 p-1">
       <div class="inline-links">
         <%= if @editing do %>
           <strong>
@@ -197,26 +219,31 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       </section>
     <% end %>
 
-    <%= for entry <- @entries do %>
-      <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
-        <%= if @live_action == :edit_item_entry and @editable_entry.id == entry.id do %>
-          <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
-          <.entry_form
-            rows={@entry_rows}
-            action="update_entry"
-            changeset={@entry_update_changeset}
-            item_id={@item.id}
-          />
-        <% else %>
-          <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
-          <%= unless entry.is_collapsed do %>
-            <div class="markdown-content">
-              <%= markdown_to_html(entry.content) %>
-            </div>
+    <div id="entry-container" phx-hook="Sortable">
+      <%= for entry <- @entries do %>
+        <section
+          class="lg:w-1/2 md:w-full window mt-2 mb-2 js-sortable-item"
+          id={Integer.to_string(entry.id)}
+        >
+          <%= if @live_action == :edit_item_entry and @editable_entry.id == entry.id do %>
+            <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
+            <.entry_form
+              rows={@entry_rows}
+              action="update_entry"
+              changeset={@entry_update_changeset}
+              item_id={@item.id}
+            />
+          <% else %>
+            <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
+            <%= unless entry.is_collapsed do %>
+              <div class="markdown-content">
+                <%= markdown_to_html(entry.content) %>
+              </div>
+            <% end %>
           <% end %>
-        <% end %>
-      </section>
-    <% end %>
+        </section>
+      <% end %>
+    </div>
     """
   end
 end

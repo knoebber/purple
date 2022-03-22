@@ -81,7 +81,6 @@
         @apply border-purple-400;
         @apply border;
         @apply rounded;
-        @apply shadow-md;
     }
 
     .btn {

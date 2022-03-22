@@ -17,40 +17,22 @@
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import 'phoenix_html';
-// Establish Phoenix Socket and LiveView configuration.
 import { Socket } from 'phoenix';
 import { LiveSocket } from 'phoenix_live_view';
 import topbar from '../vendor/topbar';
 
-const hooks = {
-  Dialog: {
-    mounted() {
-      let focus = false;
-      document
-        .querySelector('dialog')
-        .querySelector('form')
-        .querySelectorAll('input, select')
-        .forEach((element) => {
-          if (!focus && element.type !== 'hidden') {
-            focus = true;
-            element.focus();
-          }
-        });
-    }
-  },
-  EntryForm: {
-    mounted() {
-      document.querySelector("#entry-form").focus();
-    }
-  }
-}
+import AutoFocus from './hooks/autofocus';
+import Sortable from './hooks/sortable';
 
 const params = { _csrf_token: document.querySelector("meta[name='csrf-token']").getAttribute('content') };
 const liveSocket = new LiveSocket(
   '/live',
   Socket,
   {
-    hooks,
+    hooks: {
+      AutoFocus,
+      Sortable,
+    },
     params,
   }
 );

@@ -30,7 +30,6 @@ defmodule PetallerWeb.LiveHelpers do
     <dialog
       id="dialog"
       open
-      phx-hook="Dialog"
       phx-remove={hide_modal()}
       class="p-0 mx-auto w-5/6 md:w-1/2 lg:w-1/3 drop-shadow-2xl window"
       phx-click-away={JS.dispatch("click", to: "#close")}

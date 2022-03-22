@@ -51,7 +51,7 @@ defmodule PetallerWeb.BoardLive.ItemForm do
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :description) %>
-          <%= text_input(f, :description) %>
+          <%= text_input(f, :description, phx_hook: "AutoFocus") %>
           <%= error_tag(f, :description) %>
           <%= label(f, :priority) %>
           <%= select(f, :priority, 1..5) %>
