@@ -4,8 +4,9 @@ defmodule Petaller.Activities.Run do
 
   schema "runs" do
     field :description, :string, default: ""
-    field :miles, :float, default: 0.0
-    field :seconds, :integer
+    field :miles, :float, default: 6.0
+    field :seconds, :integer, default: nil
+    field :date, :date
 
     field :hours, :integer, default: 0, virtual: true
     field :minutes, :integer, default: 0, virtual: true
@@ -21,25 +22,40 @@ defmodule Petaller.Activities.Run do
         {_, minutes} = fetch_field(changeset, :minutes)
         {_, minute_seconds} = fetch_field(changeset, :minute_seconds)
 
-        changeset
-        |> delete_change(:hours)
-        |> delete_change(:minutes)
-        |> delete_change(:minute_seconds)
-        |> put_change(:seconds, hours * 3600 + minutes * 60 + minute_seconds)
+        seconds = hours * 3600 + minutes * 60 + minute_seconds
+
+        if seconds <= 0 do
+          put_change(changeset, :seconds, nil)
+        else
+          changeset
+          |> delete_change(:hours)
+          |> delete_change(:minutes)
+          |> delete_change(:minute_seconds)
+          |> put_change(:seconds, seconds)
+        end
 
       _ ->
         changeset
     end
   end
 
+  defp set_default_date(changeset) do
+    if get_field(changeset, :date) do
+      changeset
+    else
+      put_change(changeset, :date, Date.utc_today())
+    end
+  end
+
   def changeset(run, attrs) do
     run
-    |> cast(attrs, [:miles, :hours, :minutes, :minute_seconds, :description])
+    |> cast(attrs, [:miles, :hours, :minutes, :minute_seconds, :description, :date])
     |> validate_required([:miles])
     |> validate_number(:miles, greater_than: 0)
-    |> validate_number(:minutes, less_than: 60)
-    |> validate_number(:minute_seconds, less_than: 60)
+    |> validate_number(:hours, greater_than: -1)
+    |> validate_number(:minutes, greater_than: -1, less_than: 60)
+    |> validate_number(:minute_seconds, greater_than: -1, less_than: 60)
     |> calculate_seconds
-    |> validate_number(:seconds, greater_than: 60)
+    |> set_default_date
   end
 end

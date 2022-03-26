@@ -66,4 +66,56 @@ defmodule PetallerWeb.RunLive.FormComponent do
       {:noreply, assign(socket, :changeset, changeset)}
     end
   end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <section>
+      <.form
+        for={@changeset}
+        id="run-form"
+        let={f}
+        phx-submit="save"
+        phx-change="calculate-pace"
+        phx-target={@myself}
+      >
+        <div class="flex flex-col mb-2">
+          <div class="flex mb-2 gap-2">
+            <%= label(f, :miles, phx_hook: "AutoFocus", class: "w-1/2") %>
+            <%= label(f, :date, class: "w-1/2") %>
+          </div>
+          <div class="flex mb-2 gap-2">
+            <%= number_input(f, :miles, step: "any", class: "w-1/2") %>
+            <%= date_input(f, :date, class: "w-1/2") %>
+          </div>
+          <div class="flex mb-2 gap-2">
+            <%= label(f, :hours, class: "w-1/3") %>
+            <%= label(f, :minutes, class: "w-1/3") %>
+            <%= label(f, :minute_seconds, "Seconds", class: "w-1/3") %>
+          </div>
+          <div class="flex mb-2 gap-2">
+            <%= number_input(f, :hours, class: "w-1/3") %>
+            <%= number_input(f, :minutes, class: "w-1/3") %>
+            <%= number_input(f, :minute_seconds, class: "w-1/3") %>
+          </div>
+          <%= label(f, :description) %>
+          <%= textarea(f, :description) %>
+          <p class="mt-2">
+            <%= if @changeset.valid? do %>
+              Pace:
+              <strong>
+                <%= format_pace(@miles, @duration_in_seconds) %>
+              </strong>
+            <% else %>
+              Invalid
+            <% end %>
+          </p>
+        </div>
+        <div>
+          <%= submit("Save", phx_disable_with: "Saving...") %>
+        </div>
+      </.form>
+    </section>
+    """
+  end
 end

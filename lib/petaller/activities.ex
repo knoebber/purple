@@ -11,9 +11,9 @@ defmodule Petaller.Activities do
   defp run_select(query) do
     query
     |> select_merge(%{
-      hours: fragment("seconds/3600"),
-      minutes: fragment("(seconds/60) % 60"),
-      minute_seconds: fragment("seconds % 60")
+      hours: fragment("COALESCE(seconds/3600, 0)"),
+      minutes: fragment("COALESCE((seconds/60) % 60, 0)"),
+      minute_seconds: fragment("COALESCE(seconds % 60, 0)")
     })
   end
 
@@ -29,6 +29,7 @@ defmodule Petaller.Activities do
   def list_runs do
     Run
     |> run_select
+    |> order_by(desc: :date)
     |> Repo.all()
   end
 
