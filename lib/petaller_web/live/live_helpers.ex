@@ -31,7 +31,7 @@ defmodule PetallerWeb.LiveHelpers do
       id="dialog"
       open
       phx-remove={hide_modal()}
-      class="p-0 mx-auto w-5/6 md:w-1/2 lg:w-1/3 drop-shadow-2xl window"
+      class="p-0 mx-auto w-5/6 md:w-1/2 lg:w-1/3 drop-shadow-2xl window fixed"
       phx-click-away={JS.dispatch("click", to: "#close")}
     >
       <div class="flex justify-between bg-purple-300 p-2">
