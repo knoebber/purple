@@ -59,6 +59,15 @@
         @apply rounded;
     }
 
+    code {
+        @apply border-purple-400;
+        @apply border;
+        @apply rounded;
+        @apply bg-white;
+        @apply text-sm;
+        padding: 2px;
+    }
+
     button[type="submit"] {
         @apply bg-purple-300;
         @apply p-2;
