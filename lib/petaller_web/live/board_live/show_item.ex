@@ -89,7 +89,10 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         {:noreply,
          socket
          |> assign(:entries, Board.get_item_entries(entry.item_id))
-         |> put_flash(:info, "Entry created")}
+         |> put_flash(:info, "Entry created")
+         |> push_redirect(
+           to: Routes.board_show_item_path(socket, :show_item, socket.assigns.item.id)
+         )}
 
       _ ->
         {:noreply, put_flash(socket, :error, "Failed to create entry")}
