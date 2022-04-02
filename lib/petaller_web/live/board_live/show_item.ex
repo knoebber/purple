@@ -3,17 +3,47 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   alias Petaller.Board
   alias Petaller.Board.ItemEntry
+  alias Petaller.Uploads
+  alias Petaller.Uploads.Upload
 
   defp page_title(item_id, :show_item), do: "Item #{item_id}"
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
   defp page_title(_, :create_item_entry), do: "Create Item Entry"
   defp page_title(_, :edit_item_entry), do: "Edit Item Entry"
+  defp page_title(_, :upload_files), do: "Upload Files to Item"
 
-  defp assign_params(socket, item_id) do
+  defp assign_default_params(socket, item_id) do
     socket
     |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
     |> assign(:item, Board.get_item!(item_id))
     |> assign(:entries, Board.get_item_entries(item_id))
+  end
+
+  defp apply_action(socket, :upload_files, %{"id" => item_id}) do
+    socket
+    |> assign_default_params(item_id)
+    |> assign(:upload_changeset, Uploads.change_upload(%Upload{}))
+    |> allow_upload(:files, accept: :any, max_entries: 1, auto_upload: true)
+  end
+
+  defp apply_action(socket, :edit_item_entry, %{"id" => item_id, "entry_id" => entry_id}) do
+    socket = assign_default_params(socket, item_id)
+
+    editable_entry = get_entry(socket, entry_id)
+
+    entry_rows =
+      editable_entry.content
+      |> String.split("\n")
+      |> length()
+
+     socket
+     |> assign(:editable_entry, editable_entry)
+     |> assign(:entry_rows, entry_rows + 1)
+     |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))
+  end
+
+  defp apply_action(socket, _, %{"id" => item_id}) do
+    assign_default_params(socket, item_id)
   end
 
   defp get_entry(socket, entry_id) do
@@ -28,26 +58,8 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   end
 
   @impl true
-  def handle_params(%{"id" => item_id, "entry_id" => entry_id}, _, socket) do
-    socket = assign_params(socket, item_id)
-
-    editable_entry = get_entry(socket, entry_id)
-
-    entry_rows =
-      editable_entry.content
-      |> String.split("\n")
-      |> length()
-
-    {:noreply,
-     socket
-     |> assign(:editable_entry, editable_entry)
-     |> assign(:entry_rows, entry_rows + 1)
-     |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))}
-  end
-
-  @impl true
-  def handle_params(%{"id" => item_id}, _, socket) do
-    {:noreply, assign_params(socket, item_id)}
+  def handle_params(params, _url, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   @impl true
@@ -101,8 +113,6 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   @impl true
   def handle_event("save_sort_order", %{"list" => [_ | _] = entry_ids}, socket) do
-    IO.inspect(entry_ids)
-
     Board.save_item_entry_sort_order(
       entry_ids
       |> Enum.with_index()
@@ -118,6 +128,17 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     )
 
     {:noreply, socket}
+  end
+
+  defp file_form(assigns) do
+    ~H"""
+    <.form for={@changeset} let={f} phx-submit="handle_upload" class="p-4">
+      <div class="flex flex-col mb-2">
+        <%= hidden_input(f, :dir, value: "item/#{@item_id}") %>
+      </div>
+      <%= submit("Upload", phx_disable_with: "Saving...") %>
+    </.form>
+    """
   end
 
   defp entry_form(assigns) do
@@ -190,7 +211,13 @@ defmodule PetallerWeb.BoardLive.ShowItem do
           Create Entry
         </button>
       <% end %>
+      <%= live_patch to: Routes.board_show_item_path(@socket, :upload_files, @item) do %>
+        <button disabled={@live_action == :upload_files} class="btn p-1 ml-2">
+          Upload Files
+        </button>
+      <% end %>
     </div>
+
     <%= if @live_action == :edit_item do %>
       <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)} title={@page_title}>
         <.live_component
@@ -202,6 +229,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         />
       </.modal>
     <% end %>
+
     <%= if @live_action == :create_item_entry do %>
       <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
         <div class="flex justify-between bg-purple-300 p-1">
@@ -219,6 +247,21 @@ defmodule PetallerWeb.BoardLive.ShowItem do
           changeset={@new_entry_changeset}
           item_id={@item.id}
         />
+      </section>
+    <% end %>
+
+    <%= if @live_action == :upload_files do %>
+      <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
+        <div class="flex justify-between bg-purple-300 p-1">
+          <div class="inline-links">
+            <strong>Upload Files</strong>
+            <span>|</span>
+            <%= live_patch("Cancel",
+              to: Routes.board_show_item_path(@socket, :show_item, @item.id)
+            ) %>
+          </div>
+        </div>
+        <.file_form changeset={@upload_changeset} item_id={@item.id} />
       </section>
     <% end %>
 

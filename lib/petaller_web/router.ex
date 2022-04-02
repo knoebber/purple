@@ -78,6 +78,7 @@ defmodule PetallerWeb.Router do
       live "/board/item/:id/show", BoardLive.ShowItem, :show_item
       live "/board/item/:id/show/edit", BoardLive.ShowItem, :edit_item
       live "/board/item/:id/show/entry/new", BoardLive.ShowItem, :create_item_entry
+      live "/board/item/:id/show/entry/upload", BoardLive.ShowItem, :upload_files
       live "/board/item/:id/show/entry/:entry_id", BoardLive.ShowItem, :edit_item_entry
     end
   end
