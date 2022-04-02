@@ -2,7 +2,7 @@ import Config
 
 # Configure your database
 config :petaller, Petaller.Repo,
-  username: "nicolas",
+  username: "nicolasknoebber",
   password: "",
   hostname: "localhost",
   database: "petaller",
@@ -66,7 +66,6 @@ config :petaller, PetallerWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
-
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
@@ -76,4 +75,3 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
-
