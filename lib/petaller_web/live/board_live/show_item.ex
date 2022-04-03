@@ -12,6 +12,10 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   defp page_title(_, :edit_item_entry), do: "Edit Item Entry"
   defp page_title(_, :upload_files), do: "Upload Files to Item"
 
+  defp error_to_string(:too_large), do: "Too large"
+  defp error_to_string(:too_many_files), do: "You have selected too many files"
+  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
+
   defp assign_default_params(socket, item_id) do
     socket
     |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
@@ -22,8 +26,13 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   defp apply_action(socket, :upload_files, %{"id" => item_id}) do
     socket
     |> assign_default_params(item_id)
+    |> assign(:uploaded_files, [])
+    |> allow_upload(:files,
+      accept: :any,
+      max_file_size: 50_000_000,
+      max_entries: 10
+    )
     |> assign(:upload_changeset, Uploads.change_upload(%Upload{}))
-    |> allow_upload(:files, accept: :any, max_entries: 1, auto_upload: true)
   end
 
   defp apply_action(socket, :edit_item_entry, %{"id" => item_id, "entry_id" => entry_id}) do
@@ -36,10 +45,16 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       |> String.split("\n")
       |> length()
 
-     socket
-     |> assign(:editable_entry, editable_entry)
-     |> assign(:entry_rows, entry_rows + 1)
-     |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))
+    socket
+    |> assign(:editable_entry, editable_entry)
+    |> assign(:entry_rows, entry_rows + 1)
+    |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))
+  end
+
+  defp apply_action(socket, :create_item_entry, %{"id" => item_id}) do
+    socket
+    |> assign_default_params(item_id)
+    |> assign(:new_entry_changeset, Board.change_item_entry(%ItemEntry{}))
   end
 
   defp apply_action(socket, _, %{"id" => item_id}) do
@@ -52,24 +67,19 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     end)
   end
 
-  @impl true
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, :new_entry_changeset, Board.change_item_entry(%ItemEntry{}))}
-  end
-
-  @impl true
+  @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("toggle_entry_collapse", %{"id" => id}, socket) do
     entry = get_entry(socket, id)
     Board.collapse_item_entries([id], !entry.is_collapsed)
     {:noreply, assign(socket, :entries, Board.get_item_entries(socket.assigns.item.id))}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("delete_entry", %{"id" => id}, socket) do
     {entry_id, _} = Integer.parse(id)
     Board.delete_entry!(%ItemEntry{id: entry_id})
@@ -80,7 +90,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
      |> assign(:entries, Board.get_item_entries(socket.assigns.item.id))}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("update_entry", %{"item_entry" => params}, socket) do
     case Board.update_item_entry(socket.assigns.editable_entry, params) do
       {:ok, entry} ->
@@ -94,7 +104,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     end
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("create_entry", %{"item_entry" => params}, socket) do
     case Board.create_item_entry(params) do
       {:ok, entry} ->
@@ -111,7 +121,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     end
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("save_sort_order", %{"list" => [_ | _] = entry_ids}, socket) do
     Board.save_item_entry_sort_order(
       entry_ids
@@ -130,15 +140,27 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     {:noreply, socket}
   end
 
-  defp file_form(assigns) do
-    ~H"""
-    <.form for={@changeset} let={f} phx-submit="handle_upload" class="p-4">
-      <div class="flex flex-col mb-2">
-        <%= hidden_input(f, :dir, value: "item/#{@item_id}") %>
-      </div>
-      <%= submit("Upload", phx_disable_with: "Saving...") %>
-    </.form>
-    """
+  @impl Phoenix.LiveView
+  def handle_event("handle_upload", upload_params, socket) do
+    uploaded_files =
+      consume_uploaded_entries(socket, :files, fn %{path: path}, _entry ->
+        dest = Path.join([:code.priv_dir(:petaller), "static", "uploads", Path.basename(path)])
+        File.cp!(path, dest)
+        {:ok, Routes.static_path(socket, "/uploads/#{Path.basename(dest)}")}
+      end)
+
+    IO.inspect(uploaded_files)
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("validate_upload", upload_params, socket) do
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :files, ref)}
   end
 
   defp entry_form(assigns) do
@@ -251,7 +273,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     <% end %>
 
     <%= if @live_action == :upload_files do %>
-      <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
+      <section class="lg:w-1/2 md:w-full window mt-2 mb-2" phx-drop-target={@uploads.files.ref}>
         <div class="flex justify-between bg-purple-300 p-1">
           <div class="inline-links">
             <strong>Upload Files</strong>
@@ -261,7 +283,30 @@ defmodule PetallerWeb.BoardLive.ShowItem do
             ) %>
           </div>
         </div>
-        <.file_form changeset={@upload_changeset} item_id={@item.id} />
+        <form id="upload-form" phx-submit="handle_upload" phx-change="validate_upload" class="p-4">
+          <div class="flex flex-col mb-2">
+            <%= live_file_input(@uploads.files) %>
+          </div>
+          <button type="submit">Upload</button>
+        </form>
+        <%= for entry <- @uploads.files.entries do %>
+          <article class="upload-entry">
+            <figure>
+              <%= live_img_preview(entry) %>
+              <figcaption><%= entry.client_name %></figcaption>
+            </figure>
+
+            <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
+
+            <button phx-click="cancel-upload" phx-value-ref={entry.ref} aria-label="cancel">
+              &times;
+            </button>
+          </article>
+        <% end %>
+
+        <%= for err <- upload_errors(@uploads.files) do %>
+          <p class="alert alert-danger"><%= error_to_string(err) %></p>
+        <% end %>
       </section>
     <% end %>
 
