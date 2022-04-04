@@ -12,27 +12,11 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   defp page_title(_, :edit_item_entry), do: "Edit Item Entry"
   defp page_title(_, :upload_files), do: "Upload Files to Item"
 
-  defp error_to_string(:too_large), do: "Too large"
-  defp error_to_string(:too_many_files), do: "You have selected too many files"
-  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
-
   defp assign_default_params(socket, item_id) do
     socket
     |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
     |> assign(:item, Board.get_item!(item_id))
     |> assign(:entries, Board.get_item_entries(item_id))
-  end
-
-  defp apply_action(socket, :upload_files, %{"id" => item_id}) do
-    socket
-    |> assign_default_params(item_id)
-    |> assign(:uploaded_files, [])
-    |> allow_upload(:files,
-      accept: :any,
-      max_file_size: 50_000_000,
-      max_entries: 10
-    )
-    |> assign(:upload_changeset, Uploads.change_upload(%Upload{}))
   end
 
   defp apply_action(socket, :edit_item_entry, %{"id" => item_id, "entry_id" => entry_id}) do
@@ -97,7 +81,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         {:noreply,
          socket
          |> put_flash(:info, "Entry saved")
-         |> push_redirect(to: Routes.board_show_item_path(socket, :show_item, entry.item_id))}
+         |> push_patch(to: Routes.board_show_item_path(socket, :show_item, entry.item_id))}
 
       _ ->
         {:noreply, put_flash(socket, :error, "Failed to save entry")}
@@ -138,29 +122,6 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     )
 
     {:noreply, socket}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("handle_upload", upload_params, socket) do
-    uploaded_files =
-      consume_uploaded_entries(socket, :files, fn %{path: path}, _entry ->
-        dest = Path.join([:code.priv_dir(:petaller), "static", "uploads", Path.basename(path)])
-        File.cp!(path, dest)
-        {:ok, Routes.static_path(socket, "/uploads/#{Path.basename(dest)}")}
-      end)
-
-    IO.inspect(uploaded_files)
-    {:noreply, socket}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("validate_upload", upload_params, socket) do
-    {:noreply, socket}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :files, ref)}
   end
 
   defp entry_form(assigns) do
@@ -273,41 +234,15 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     <% end %>
 
     <%= if @live_action == :upload_files do %>
-      <section class="lg:w-1/2 md:w-full window mt-2 mb-2" phx-drop-target={@uploads.files.ref}>
-        <div class="flex justify-between bg-purple-300 p-1">
-          <div class="inline-links">
-            <strong>Upload Files</strong>
-            <span>|</span>
-            <%= live_patch("Cancel",
-              to: Routes.board_show_item_path(@socket, :show_item, @item.id)
-            ) %>
-          </div>
-        </div>
-        <form id="upload-form" phx-submit="handle_upload" phx-change="validate_upload" class="p-4">
-          <div class="flex flex-col mb-2">
-            <%= live_file_input(@uploads.files) %>
-          </div>
-          <button type="submit">Upload</button>
-        </form>
-        <%= for entry <- @uploads.files.entries do %>
-          <article class="upload-entry">
-            <figure>
-              <%= live_img_preview(entry) %>
-              <figcaption><%= entry.client_name %></figcaption>
-            </figure>
-
-            <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
-
-            <button phx-click="cancel-upload" phx-value-ref={entry.ref} aria-label="cancel">
-              &times;
-            </button>
-          </article>
-        <% end %>
-
-        <%= for err <- upload_errors(@uploads.files) do %>
-          <p class="alert alert-danger"><%= error_to_string(err) %></p>
-        <% end %>
-      </section>
+      <.live_component
+        accept={:any}
+        class="lg:w-1/2 md:w-full window mt-2 mb-2"
+        dir={"item/#{@item.id}"}
+        return_to={Routes.board_show_item_path(@socket, :show_item, @item.id)}
+        id={"item-#{@item.id}-upload"}
+        max_entries={20}
+        module={PetallerWeb.LiveUpload}
+      />
     <% end %>
 
     <div id="entry-container" phx-hook="Sortable">
