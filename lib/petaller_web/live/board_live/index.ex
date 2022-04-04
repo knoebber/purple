@@ -30,31 +30,29 @@ defmodule PetallerWeb.BoardLive.Index do
     |> assign(:pinned_items, Board.list_pinned_items())
   end
 
-  @impl true
-  def mount(_params, _session, socket) do
-    {:ok, load_items(socket)}
-  end
-
-  @impl true
+  @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+    {:noreply,
+     socket
+     |> load_items
+     |> apply_action(socket.assigns.live_action, params)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("toggle_complete", %{"id" => id}, socket) do
     item = Board.get_item!(id)
     Board.set_item_complete!(item, !item.completed_at)
     {:noreply, load_items(socket)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("toggle_pin", %{"id" => id}, socket) do
     item = Board.get_item!(id)
     Board.pin_item(item, !item.is_pinned)
     {:noreply, load_items(socket)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     Board.get_item!(id)
     |> Board.delete_item!()
@@ -62,7 +60,7 @@ defmodule PetallerWeb.BoardLive.Index do
     {:noreply, load_items(socket)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="flex">
