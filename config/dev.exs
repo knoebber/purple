@@ -2,7 +2,7 @@ import Config
 
 # Configure your database
 config :petaller, Petaller.Repo,
-  username: "nicolasknoebber",
+  username: System.get_env("USER"),
   password: "",
   hostname: "localhost",
   database: "petaller",

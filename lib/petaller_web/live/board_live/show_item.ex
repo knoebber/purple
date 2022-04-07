@@ -3,8 +3,6 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   alias Petaller.Board
   alias Petaller.Board.ItemEntry
-  alias Petaller.Uploads
-  alias Petaller.Uploads.Upload
 
   defp page_title(item_id, :show_item), do: "Item #{item_id}"
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"

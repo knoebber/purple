@@ -1,3 +1,4 @@
+.DS_Store
 # The directory Mix will write compiled artifacts to.
 /_build/
 
@@ -35,4 +36,4 @@ petaller-*.tar
 npm-debug.log
 /assets/node_modules/
 
-book_examples/
+/priv/uploads

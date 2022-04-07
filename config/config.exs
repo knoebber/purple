@@ -20,6 +20,8 @@ config :petaller, PetallerWeb.Endpoint,
   pubsub_server: Petaller.PubSub,
   live_view: [signing_salt: "Rr9+Wk+P"]
 
+config :petaller, :upload_dir, Path.expand("../priv/uploads", __DIR__)
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

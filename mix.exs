@@ -42,6 +42,7 @@ defmodule Petaller.MixProject do
       {:heex_formatter, github: "feliperenan/heex_formatter", runtime: Mix.env() == :dev},
       {:html_sanitize_ex, "~> 1.4.2"},
       {:jason, "~> 1.2"},
+      {:mogrify, "~> 0.9.1"},
       {:phoenix, "~> 1.6.6"},
       {:phoenix_ecto, "~> 4.4"},
       {:phoenix_html, "~> 3.0"},

@@ -6,6 +6,32 @@ defmodule PetallerWeb.LiveUpload do
   defp error_to_string(:too_many_files), do: "You have selected too many files"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 
+  defp update_client_name(socket, _, "") do
+    socket
+  end
+
+  defp update_client_name(socket, current_name, new_name) do
+    assign(
+      socket,
+      :uploads,
+      Map.put(
+        socket.assigns.uploads,
+        :files,
+        Map.put(
+          socket.assigns.uploads.files,
+          :entries,
+          Enum.map(socket.assigns.uploads.files.entries, fn entry ->
+            if entry.client_name == current_name do
+              Map.put(entry, :client_name, new_name <> Path.extname(entry.client_name))
+            else
+              entry
+            end
+          end)
+        )
+      )
+    )
+  end
+
   @impl Phoenix.LiveComponent
   def update(assigns, socket) do
     {:ok,
@@ -23,18 +49,20 @@ defmodule PetallerWeb.LiveUpload do
   def handle_event("upload", _, socket) do
     uploaded_files =
       consume_uploaded_entries(socket, :files, fn %{path: path}, entry ->
-        case Uploads.save_file_upload(
-               path,
-               socket.assigns.dir,
-               entry.client_name,
-               entry.client_size
-             ) do
-          {:ok, upload} -> {:ok, upload}
+        params =
+          Uploads.make_upload_params(
+            path,
+            socket.assigns.dir,
+            entry.client_name,
+            entry.client_size
+          )
+
+        case Uploads.save_file_upload(path, params) do
           {:error, changeset} -> {:postpone, changeset}
+          upload -> {:ok, upload}
         end
       end)
 
-    IO.inspect(["uploaded files", uploaded_files])
     {:noreply, socket}
   end
 
@@ -43,21 +71,7 @@ defmodule PetallerWeb.LiveUpload do
     %{"_target" => [current_name | _]} = params
     new_name = params[current_name]
 
-    files = socket.assigns.uploads.files
-
-    updated_entries =
-      Enum.map(files.entries, fn entry ->
-        if entry.client_name == current_name do
-          Map.put(entry, :client_name, new_name <> Path.extname(entry.client_name))
-        else
-          entry
-        end
-      end)
-
-    updated_files = Map.put(files, :entries, updated_entries)
-    updated_uploads = Map.put(socket.assigns.uploads, :files, updated_files)
-
-    {:noreply, assign(socket, :uploads, updated_uploads)}
+    {:noreply, update_client_name(socket, current_name, new_name)}
   end
 
   @impl Phoenix.LiveComponent
