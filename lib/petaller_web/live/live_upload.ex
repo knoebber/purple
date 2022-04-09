@@ -1,33 +1,32 @@
 defmodule PetallerWeb.LiveUpload do
   use PetallerWeb, :live_component
   alias Petaller.Uploads
+  alias Petaller.Uploads.FileRef
+  alias Phoenix.LiveView.UploadConfig
 
   defp error_to_string(:too_large), do: "Too large"
   defp error_to_string(:too_many_files), do: "You have selected too many files"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
+  defp error_to_string(message), do: message
 
-  defp update_client_name(socket, _, "") do
-    socket
+  defp update_client_name(%UploadConfig{} = conf, entry_ref, new_name) do
+    if new_name == "" do
+      conf
+    else
+      UploadConfig.update_entry(conf, entry_ref, fn entry ->
+        Map.put(entry, :client_name, new_name <> Path.extname(entry.client_name))
+      end)
+    end
   end
 
-  defp update_client_name(socket, current_name, new_name) do
+  defp set_files_to_socket(socket, files) do
     assign(
       socket,
       :uploads,
       Map.put(
         socket.assigns.uploads,
         :files,
-        Map.put(
-          socket.assigns.uploads.files,
-          :entries,
-          Enum.map(socket.assigns.uploads.files.entries, fn entry ->
-            if entry.client_name == current_name do
-              Map.put(entry, :client_name, new_name <> Path.extname(entry.client_name))
-            else
-              entry
-            end
-          end)
-        )
+        files
       )
     )
   end
@@ -47,31 +46,45 @@ defmodule PetallerWeb.LiveUpload do
 
   @impl Phoenix.LiveComponent
   def handle_event("upload", _, socket) do
-    uploaded_files =
-      consume_uploaded_entries(socket, :files, fn %{path: path}, entry ->
-        params =
-          Uploads.make_upload_params(
-            path,
-            socket.assigns.dir,
-            entry.client_name,
-            entry.client_size
-          )
+    consume_uploaded_entries(socket, :files, fn %{path: path}, entry ->
+      params =
+        Uploads.make_upload_params(
+          path,
+          socket.assigns.dir,
+          entry.client_name,
+          entry.client_size
+        )
 
-        case Uploads.save_file_upload(path, params) do
-          {:error, changeset} -> {:postpone, changeset}
-          upload -> {:ok, upload}
-        end
-      end)
+      case Uploads.save_file_upload(path, params) do
+        {:error, changeset} ->
+          {:postpone, {entry.ref, changeset}}
+
+        file_ref ->
+          {:ok, {entry.ref, file_ref}}
+      end
+    end)
+    |> Enum.map(fn result ->
+      case result do
+        {entry_ref, %Ecto.Changeset{errors: errors}} -> "#{entry_ref} error"
+        {entry_ref, %FileRef{} = file} -> "#{entry_ref} ok"
+      end
+    end)
+    |> IO.inspect(label: "result")
 
     {:noreply, socket}
   end
 
   @impl Phoenix.LiveComponent
   def handle_event("update_client_name", params, socket) do
-    %{"_target" => [current_name | _]} = params
-    new_name = params[current_name]
+    %{"_target" => [entry_ref | _]} = params
+    new_name = params[entry_ref]
+    IO.inspect(socket.assigns.uploads, label: "socket uploads")
 
-    {:noreply, update_client_name(socket, current_name, new_name)}
+    {:noreply,
+     set_files_to_socket(
+       socket,
+       update_client_name(socket.assigns.uploads.files, entry_ref, new_name)
+     )}
   end
 
   @impl Phoenix.LiveComponent
@@ -129,8 +142,7 @@ defmodule PetallerWeb.LiveUpload do
               <form phx-change="update_client_name" phx-target={@myself} class="w-5/6 flex">
                 <input
                   class="p-0 text-sm w-5/6"
-                  name={entry.client_name}
-                  phx-change="update_client_name"
+                  name={entry.ref}
                   type="text"
                   value={Path.basename(entry.client_name, Path.extname(entry.client_name))}
                 />

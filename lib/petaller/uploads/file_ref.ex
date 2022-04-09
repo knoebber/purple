@@ -1,4 +1,4 @@
-defmodule Petaller.Uploads.Upload do
+defmodule Petaller.Uploads.FileRef do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -14,9 +14,8 @@ defmodule Petaller.Uploads.Upload do
     timestamps()
   end
 
-  def changeset(upload, attrs) do
-    # TODO: sha_hash isn't validating before insert..
-    upload
+  def changeset(file_ref, attrs) do
+    file_ref
     |> cast(attrs, [
       :byte_size,
       :extension,
@@ -31,7 +30,11 @@ defmodule Petaller.Uploads.Upload do
       :path,
       :sha_hash
     ])
-    |> unique_constraint([:extension, :path], message: "A file with path exists")
+    |> unique_constraint(
+      [:extension, :path],
+      message: "A file with path exists",
+      name: "file_uploads_path_extension_index"
+    )
     |> unique_constraint(:sha_hash, message: "Duplicate file content")
   end
 end
