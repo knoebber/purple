@@ -40,8 +40,8 @@ defmodule PetallerWeb.LiveUpload do
         )
 
       case Uploads.save_file_upload(path, params) do
-        %FileRef{} ->
-          {:ok, :ok}
+        %FileRef{} = file_ref ->
+          {:ok, file_ref}
 
         {:error, changeset} ->
           {:postpone, {entry.ref, changeset_to_reason_list(changeset)}}
@@ -49,13 +49,13 @@ defmodule PetallerWeb.LiveUpload do
     end)
     |> Enum.reduce(
       %{
-        success_count: 0,
         error_count: 0,
-        upload_config: socket.assigns.uploads.files
+        upload_config: socket.assigns.uploads.files,
+        uploaded_files: []
       },
       fn
-        :ok, acc ->
-          %{acc | success_count: acc.success_count + 1}
+        %FileRef{} = file_ref, acc ->
+          %{acc | uploaded_files: acc.uploaded_files ++ [file_ref]}
 
         {entry_ref, errors}, acc when is_list(errors) ->
           %{
@@ -97,6 +97,16 @@ defmodule PetallerWeb.LiveUpload do
   @impl Phoenix.LiveComponent
   def handle_event("upload", _, socket) do
     result = upload(socket)
+
+    send(
+      self(),
+      {:upload_result,
+       %{
+         uploaded_files: result.uploaded_files,
+         num_uploaded: length(result.uploaded_files),
+         num_attempted: length(result.uploaded_files) + result.error_count
+       }}
+    )
 
     {
       :noreply,

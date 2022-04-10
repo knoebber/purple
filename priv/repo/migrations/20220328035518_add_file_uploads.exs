@@ -16,5 +16,13 @@ defmodule Petaller.Repo.Migrations.AddFileUploads do
 
     create unique_index(:file_uploads, [:path, :extension])
     create unique_index(:file_uploads, [:sha_hash])
+
+    create table(:item_file_uploads) do
+      add :item_id, references(:items), null: false
+      add :file_upload_id, references(:file_uploads), null: false
+      timestamps()
+    end
+
+    create unique_index(:item_file_uploads, [:item_id, :file_upload_id])
   end
 end

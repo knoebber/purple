@@ -3,6 +3,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
   alias Petaller.Board
   alias Petaller.Board.ItemEntry
+  alias Petaller.Uploads
 
   defp page_title(item_id, :show_item), do: "Item #{item_id}"
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
@@ -15,6 +16,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
     |> assign(:item, Board.get_item!(item_id))
     |> assign(:entries, Board.get_item_entries(item_id))
+    |> assign(:uploads, Uploads.get_files_in_item(item_id))
   end
 
   defp apply_action(socket, :edit_item_entry, %{"id" => item_id, "entry_id" => entry_id}) do
@@ -122,6 +124,22 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     {:noreply, socket}
   end
 
+  @impl Phoenix.LiveView
+  def handle_info({:upload_result, result}, socket) do
+    Enum.each(result.uploaded_files, fn file_ref ->
+      Uploads.add_file_to_item!(file_ref, socket.assigns.item)
+    end)
+
+    IO.inspect(result, label: "message to show item")
+
+    {
+      :noreply,
+      socket
+      |> assign(:uploads, Uploads.get_files_in_item(socket.assigns.item.id))
+      |> put_flash(:info, "Uploaded #{result.num_uploaded}/#{result.num_attempted} files")
+    }
+  end
+
   defp entry_form(assigns) do
     ~H"""
     <.form for={@changeset} let={f} phx-submit={@action} class="p-4">
@@ -199,6 +217,14 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       <% end %>
     </div>
 
+    <div class="grid gap-4 grid-cols-3 mb-2">
+      <%= for upload <- @uploads do %>
+        <div>
+          <strong><%= upload.path %></strong>
+        </div>
+      <% end %>
+    </div>
+
     <%= if @live_action == :edit_item do %>
       <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)} title={@page_title}>
         <.live_component
@@ -212,7 +238,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     <% end %>
 
     <%= if @live_action == :create_item_entry do %>
-      <section class="lg:w-1/2 md:w-full window mt-2 mb-2">
+      <section class="window mt-2 mb-2">
         <div class="flex justify-between bg-purple-300 p-1">
           <div class="inline-links">
             <strong>New Entry</strong>
@@ -234,7 +260,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     <%= if @live_action == :upload_files do %>
       <.live_component
         accept={:any}
-        class="lg:w-1/2 md:w-full window mt-2 mb-2"
+        class="md:w-full window mt-2 mb-2"
         dir={"item/#{@item.id}"}
         id={"item-#{@item.id}-upload"}
         max_entries={20}
@@ -246,7 +272,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     <div id="entry-container" phx-hook="Sortable">
       <%= for entry <- @entries do %>
         <section
-          class="lg:w-1/2 md:w-full window mt-2 mb-2 js-sortable-item"
+          class="window mt-2 mb-2 js-sortable-item"
           id={Integer.to_string(entry.id)}
         >
           <%= if @live_action == :edit_item_entry and @editable_entry.id == entry.id do %>

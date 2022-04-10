@@ -1,7 +1,10 @@
 defmodule Petaller.Uploads do
-  import Ecto.Query, warn: false
+  import Ecto.Query
+
+  alias Petaller.Board.Item
   alias Petaller.Repo
   alias Petaller.Uploads.FileRef
+  alias Petaller.Uploads.ItemFile
 
   defp remove_extname(s), do: String.replace_suffix(s, Path.extname(s), "")
   defp remove_repeating_underscore(s), do: Regex.replace(~r/__+/, s, "_")
@@ -120,7 +123,22 @@ defmodule Petaller.Uploads do
     end
   end
 
+  def add_file_to_item!(%FileRef{} = file_ref, %Item{} = item) do
+    Repo.insert!(ItemFile.changeset(file_ref.id, item.id))
+  end
+
   def get_file_ref!(id) do
     Repo.get!(FileRef, id)
+  end
+
+  def get_files_in_item(item_id) do
+    Repo.all(
+      from(f in FileRef,
+        where:
+          f.id in subquery(
+            from(i in ItemFile, select: i.file_upload_id, where: i.item_id == ^item_id)
+          )
+      )
+    )
   end
 end
