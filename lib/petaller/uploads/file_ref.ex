@@ -32,9 +32,9 @@ defmodule Petaller.Uploads.FileRef do
     ])
     |> unique_constraint(
       [:extension, :path],
-      message: "A file with path exists",
+      message: "a file with path exists",
       name: "file_uploads_path_extension_index"
     )
-    |> unique_constraint(:sha_hash, message: "Duplicate file content")
+    |> unique_constraint(:sha_hash, message: "duplicate file content")
   end
 end

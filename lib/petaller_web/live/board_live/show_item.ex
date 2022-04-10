@@ -236,10 +236,10 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         accept={:any}
         class="lg:w-1/2 md:w-full window mt-2 mb-2"
         dir={"item/#{@item.id}"}
-        return_to={Routes.board_show_item_path(@socket, :show_item, @item.id)}
         id={"item-#{@item.id}-upload"}
         max_entries={20}
         module={PetallerWeb.LiveUpload}
+        return_to={Routes.board_show_item_path(@socket, :show_item, @item.id)}
       />
     <% end %>
 

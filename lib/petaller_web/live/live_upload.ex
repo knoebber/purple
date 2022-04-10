@@ -9,6 +9,16 @@ defmodule PetallerWeb.LiveUpload do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
   defp error_to_string(message), do: message
 
+  defp put_errors(%UploadConfig{} = conf, _, []), do: conf
+
+  defp put_errors(%UploadConfig{} = conf, entry_ref, [head | tail]) do
+    if {entry_ref, head} in conf.errors do
+      put_errors(conf, entry_ref, tail)
+    else
+      put_errors(UploadConfig.put_error(conf, entry_ref, head), entry_ref, tail)
+    end
+  end
+
   defp update_client_name(%UploadConfig{} = conf, entry_ref, new_name) do
     if new_name == "" do
       conf
@@ -17,6 +27,44 @@ defmodule PetallerWeb.LiveUpload do
         Map.put(entry, :client_name, new_name <> Path.extname(entry.client_name))
       end)
     end
+  end
+
+  defp upload(socket) do
+    consume_uploaded_entries(socket, :files, fn %{path: path}, entry ->
+      params =
+        Uploads.make_upload_params(
+          path,
+          socket.assigns.dir,
+          entry.client_name,
+          entry.client_size
+        )
+
+      case Uploads.save_file_upload(path, params) do
+        %FileRef{} ->
+          {:ok, :ok}
+
+        {:error, changeset} ->
+          {:postpone, {entry.ref, changeset_to_reason_list(changeset)}}
+      end
+    end)
+    |> Enum.reduce(
+      %{
+        success_count: 0,
+        error_count: 0,
+        upload_config: socket.assigns.uploads.files
+      },
+      fn
+        :ok, acc ->
+          %{acc | success_count: acc.success_count + 1}
+
+        {entry_ref, errors}, acc when is_list(errors) ->
+          %{
+            acc
+            | error_count: acc.error_count + 1,
+              upload_config: put_errors(acc.upload_config, entry_ref, errors)
+          }
+      end
+    )
   end
 
   defp set_files_to_socket(socket, files) do
@@ -33,58 +81,42 @@ defmodule PetallerWeb.LiveUpload do
 
   @impl Phoenix.LiveComponent
   def update(assigns, socket) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(:save_errors, [])
-     |> allow_upload(:files,
-       accept: assigns.accept,
-       max_file_size: 50_000_000,
-       max_entries: assigns.max_entries
-     )}
+    {
+      :ok,
+      socket
+      |> assign(assigns)
+      |> assign(:save_errors, [])
+      |> allow_upload(:files,
+        accept: assigns.accept,
+        max_file_size: 50_000_000,
+        max_entries: assigns.max_entries
+      )
+    }
   end
 
   @impl Phoenix.LiveComponent
   def handle_event("upload", _, socket) do
-    consume_uploaded_entries(socket, :files, fn %{path: path}, entry ->
-      params =
-        Uploads.make_upload_params(
-          path,
-          socket.assigns.dir,
-          entry.client_name,
-          entry.client_size
-        )
+    result = upload(socket)
 
-      case Uploads.save_file_upload(path, params) do
-        {:error, changeset} ->
-          {:postpone, {entry.ref, changeset}}
-
-        file_ref ->
-          {:ok, {entry.ref, file_ref}}
-      end
-    end)
-    |> Enum.map(fn result ->
-      case result do
-        {entry_ref, %Ecto.Changeset{errors: errors}} -> "#{entry_ref} error"
-        {entry_ref, %FileRef{} = file} -> "#{entry_ref} ok"
-      end
-    end)
-    |> IO.inspect(label: "result")
-
-    {:noreply, socket}
+    {
+      :noreply,
+      socket
+      |> set_files_to_socket(result.upload_config)
+    }
   end
 
   @impl Phoenix.LiveComponent
   def handle_event("update_client_name", params, socket) do
     %{"_target" => [entry_ref | _]} = params
     new_name = params[entry_ref]
-    IO.inspect(socket.assigns.uploads, label: "socket uploads")
 
-    {:noreply,
-     set_files_to_socket(
-       socket,
-       update_client_name(socket.assigns.uploads.files, entry_ref, new_name)
-     )}
+    {
+      :noreply,
+      set_files_to_socket(
+        socket,
+        update_client_name(socket.assigns.uploads.files, entry_ref, new_name)
+      )
+    }
   end
 
   @impl Phoenix.LiveComponent

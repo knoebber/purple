@@ -54,4 +54,11 @@ defmodule PetallerWeb.Formatters do
     |> HtmlSanitizeEx.markdown_html()
     |> Phoenix.HTML.raw()
   end
+
+  def changeset_to_reason_list(%Ecto.Changeset{errors: errors}) do
+    Enum.map(
+      errors,
+      fn {_, {reason, _}} -> reason end
+    )
+  end
 end
