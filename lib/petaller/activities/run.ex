@@ -43,7 +43,11 @@ defmodule Petaller.Activities.Run do
     if get_field(changeset, :date) do
       changeset
     else
-      put_change(changeset, :date, Date.utc_today())
+      put_change(
+        changeset,
+        :date,
+        DateTime.utc_now() |> DateTime.shift_zone!("America/Anchorage") |> DateTime.to_date()
+      )
     end
   end
 
