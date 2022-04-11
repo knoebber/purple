@@ -165,25 +165,23 @@ defmodule PetallerWeb.LiveUpload do
         <button type="submit">Upload</button>
       </form>
       <%= if Enum.count(@uploads.files.entries) > 0 do %>
-        <div class="grid gap-4 grid-cols-3 mb-3">
+        <div class="mb-3 grid xs:grid-cols-1 sm:grid-cols-3">
           <%= for entry <- @uploads.files.entries do %>
-            <div class="flex flex-col items-center">
-              <button
+            <div class="flex flex-col items-center m-1 border border-purple-500 bg-purple-300">
+              <a
                 aria-label="cancel"
+                class="self-end"
+                href="#"
                 phx-click="cancel"
                 phx-target={@myself}
                 phx-value-ref={entry.ref}
-                class="self-end"
               >
-                ❌
-              </button>
-              <%= live_img_preview(entry, width: 150, height: 150) %>
-              <progress class="mt-1 mb-1 w-5/6" value={entry.progress} max="100">
-                <%= entry.progress %>%
-              </progress>
-              <form phx-change="update_client_name" phx-target={@myself} class="w-5/6 flex">
+                Cancel
+              </a>
+              <%= live_img_preview(entry) %>
+              <form class="w-5/6 self-start flex items-end" phx-change="update_client_name" phx-target={@myself}>
                 <input
-                  class="p-0 text-sm w-5/6"
+                  class="p-0 text-sm w-5/6 mt-2"
                   name={entry.ref}
                   type="text"
                   value={Path.basename(entry.client_name, Path.extname(entry.client_name))}
@@ -195,6 +193,9 @@ defmodule PetallerWeb.LiveUpload do
                   <%= error_to_string(err) %>
                 </div>
               <% end %>
+              <progress class="self-start mt-1 w-full" value={entry.progress} max="100">
+                <%= entry.progress %>%
+              </progress>
             </div>
           <% end %>
         </div>

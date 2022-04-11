@@ -223,22 +223,20 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       <% end %>
     </div>
 
-    <div class="">
-      <%= for ref <- @image_refs do %>
-        <%= live_patch to: Routes.board_item_gallery_path(
-          @socket,
-          :show_file,
-          @item.id,
-          ref.id) do %>
-          <img
-            class="inline border border-purple-500 m-1"
-            width="150"
-            height="150"
-            src={Routes.file_path(@socket, :show_thumbnail, ref)}
-          />
-        <% end %>
+    <%= for ref <- @image_refs do %>
+      <%= live_patch to: Routes.board_item_gallery_path(
+        @socket,
+        :show_file,
+        @item.id,
+        ref.id) do %>
+        <img
+          class="inline border border-purple-500 m-1"
+          width="150"
+          height="150"
+          src={Routes.file_path(@socket, :show_thumbnail, ref)}
+        />
       <% end %>
-    </div>
+    <% end %>
 
     <%= if @live_action == :edit_item do %>
       <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)} title={@page_title}>
