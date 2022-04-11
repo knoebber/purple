@@ -54,16 +54,24 @@ defmodule PetallerWeb.Router do
 
   ## Protected routes
   scope "/", PetallerWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    pipe_through [:browser, :redirect_if_user_not_authenticated]
 
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+
+  end
+
+  scope "/", PetallerWeb do
+    pipe_through [:browser, :require_authenticated_user]
+    get "/files/:id", FileController, :show
+    get "/files/:id/thumbnail", FileController, :show_thumbnail
+    get "/files/:id/download", FileController, :download
   end
 
   ## Protected live routes
   scope "/", PetallerWeb do
-    pipe_through [:browser]
+    pipe_through [:browser, :redirect_if_user_not_authenticated]
 
     live_session :default, on_mount: PetallerWeb.UserAuthLive do
       live "/runs", RunLive.Index, :index
@@ -73,13 +81,17 @@ defmodule PetallerWeb.Router do
       live "/runs/:id/show/edit", RunLive.Show, :edit
 
       live "/board", BoardLive.Index, :index
-      live "/board/new_item", BoardLive.Index, :new_item
       live "/board/item/:id/edit", BoardLive.Index, :edit_item
+
+      live "/board/item/:id/gallery/:file_id", BoardLive.ItemGallery, :show_file
+
       live "/board/item/:id/show", BoardLive.ShowItem, :show_item
       live "/board/item/:id/show/edit", BoardLive.ShowItem, :edit_item
       live "/board/item/:id/show/entry/new", BoardLive.ShowItem, :create_item_entry
       live "/board/item/:id/show/entry/upload", BoardLive.ShowItem, :upload_files
       live "/board/item/:id/show/entry/:entry_id", BoardLive.ShowItem, :edit_item_entry
+      live "/board/new_item", BoardLive.Index, :new_item
+
     end
   end
 

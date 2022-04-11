@@ -27,7 +27,7 @@ defmodule Petaller.Uploads do
     Path.join([upload_dir(), "thumbnails", get_thumbnail_name(file_ref)])
   end
 
-  def make_thumbnail?(%FileRef{} = file_ref) do
+  def image?(%FileRef{} = file_ref) do
     is_integer(file_ref.image_height) and is_integer(file_ref.image_width)
   end
 
@@ -40,7 +40,7 @@ defmodule Petaller.Uploads do
         %{extension: ".pdf"}
       else
         %{
-          extension: "." <> info.format,
+          extension: "." <> String.downcase(info.format),
           image_height: info.height,
           image_width: info.width
         }
@@ -69,7 +69,7 @@ defmodule Petaller.Uploads do
   end
 
   def write_thumbnail!(%FileRef{} = file_ref) do
-    if make_thumbnail?(file_ref) do
+    if image?(file_ref) do
       path = get_full_thumbnail_path(file_ref)
       File.mkdir_p!(Path.dirname(path))
 
@@ -127,9 +127,14 @@ defmodule Petaller.Uploads do
     Repo.insert!(ItemFile.changeset(file_ref.id, item.id))
   end
 
+  def get_file_ref(id) do
+    Repo.get(FileRef, id)
+  end
+
   def get_file_ref!(id) do
     Repo.get!(FileRef, id)
   end
+
 
   def get_files_in_item(item_id) do
     Repo.all(

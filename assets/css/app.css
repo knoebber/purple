@@ -77,6 +77,10 @@
     input[type="checkbox"] {
         @apply cursor-pointer;
     }
+
+    img {
+        image-orientation: from-image;
+    }
 }
 
 @layer components {

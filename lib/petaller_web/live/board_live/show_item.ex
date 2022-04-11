@@ -11,12 +11,20 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   defp page_title(_, :edit_item_entry), do: "Edit Item Entry"
   defp page_title(_, :upload_files), do: "Upload Files to Item"
 
+  defp assign_uploads(socket, item_id) do
+    files = Uploads.get_files_in_item(item_id)
+
+    socket
+    |> assign(:image_refs, Enum.filter(files, fn f -> Uploads.image?(f) end))
+    |> assign(:file_refs, Enum.reject(files, fn f -> Uploads.image?(f) end))
+  end
+
   defp assign_default_params(socket, item_id) do
     socket
+    |> assign_uploads(item_id)
     |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
     |> assign(:item, Board.get_item!(item_id))
     |> assign(:entries, Board.get_item_entries(item_id))
-    |> assign(:uploads, Uploads.get_files_in_item(item_id))
   end
 
   defp apply_action(socket, :edit_item_entry, %{"id" => item_id, "entry_id" => entry_id}) do
@@ -130,12 +138,10 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       Uploads.add_file_to_item!(file_ref, socket.assigns.item)
     end)
 
-    IO.inspect(result, label: "message to show item")
-
     {
       :noreply,
       socket
-      |> assign(:uploads, Uploads.get_files_in_item(socket.assigns.item.id))
+      |> assign_uploads(socket.assigns.item.id)
       |> put_flash(:info, "Uploaded #{result.num_uploaded}/#{result.num_attempted} files")
     }
   end
@@ -217,11 +223,20 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       <% end %>
     </div>
 
-    <div class="grid gap-4 grid-cols-3 mb-2">
-      <%= for upload <- @uploads do %>
-        <div>
-          <strong><%= upload.path %></strong>
-        </div>
+    <div class="">
+      <%= for ref <- @image_refs do %>
+        <%= live_patch to: Routes.board_item_gallery_path(
+          @socket,
+          :show_file,
+          @item.id,
+          ref.id) do %>
+          <img
+            class="inline border border-purple-500 m-1"
+            width="150"
+            height="150"
+            src={Routes.file_path(@socket, :show_thumbnail, ref)}
+          />
+        <% end %>
       <% end %>
     </div>
 
@@ -271,10 +286,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
 
     <div id="entry-container" phx-hook="Sortable">
       <%= for entry <- @entries do %>
-        <section
-          class="window mt-2 mb-2 js-sortable-item"
-          id={Integer.to_string(entry.id)}
-        >
+        <section class="window mt-2 mb-2 js-sortable-item" id={Integer.to_string(entry.id)}>
           <%= if @live_action == :edit_item_entry and @editable_entry.id == entry.id do %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
             <.entry_form

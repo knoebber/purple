@@ -88,7 +88,7 @@ defmodule PetallerWeb.LiveUpload do
       |> assign(:save_errors, [])
       |> allow_upload(:files,
         accept: assigns.accept,
-        max_file_size: 50_000_000,
+        max_file_size: 200_000_000,
         max_entries: assigns.max_entries
       )
     }
