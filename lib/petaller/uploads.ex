@@ -78,6 +78,7 @@ defmodule Petaller.Uploads do
       |> Mogrify.open()
       |> Mogrify.format(thumb_format())
       |> Mogrify.resize_to_fill("#{thumb_x()}x#{thumb_y()}")
+      |> Mogrify.auto_orient()
       |> Mogrify.save(path: get_full_thumbnail_path(file_ref))
     end
 
