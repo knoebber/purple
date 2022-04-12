@@ -46,7 +46,9 @@ defmodule Petaller.Activities.Run do
       put_change(
         changeset,
         :date,
-        DateTime.utc_now() |> DateTime.shift_zone!("America/Anchorage") |> DateTime.to_date()
+        DateTime.utc_now()
+        |> DateTime.shift_zone!(Application.get_env(:petaller, :default_tz))
+        |> DateTime.to_date()
       )
     end
   end

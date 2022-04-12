@@ -21,6 +21,7 @@ config :petaller, PetallerWeb.Endpoint,
   live_view: [signing_salt: "Rr9+Wk+P"]
 
 config :petaller, :upload_dir, Path.expand("../priv/uploads", __DIR__)
+config :petaller, :default_tz, "America/Anchorage"
 
 # Configures the mailer
 #

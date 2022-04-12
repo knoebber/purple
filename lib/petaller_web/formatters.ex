@@ -29,7 +29,7 @@ defmodule PetallerWeb.Formatters do
 
   def format_date(%NaiveDateTime{} = ndt) do
     DateTime.from_naive!(ndt, "Etc/UTC")
-    |> DateTime.shift_zone!("America/Anchorage")
+    |> DateTime.shift_zone!(Application.get_env(:petaller, :default_tz))
     |> Calendar.strftime("%m/%d/%Y %I:%M%P")
   end
 
