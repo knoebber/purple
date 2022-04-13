@@ -224,11 +224,10 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     </div>
 
     <%= for ref <- @image_refs do %>
-      <%= live_patch to: Routes.board_item_gallery_path(
-        @socket,
-        :show_file,
-        @item.id,
-        ref.id) do %>
+      <%= live_patch(
+        to: Routes.board_item_gallery_path(@socket, :show_file, @item.id, ref.id),
+        class: "no-underline"
+    ) do %>
         <img
           class="inline border border-purple-500 m-1"
           width="150"
