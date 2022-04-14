@@ -26,19 +26,16 @@ defmodule PetallerWeb.RunLive.Index do
     Activities.list_runs()
   end
 
-  @impl true
-  def mount(_params, _session, socket) do
-    {:ok,
+  @impl Phoenix.LiveView
+  def handle_params(params, _session, socket) do
+    {:noreply,
      socket
-     |> assign(:runs, list_runs())}
+     |> assign(:runs, list_runs())
+     |> apply_action(socket.assigns.live_action, params)
+    }
   end
 
-  @impl true
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  end
-
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     run = Activities.get_run!(id)
     {:ok, _} = Activities.delete_run(run)

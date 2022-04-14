@@ -9,7 +9,7 @@ defmodule PetallerWeb.RunLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Run updated")
-         |> push_redirect(to: socket.assigns.return_to)}
+         |> push_patch(to: socket.assigns.return_to)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
@@ -22,7 +22,7 @@ defmodule PetallerWeb.RunLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Run created")
-         |> push_redirect(to: socket.assigns.return_to)}
+         |> push_patch(to: socket.assigns.return_to)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, changeset: changeset)}
