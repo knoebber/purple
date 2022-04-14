@@ -13,16 +13,21 @@ defmodule PetallerWeb.BoardLive.ItemGallery do
     {
       :noreply,
       socket
-      |> assign(:page_title, page_title(file_ref))
       |> assign(:file_ref, file_ref)
+      |> assign(:item_id, item_id)
+      |> assign(:page_title, page_title(file_ref))
     }
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1>
-      <%= @page_title %>
+      Board /
+      <%= live_patch("Item #{@item_id}",
+        to: Routes.board_show_item_path(@socket, :show_item, @item_id)
+      ) %> /
+      <%= link(@page_title, to: Routes.file_path(@socket, :download, @file_ref)) %>
     </h1>
     <%= if Uploads.image?(@file_ref) do %>
       <img

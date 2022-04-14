@@ -5,7 +5,7 @@ defmodule PetallerWeb.FileController do
   alias Petaller.Uploads.FileRef
 
   defp not_found(conn) do
-    send_resp(conn, 404, "File ref not found")
+    send_resp(conn, 404, "File reference not found")
   end
 
   defp get_file_path(id) do
@@ -24,16 +24,17 @@ defmodule PetallerWeb.FileController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    with {:ok, path} <- get_file_path(id) do
+  def show_thumbnail(conn, %{"id" => id}) do
+    with {:ok, path} <- get_thumbnail_path(id) do
       Plug.Conn.send_file(conn, 200, path)
     else
       _ -> not_found(conn)
     end
   end
 
-  def show_thumbnail(conn, %{"id" => id}) do
-    with {:ok, path} <- get_thumbnail_path(id) do
+
+  def show(conn, %{"id" => id}) do
+    with {:ok, path} <- get_file_path(id) do
       Plug.Conn.send_file(conn, 200, path)
     else
       _ -> not_found(conn)
