@@ -83,12 +83,12 @@ defmodule PetallerWeb.Router do
       live "/board", BoardLive.Index, :index
       live "/board/item/:id/edit", BoardLive.Index, :edit_item
 
-      live "/board/item/:id/gallery/:file_id", BoardLive.ItemGallery, :show_file
+      live "/board/item/:id/file/:file_id", BoardLive.ShowItemFile, :show
+      live "/board/item/:id/gallery", BoardLive.ItemGallery, :index
 
       live "/board/item/:id/show", BoardLive.ShowItem, :show_item
       live "/board/item/:id/show/edit", BoardLive.ShowItem, :edit_item
       live "/board/item/:id/show/entry/new", BoardLive.ShowItem, :create_item_entry
-      live "/board/item/:id/show/entry/upload", BoardLive.ShowItem, :upload_files
       live "/board/item/:id/show/entry/:entry_id", BoardLive.ShowItem, :edit_item_entry
       live "/board/new_item", BoardLive.Index, :new_item
 

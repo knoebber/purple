@@ -47,7 +47,7 @@ defmodule PetallerWeb.BoardLive.ItemForm do
   @impl true
   def render(assigns) do
     ~H"""
-    <section>
+    <div>
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :description) %>
@@ -59,7 +59,7 @@ defmodule PetallerWeb.BoardLive.ItemForm do
         </div>
         <%= submit("Save", phx_disable_with: "Saving...") %>
       </.form>
-    </section>
+    </div>
     """
   end
 end

@@ -9,10 +9,9 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
   defp page_title(_, :create_item_entry), do: "Create Item Entry"
   defp page_title(_, :edit_item_entry), do: "Edit Item Entry"
-  defp page_title(_, :upload_files), do: "Upload Files to Item"
 
   defp assign_uploads(socket, item_id) do
-    files = Uploads.get_files_in_item(item_id)
+    files = Uploads.get_files_by_item(item_id)
 
     socket
     |> assign(:image_refs, Enum.filter(files, fn f -> Uploads.image?(f) end))
@@ -206,47 +205,68 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex items-center">
-      <h1>
-        <%= "Item #{@item.id}: " %>
-        <%= live_patch(@item.description, to: Routes.board_show_item_path(@socket, :edit_item, @item)) %>
-      </h1>
-      <%= live_patch to: Routes.board_show_item_path(@socket, :create_item_entry, @item) do %>
-        <button disabled={@live_action == :create_item_entry} class="btn p-1 ml-2">
-          Create Entry
-        </button>
+    <h1>
+      <%= live_patch("Board", to: Routes.board_index_path(@socket, :index)) %> /
+      <%= "Item #{@item.id}" %>
+    </h1>
+    <section class="mt-2 mb-2 window">
+      <div class="inline-links bg-purple-300 p-1">
+        <%= live_patch(
+          "Edit Item",
+          to: Routes.board_show_item_path(@socket, :edit_item, @item)
+        ) %>|
+        <%= live_patch(
+          "Create Entry",
+          to: Routes.board_show_item_path(@socket, :create_item_entry, @item)
+        ) %>
+      </div>
+      <%= if @live_action == :edit_item do %>
+        <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
+          <.live_component
+            module={PetallerWeb.BoardLive.ItemForm}
+            id={@item.id}
+            action={@live_action}
+            item={@item}
+            return_to={Routes.board_show_item_path(@socket, :show_item, @item)}
+          />
+        </div>
+        <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
+          <.live_component
+            accept={:any}
+            dir={"item/#{@item.id}"}
+            id={"item-#{@item.id}-upload"}
+            max_entries={20}
+            module={PetallerWeb.LiveUpload}
+            return_to={Routes.board_show_item_path(@socket, :show_item, @item.id)}
+          />
+        </div>
+      <% else %>
+        <h2 class="m-8"><%= @item.description %></h2>
       <% end %>
-      <%= live_patch to: Routes.board_show_item_path(@socket, :upload_files, @item) do %>
-        <button disabled={@live_action == :upload_files} class="btn p-1 ml-2">
-          Upload Files
-        </button>
-      <% end %>
-    </div>
+    </section>
 
-    <%= for ref <- @image_refs do %>
-      <%= live_patch(
-        to: Routes.board_item_gallery_path(@socket, :show_file, @item.id, ref.id),
+    <%= if length(@image_refs) > 0 do %>
+      <section class="window">
+        <div class="bg-purple-300 p-1">
+          <%= live_patch(
+            "Image Gallery",
+            to: Routes.board_item_gallery_path(@socket, :index, @item)
+          ) %>
+        </div>
+        <%= for ref <- @image_refs do %>
+          <%= live_patch(
+        to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
         class: "no-underline"
     ) do %>
-        <img
-          class="inline border border-purple-500 m-1"
-          width="150"
-          height="150"
-          src={Routes.file_path(@socket, :show_thumbnail, ref)}
-        />
-      <% end %>
-    <% end %>
-
-    <%= if @live_action == :edit_item do %>
-      <.modal return_to={Routes.board_show_item_path(@socket, :show_item, @item)} title={@page_title}>
-        <.live_component
-          module={PetallerWeb.BoardLive.ItemForm}
-          id={@item.id}
-          action={@live_action}
-          item={@item}
-          return_to={Routes.board_show_item_path(@socket, :show_item, @item)}
-        />
-      </.modal>
+            <img
+              class="inline border border-purple-500 m-1"
+              width="150"
+              height="150"
+              src={Routes.file_path(@socket, :show_thumbnail, ref)}
+            />
+          <% end %>
+        <% end %>
+      </section>
     <% end %>
 
     <%= if @live_action == :create_item_entry do %>
@@ -267,18 +287,6 @@ defmodule PetallerWeb.BoardLive.ShowItem do
           item_id={@item.id}
         />
       </section>
-    <% end %>
-
-    <%= if @live_action == :upload_files do %>
-      <.live_component
-        accept={:any}
-        class="md:w-full window mt-2 mb-2"
-        dir={"item/#{@item.id}"}
-        id={"item-#{@item.id}-upload"}
-        max_entries={20}
-        module={PetallerWeb.LiveUpload}
-        return_to={Routes.board_show_item_path(@socket, :show_item, @item.id)}
-      />
     <% end %>
 
     <div id="entry-container" phx-hook="Sortable">

@@ -4,18 +4,14 @@ defmodule PetallerWeb.BoardLive.ItemGallery do
   alias Petaller.Uploads
   alias Petaller.Uploads.FileRef
 
-  defp page_title(file_ref = %FileRef{}), do: Path.basename(file_ref.path <> file_ref.extension)
-
   @impl Phoenix.LiveView
-  def handle_params(%{"id" => item_id, "file_id" => file_id}, _url, socket) do
-    file_ref = Uploads.get_file_ref!(file_id)
-
+  def handle_params(%{"id" => item_id}, _url, socket) do
     {
       :noreply,
       socket
-      |> assign(:file_ref, file_ref)
       |> assign(:item_id, item_id)
-      |> assign(:page_title, page_title(file_ref))
+      |> assign(:image_refs, Uploads.get_images_by_item(item_id))
+      |> assign(:page_title, "Item #{item_id} gallery")
     }
   end
 
@@ -26,16 +22,21 @@ defmodule PetallerWeb.BoardLive.ItemGallery do
       Board /
       <%= live_patch("Item #{@item_id}",
         to: Routes.board_show_item_path(@socket, :show_item, @item_id)
-      ) %> /
-      <%= link(@page_title, to: Routes.file_path(@socket, :download, @file_ref)) %>
+      ) %> / Gallery
     </h1>
-    <%= if Uploads.image?(@file_ref) do %>
-      <img
-        class="inline border border-purple-500 m-1"
-        width={@file_ref.image_width}
-        height={@file_ref.image_height}
-        src={Routes.file_path(@socket, :show, @file_ref)}
-      />
+    <%= for ref <- @image_refs do %>
+      <%= live_patch(
+        to: Routes.board_show_item_file_path(@socket, :show, @item_id, ref.id),
+        class: "no-underline"
+    ) do %>
+        <img
+          class="border border-purple-500 mb-2 mt-2"
+          height={ref.image_height}
+          loading="lazy"
+          src={Routes.file_path(@socket, :show, ref)}
+          width={ref.image_width}
+        />
+      <% end %>
     <% end %>
     """
   end

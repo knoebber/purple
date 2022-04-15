@@ -136,15 +136,22 @@ defmodule Petaller.Uploads do
     Repo.get!(FileRef, id)
   end
 
-
-  def get_files_in_item(item_id) do
-    Repo.all(
-      from(f in FileRef,
-        where:
-          f.id in subquery(
-            from(i in ItemFile, select: i.file_upload_id, where: i.item_id == ^item_id)
-          )
-      )
+  defp get_files_by_item_query(item_id) do
+    from(f in FileRef,
+      where:
+        f.id in subquery(
+          from(i in ItemFile, select: i.file_upload_id, where: i.item_id == ^item_id)
+        )
     )
+  end
+
+  def get_files_by_item(item_id) do
+    Repo.all(get_files_by_item_query(item_id))
+  end
+
+  def get_images_by_item(item_id) do
+    get_files_by_item_query(item_id)
+    |> where([f], f.image_width > 0)
+    |> Repo.all()
   end
 end

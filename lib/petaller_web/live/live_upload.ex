@@ -142,18 +142,8 @@ defmodule PetallerWeb.LiveUpload do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <section class={@class} phx-drop-target={@uploads.files.ref} phx-target={@myself}>
-      <div class="flex justify-between bg-purple-300 p-1">
-        <div class="inline-links">
-          <strong>Upload Files</strong>
-          <span>|</span>
-          <%= live_patch("Cancel",
-            to: @return_to
-          ) %>
-        </div>
-      </div>
+    <div phx-drop-target={@uploads.files.ref} phx-target={@myself}>
       <form
-        class="p-4"
         id="upload-form"
         phx-change="validate"
         phx-submit="upload"
@@ -162,12 +152,14 @@ defmodule PetallerWeb.LiveUpload do
         <div class="flex flex-col mb-2">
           <%= live_file_input(@uploads.files) %>
         </div>
+      <%= if Enum.count(@uploads.files.entries) > 0 do %>
         <button type="submit">Upload</button>
+      <% end %>
       </form>
       <%= if Enum.count(@uploads.files.entries) > 0 do %>
         <div class="mb-3 grid xs:grid-cols-1 sm:grid-cols-3">
           <%= for entry <- @uploads.files.entries do %>
-            <div class="flex flex-col items-center m-1 border border-purple-500 bg-purple-300">
+            <div class="flex flex-col items-center m-1">
               <a
                 aria-label="cancel"
                 class="self-end"
@@ -206,7 +198,7 @@ defmodule PetallerWeb.LiveUpload do
           <div class="alert alert-danger"><%= err %></div>
         <% end %>
       <% end %>
-    </section>
+    </div>
     """
   end
 end
