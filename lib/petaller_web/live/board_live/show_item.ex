@@ -71,6 +71,17 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("toggle_files_collapsed", _, socket) do
+    item = socket.assigns.item
+    Board.toggle_show_item_files(item.id, !item.show_files)
+
+    {
+      :noreply,
+      assign(socket, :item, Board.get_item!(item.id))
+    }
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("delete_entry", %{"id" => id}, socket) do
     {entry_id, _} = Integer.parse(id)
     Board.delete_entry!(%ItemEntry{id: entry_id})
@@ -132,6 +143,19 @@ defmodule PetallerWeb.BoardLive.ShowItem do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("delete", %{"id" => id}, socket) do
+    Board.get_item!(id)
+    |> Board.delete_item!()
+
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Deleted item")
+      |> push_redirect(to: Routes.board_index_path(socket, :index))
+    }
+  end
+
+  @impl Phoenix.LiveView
   def handle_info({:upload_result, result}, socket) do
     Enum.each(result.uploaded_files, fn file_ref ->
       Uploads.add_file_to_item!(file_ref, socket.assigns.item)
@@ -143,6 +167,14 @@ defmodule PetallerWeb.BoardLive.ShowItem do
       |> assign_uploads(socket.assigns.item.id)
       |> put_flash(:info, "Uploaded #{result.num_uploaded}/#{result.num_attempted} files")
     }
+  end
+
+  defp cancel_link(assigns) do
+    ~H"""
+    <%= live_patch("Cancel",
+      to: Routes.board_show_item_path(@socket, :show_item, @item.id)
+    ) %>
+    """
   end
 
   defp entry_form(assigns) do
@@ -168,9 +200,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
             Edit Entry
           </strong>
           <span>|</span>
-          <%= live_patch("Cancel",
-            to: Routes.board_show_item_path(@socket, :show_item, @item.id)
-          ) %>
+          <.cancel_link item={@item} socket={@socket} />
         <% else %>
           <%= link(if(@entry.is_collapsed, do: "[+]", else: "[-]"),
             phx_click: "toggle_entry_collapse",
@@ -211,10 +241,24 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     </h1>
     <section class="mt-2 mb-2 window">
       <div class="inline-links bg-purple-300 p-1">
-        <%= live_patch(
-          "Edit Item",
-          to: Routes.board_show_item_path(@socket, :edit_item, @item)
-        ) %>|
+        <%= if @live_action == :edit_item do %>
+          <strong>Edit Item</strong>
+          <span>|</span>
+          <.cancel_link item={@item} socket={@socket} />
+        <% else %>
+          <%= live_patch(
+            "Edit",
+            to: Routes.board_show_item_path(@socket, :edit_item, @item)
+          ) %>
+        <% end %>
+        <span>|</span>
+        <%= link("Delete",
+          phx_click: "delete",
+          phx_value_id: @item.id,
+          data: [confirm: "Are you sure?"],
+          to: "#"
+        ) %>
+        <span>|</span>
         <%= live_patch(
           "Create Entry",
           to: Routes.board_show_item_path(@socket, :create_item_entry, @item)
@@ -230,7 +274,23 @@ defmodule PetallerWeb.BoardLive.ShowItem do
             return_to={Routes.board_show_item_path(@socket, :show_item, @item)}
           />
         </div>
-        <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
+      <% else %>
+        <h2 class="m-8"><%= @item.description %></h2>
+      <% end %>
+      <div>
+        <span>
+          <%= link(if(!@item.show_files, do: "[+]", else: "[-]"),
+            phx_click: "toggle_files_collapsed",
+            to: "#",
+            class: "ml-1 no-underline font-mono"
+          ) %>
+          <%= live_patch to: Routes.board_item_gallery_path(@socket, :index, @item) do %>
+            <%= length(@image_refs) %> file<%= if length(@image_refs) != 1, do: "s" %>
+          <% end %>
+        </span>
+      </div>
+      <%= if @item.show_files do %>
+        <div class="m-2 p-2">
           <.live_component
             accept={:any}
             dir={"item/#{@item.id}"}
@@ -240,34 +300,31 @@ defmodule PetallerWeb.BoardLive.ShowItem do
             return_to={Routes.board_show_item_path(@socket, :show_item, @item.id)}
           />
         </div>
-      <% else %>
-        <h2 class="m-8"><%= @item.description %></h2>
+        <%= if length(@image_refs) > 0 do %>
+          <%= for ref <- @image_refs do %>
+            <%= live_patch(
+            to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
+            class: "no-underline") do %>
+              <img
+                class="inline border border-purple-500 m-1"
+                width="150"
+                height="150"
+                src={Routes.file_path(@socket, :show_thumbnail, ref)}
+              />
+            <% end %>
+          <% end %>
+          <ul class="ml-8">
+            <%= for ref <- @file_refs do %>
+              <li>
+                <%= live_patch(Uploads.file_title(ref),
+                  to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)
+                ) %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
       <% end %>
     </section>
-
-    <%= if length(@image_refs) > 0 do %>
-      <section class="window">
-        <div class="bg-purple-300 p-1">
-          <%= live_patch(
-            "Image Gallery",
-            to: Routes.board_item_gallery_path(@socket, :index, @item)
-          ) %>
-        </div>
-        <%= for ref <- @image_refs do %>
-          <%= live_patch(
-        to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
-        class: "no-underline"
-    ) do %>
-            <img
-              class="inline border border-purple-500 m-1"
-              width="150"
-              height="150"
-              src={Routes.file_path(@socket, :show_thumbnail, ref)}
-            />
-          <% end %>
-        <% end %>
-      </section>
-    <% end %>
 
     <%= if @live_action == :create_item_entry do %>
       <section class="window mt-2 mb-2">
@@ -275,9 +332,7 @@ defmodule PetallerWeb.BoardLive.ShowItem do
           <div class="inline-links">
             <strong>New Entry</strong>
             <span>|</span>
-            <%= live_patch("Cancel",
-              to: Routes.board_show_item_path(@socket, :show_item, @item.id)
-            ) %>
+            <.cancel_link item={@item} socket={@socket} />
           </div>
         </div>
         <.entry_form

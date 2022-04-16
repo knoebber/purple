@@ -74,6 +74,12 @@ defmodule Petaller.Board do
     |> Repo.update_all(set: [is_collapsed: is_collapsed])
   end
 
+  def toggle_show_item_files(item_id, show_files) do
+    Item
+    |> where([i], i.id == ^item_id)
+    |> Repo.update_all(set: [show_files: show_files])
+  end
+
   def save_item_entry_sort_order(entries) do
     Repo.transaction(fn ->
       Enum.each(entries, fn entry ->

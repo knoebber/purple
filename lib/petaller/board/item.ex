@@ -7,9 +7,9 @@ defmodule Petaller.Board.Item do
     field :priority, :integer, default: 3
     field :completed_at, :naive_datetime
     field :is_pinned, :boolean, default: false
+    field :show_files, :boolean, default: false
 
     has_many :entries, Petaller.Board.ItemEntry
-    # 
     many_to_many :tags, Petaller.Board.Tag, join_through: Petaller.Board.ItemTag
 
     timestamps()
@@ -21,7 +21,8 @@ defmodule Petaller.Board.Item do
       :description,
       :priority,
       :completed_at,
-      :is_pinned
+      :is_pinned,
+      :show_files
     ])
     |> validate_required([
       :description,

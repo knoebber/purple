@@ -165,4 +165,8 @@ defmodule Petaller.Uploads do
     |> where([f], f.image_width > 0)
     |> Repo.all()
   end
+
+  def file_title(%FileRef{} = file_ref) do
+    Path.basename(file_ref.path <> file_ref.extension)
+  end
 end

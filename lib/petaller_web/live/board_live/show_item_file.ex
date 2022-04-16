@@ -4,8 +4,6 @@ defmodule PetallerWeb.BoardLive.ShowItemFile do
   alias Petaller.Uploads
   alias Petaller.Uploads.FileRef
 
-  defp page_title(file_ref = %FileRef{}), do: Path.basename(file_ref.path <> file_ref.extension)
-
   @impl Phoenix.LiveView
   def handle_params(%{"id" => item_id, "file_id" => file_id}, _url, socket) do
     file_ref = Uploads.get_file_ref!(file_id)
@@ -15,7 +13,7 @@ defmodule PetallerWeb.BoardLive.ShowItemFile do
       socket
       |> assign(:file_ref, file_ref)
       |> assign(:item_id, item_id)
-      |> assign(:page_title, page_title(file_ref))
+      |> assign(:page_title, Uploads.file_title(file_ref))
     }
   end
 
