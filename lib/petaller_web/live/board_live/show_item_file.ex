@@ -20,6 +20,20 @@ defmodule PetallerWeb.BoardLive.ShowItemFile do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("delete", _, socket) do
+    Uploads.delete_file_upload!(socket.assigns.file_ref.id)
+
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Deleted file")
+      |> push_redirect(
+        to: Routes.board_show_item_path(socket, :show_item, socket.assigns.item_id)
+      )
+    }
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1>
@@ -29,8 +43,13 @@ defmodule PetallerWeb.BoardLive.ShowItemFile do
       ) %> /
       <%= live_patch("Item #{@item_id}",
         to: Routes.board_show_item_path(@socket, :show_item, @item_id)
-      ) %> / <%= link(@page_title, to: Routes.file_path(@socket, :download, @file_ref)) %>
+      ) %> / <%= @page_title %>
     </h1>
+
+    <div class="flex bg-purple-300 inline-links p-1 border rounded border-purple-500">
+      <%= link("Download", to: Routes.file_path(@socket, :download, @file_ref)) %>
+      <%= link("Delete", to: "#", phx_click: "delete") %>
+    </div>
     <%= if Uploads.image?(@file_ref) do %>
       <img
         class="inline border border-purple-500 m-1"

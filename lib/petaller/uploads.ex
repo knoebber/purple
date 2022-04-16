@@ -124,6 +124,17 @@ defmodule Petaller.Uploads do
     end
   end
 
+  def delete_file_upload!(id) do
+    file_ref = get_file_ref!(id)
+    File.rm(get_full_upload_path(file_ref))
+
+    if image?(file_ref) do
+      File.rm(get_full_thumbnail_path(file_ref))
+    end
+
+    Repo.delete!(file_ref)
+  end
+
   def add_file_to_item!(%FileRef{} = file_ref, %Item{} = item) do
     Repo.insert!(ItemFile.changeset(file_ref.id, item.id))
   end

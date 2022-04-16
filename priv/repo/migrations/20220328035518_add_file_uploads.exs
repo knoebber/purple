@@ -19,7 +19,7 @@ defmodule Petaller.Repo.Migrations.AddFileUploads do
 
     create table(:item_file_uploads) do
       add :item_id, references(:items), null: false
-      add :file_upload_id, references(:file_uploads), null: false
+      add :file_upload_id, references(:file_uploads, on_delete: :delete_all), null: false
       timestamps()
     end
 
