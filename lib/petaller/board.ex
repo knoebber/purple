@@ -118,6 +118,7 @@ defmodule Petaller.Board do
   end
 
   def delete_item!(%Item{} = item) do
+    Petaller.Uploads.delete_file_uploads_in_item!(item.id)
     Repo.transaction(fn ->
       ItemEntry
       |> where([e], e.item_id == ^item.id)

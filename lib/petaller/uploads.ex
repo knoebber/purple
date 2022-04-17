@@ -124,8 +124,7 @@ defmodule Petaller.Uploads do
     end
   end
 
-  def delete_file_upload!(id) do
-    file_ref = get_file_ref!(id)
+  def delete_file_upload!(%FileRef{} = file_ref) do
     File.rm(get_full_upload_path(file_ref))
 
     if image?(file_ref) do
@@ -133,6 +132,18 @@ defmodule Petaller.Uploads do
     end
 
     Repo.delete!(file_ref)
+  end
+
+  def delete_file_upload!(id) do
+    id
+    |> get_file_ref!
+    |> delete_file_upload!
+  end
+
+  def delete_file_uploads_in_item!(item_id) do
+    Enum.each(get_files_by_item(item_id), fn file ->
+      delete_file_upload!(file)
+    end)
   end
 
   def add_file_to_item!(%FileRef{} = file_ref, %Item{} = item) do
