@@ -14,8 +14,9 @@ defmodule PetallerWeb.BoardLive.ShowItem do
     files = Uploads.get_files_by_item(item_id)
 
     socket
-    |> assign(:image_refs, Enum.filter(files, fn f -> Uploads.image?(f) end))
     |> assign(:file_refs, Enum.reject(files, fn f -> Uploads.image?(f) end))
+    |> assign(:image_refs, Enum.filter(files, fn f -> Uploads.image?(f) end))
+    |> assign(:total_files, length(files))
   end
 
   defp assign_default_params(socket, item_id) do
@@ -284,8 +285,12 @@ defmodule PetallerWeb.BoardLive.ShowItem do
             to: "#",
             class: "ml-1 no-underline font-mono"
           ) %>
-          <%= live_patch to: Routes.board_item_gallery_path(@socket, :index, @item) do %>
-            <%= length(@image_refs) %> file<%= if length(@image_refs) != 1, do: "s" %>
+          <%= if @total_files > 0 do %>
+            <%= live_patch to: Routes.board_item_gallery_path(@socket, :index, @item) do %>
+              <%= @total_files %> file<%= if length(@image_refs) != 1, do: "s" %>
+            <% end %>
+          <% else %>
+            No files
           <% end %>
         </span>
       </div>
@@ -302,22 +307,37 @@ defmodule PetallerWeb.BoardLive.ShowItem do
         </div>
         <%= if length(@image_refs) > 0 do %>
           <%= for ref <- @image_refs do %>
-            <%= live_patch(
+            <div class="inline">
+              <div class="inline-flex flex-col">
+                <div
+                  id={"copy-markdown-#{ref.id}"}
+                  phx-hook="CopyMarkdownImage"
+                  name={Uploads.file_title(ref)}
+                  value={Routes.file_path(@socket, :show, ref)}
+                  class="cursor-pointer w-1/6"
+                >
+                  🧩
+                </div>
+                <%= live_patch(
             to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
             class: "no-underline") do %>
-              <img
-                class="inline border border-purple-500 m-1"
-                width="150"
-                height="150"
-                src={Routes.file_path(@socket, :show_thumbnail, ref)}
-              />
-            <% end %>
+                  <img
+                    id={"thumbnail-#{ref.id}"}
+                    class="inline border border-purple-500 m-1"
+                    width="150"
+                    height="150"
+                    src={Routes.file_path(@socket, :show_thumbnail, ref)}
+                  />
+                <% end %>
+              </div>
+            </div>
           <% end %>
           <ul class="ml-8">
             <%= for ref <- @file_refs do %>
-              <li>
+              <li }>
                 <%= live_patch(Uploads.file_title(ref),
-                  to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)
+                  to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
+                  id: "file-#{ref.id}"
                 ) %>
               </li>
             <% end %>

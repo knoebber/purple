@@ -9,7 +9,7 @@ function onSort(hook) {
 }
 
 const SortableHook = {
-  mounted(e) {
+  mounted() {
     Sortable.create(this.el, {
       animation: 150,
       handle: '.cursor-move',

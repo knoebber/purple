@@ -23,6 +23,7 @@ import topbar from '../vendor/topbar';
 
 import AutoFocus from './hooks/autofocus';
 import Sortable from './hooks/sortable';
+import CopyMarkdownImage from './hooks/copy_markdown_image';
 
 const params = { _csrf_token: document.querySelector("meta[name='csrf-token']").getAttribute('content') };
 const liveSocket = new LiveSocket(
@@ -32,6 +33,7 @@ const liveSocket = new LiveSocket(
     hooks: {
       AutoFocus,
       Sortable,
+      CopyMarkdownImage,
     },
     params,
   }
