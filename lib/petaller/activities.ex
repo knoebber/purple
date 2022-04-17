@@ -17,6 +17,29 @@ defmodule Petaller.Activities do
     })
   end
 
+  def get_miles_in_week([], _), do: 0
+
+  def get_miles_in_week([%Run{} = head | tail], %Date{} = start_date) do
+    if Date.compare(head.date, Date.beginning_of_week(start_date)) == :lt do
+      0
+    else
+      head.miles + get_miles_in_week(tail, start_date)
+    end
+  end
+
+  @doc """
+  Returns the sum of miles in the current week.
+  Runs must be ordered by date descending.
+  """
+  def get_miles_in_current_week(runs) do
+    get_miles_in_week(
+      runs,
+      DateTime.utc_now()
+      |> DateTime.shift_zone!(Application.get_env(:petaller, :default_tz))
+      |> DateTime.to_date()
+    )
+  end
+
   @doc """
   Returns the list of runs.
 

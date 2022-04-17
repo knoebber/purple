@@ -1,8 +1,16 @@
 <div class="flex">
-  <%= live_patch(to: Routes.run_index_path(@socket, :new), class: "text-xl") do %>
-    <h1>Add Run</h1>
+  <h1>Runs</h1>
+  <%= live_patch(
+    to: Routes.run_index_path(@socket, :new),
+    class: "text-xl self-end ml-1 mr-1")
+  do %>
+    <button>➕</button>
   <% end %>
+  <i class="self-end">
+    <%= Activities.get_miles_in_current_week(@runs) %> this week
+  </i>
 </div>
+
 <%= if @live_action in [:new, :edit] do %>
   <.modal return_to={Routes.run_index_path(@socket, :index)} title={@page_title}>
     <.live_component
@@ -38,7 +46,7 @@
           <%= format_pace(run.miles, run.seconds) %>
         </td>
         <td>
-          <%= format_date(run.date) %>
+          <%= format_date(run.date, :dayname) %>
         </td>
         <td>
           <%= live_patch("Edit", to: Routes.run_index_path(@socket, :edit, run)) %>

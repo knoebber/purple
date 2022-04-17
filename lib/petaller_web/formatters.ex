@@ -41,6 +41,10 @@ defmodule PetallerWeb.Formatters do
     Calendar.strftime(d, "%m/%d/%Y")
   end
 
+  def format_date(%Date{} = d, :dayname) do
+    Calendar.strftime(d, "%a %m/%d/%Y")
+  end
+
   def strip_markdown(markdown) do
     Regex.replace(~r/[#`*\n]/, markdown, "")
   end
