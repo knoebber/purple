@@ -2,7 +2,6 @@ defmodule PetallerWeb.BoardLive.ItemGallery do
   use PetallerWeb, :live_view
 
   alias Petaller.Uploads
-  alias Petaller.Uploads.FileRef
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => item_id}, _url, socket) do

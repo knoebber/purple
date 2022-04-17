@@ -1,6 +1,7 @@
 defmodule PetallerWeb.Router do
   use PetallerWeb, :router
 
+  import Phoenix.LiveDashboard.Router
   import PetallerWeb.UserAuth
 
   pipeline :browser do
@@ -21,21 +22,10 @@ defmodule PetallerWeb.Router do
     plug :accepts, ["json"]
   end
 
-  # Enables LiveDashboard only for development
-  #
-  # If you want to use the LiveDashboard in production, you should put
-  # it behind authentication and allow only admins to access it.
-  # If your application does not have an admins-only section yet,
-  # you can use Plug.BasicAuth to set up some basic authentication
-  # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
+  scope "/" do
+    pipe_through [:browser, :redirect_if_user_not_authenticated]
 
-    scope "/" do
-      pipe_through :browser
-
-      live_dashboard "/dashboard", metrics: PetallerWeb.Telemetry
-    end
+    live_dashboard "/dashboard", metrics: PetallerWeb.Telemetry
   end
 
   ## Authentication routes
@@ -59,7 +49,6 @@ defmodule PetallerWeb.Router do
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
-
   end
 
   scope "/", PetallerWeb do
@@ -91,7 +80,6 @@ defmodule PetallerWeb.Router do
       live "/board/item/:id/show/entry/new", BoardLive.ShowItem, :create_item_entry
       live "/board/item/:id/show/entry/:entry_id", BoardLive.ShowItem, :edit_item_entry
       live "/board/new_item", BoardLive.Index, :new_item
-
     end
   end
 

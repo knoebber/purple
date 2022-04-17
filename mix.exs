@@ -20,7 +20,7 @@ defmodule Petaller.MixProject do
   def application do
     [
       mod: {Petaller.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :os_mon],
     ]
   end
 
@@ -35,6 +35,7 @@ defmodule Petaller.MixProject do
     [
       {:bcrypt_elixir, "~> 2.0"},
       {:earmark, "~> 1.4.20"},
+      {:ecto_psql_extras, "~> 0.7.4"},
       {:ecto_sql, "~> 3.6"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:floki, ">= 0.30.0", only: :test},
