@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.MakeEntryFieldsNonNull do
+defmodule Purple.Repo.Migrations.MakeEntryFieldsNonNull do
   use Ecto.Migration
 
   def change do

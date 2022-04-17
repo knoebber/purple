@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.CreateItemEntries do
+defmodule Purple.Repo.Migrations.CreateItemEntries do
   use Ecto.Migration
 
   def change do

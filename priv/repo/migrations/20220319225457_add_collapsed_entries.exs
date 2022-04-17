@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.AddCollapsedEntries do
+defmodule Purple.Repo.Migrations.AddCollapsedEntries do
   use Ecto.Migration
 
   def change do

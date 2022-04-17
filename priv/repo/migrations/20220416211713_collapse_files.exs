@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.CollapseFiles do
+defmodule Purple.Repo.Migrations.CollapseFiles do
   use Ecto.Migration
 
   def change do

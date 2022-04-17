@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.AddTagsTable do
+defmodule Purple.Repo.Migrations.AddTagsTable do
   use Ecto.Migration
 
   def change do

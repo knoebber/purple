@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.AddEntrySortOrder do
+defmodule Purple.Repo.Migrations.AddEntrySortOrder do
   use Ecto.Migration
 
   def change do

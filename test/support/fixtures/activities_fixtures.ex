@@ -1,7 +1,7 @@
-defmodule Petaller.ActivitiesFixtures do
+defmodule Purple.ActivitiesFixtures do
   @moduledoc """
   This module defines test helpers for creating
-  entities via the `Petaller.Activities` context.
+  entities via the `Purple.Activities` context.
   """
 
   @doc """
@@ -15,7 +15,7 @@ defmodule Petaller.ActivitiesFixtures do
         miles: 120.5,
         seconds: 42
       })
-      |> Petaller.Activities.create_run()
+      |> Purple.Activities.create_run()
 
     run
   end

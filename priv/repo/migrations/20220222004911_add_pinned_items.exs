@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.AddPinnedItems do
+defmodule Purple.Repo.Migrations.AddPinnedItems do
   use Ecto.Migration
 
   def change do

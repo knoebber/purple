@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.ImproveRunsTable do
+defmodule Purple.Repo.Migrations.ImproveRunsTable do
   use Ecto.Migration
 
   def change do

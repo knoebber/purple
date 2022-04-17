@@ -10,19 +10,19 @@ import Config
 # Timezone support
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
-config :petaller,
-  ecto_repos: [Petaller.Repo]
+config :purple,
+  ecto_repos: [Purple.Repo]
 
 # Configures the endpoint
-config :petaller, PetallerWeb.Endpoint,
+config :purple, PurpleWeb.Endpoint,
   url: [host: "localhost"],
-  render_errors: [view: PetallerWeb.ErrorView, accepts: ~w(html json), layout: false],
-  pubsub_server: Petaller.PubSub,
+  render_errors: [view: PurpleWeb.ErrorView, accepts: ~w(html json), layout: false],
+  pubsub_server: Purple.PubSub,
   live_view: [signing_salt: "Rr9+Wk+P"]
 
-config :petaller, :upload_dir, Path.expand("../priv/uploads", __DIR__)
-config :petaller, :default_tz, "America/Anchorage"
-config :petaller, :allow_user_registration, false
+config :purple, :upload_dir, Path.expand("../priv/uploads", __DIR__)
+config :purple, :default_tz, "America/Anchorage"
+config :purple, :allow_user_registration, false
 
 # Configures the mailer
 #
@@ -31,7 +31,7 @@ config :petaller, :allow_user_registration, false
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :petaller, Petaller.Mailer, adapter: Swoosh.Adapters.Local
+config :purple, Purple.Mailer, adapter: Swoosh.Adapters.Local
 
 # Swoosh API client is needed for adapters other than SMTP.
 config :swoosh, :api_client, false

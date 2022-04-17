@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.RunDescriptionDefault do
+defmodule Purple.Repo.Migrations.RunDescriptionDefault do
   use Ecto.Migration
 
   def change do

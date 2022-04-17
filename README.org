@@ -1,43 +1,4 @@
-#+title: Petaller
+#+title: Purple
 
-Simple TODO app for learning PETAL stack.
+Toy app for learning Elixir + Phoenix + LiveView + Tailwind
 
-* Run
-+ Install dependencies with ~mix deps.get~
-+ Create and migrate your database with ~mix ecto.setup~
-+ Start Phoenix endpoint with ~mix phx.server~ or inside IEx with ~iex -S mix phx.server~
-
-Use ~iex -S mix~ to start console.
-
-* (P) Phoenix
-+ [[https://serokell.io/blog/introduction-to-phoenix][intro tutorial]]
-+ [[https://hexdocs.pm/phoenix/Phoenix.html]]
-+ https://hexdocs.pm/iex/IEx.Helpers.html#recompile/0
-
-** Ecto
-+ [[https://hexdocs.pm/ecto/Ecto.html]]
-+ https://hexdocs.pm/ecto_sql
-+ https://hexdocs.pm/ecto/getting-started.html
-+ https://hexdocs.pm/phoenix/ecto.html#repo-configuration
-+ ~mix ecto.gen.migration add_weather_table~
-+ ~mix ecto.migrate~
-+ ~mix help phx.gen.schema~
-
-*List all items*
-#+begin_src
-iex(33)> alias Petaller.Repo
-Petaller.Repo
-iex(34)> Repo.all(Item) 
-#+end_src
-* (E) Elixir
-+ [[https://github.com/antifuchs/elixir-mode]]
-+ https://elixirschool.com/en/lessons/basics/sigils
-+ See keys in struct: ~|> Map.keys~
-+ See exported functions: ~exports Enum~
-* (T) Tailwind
-+ https://tailwindcss.com/docs
-
-* (A) Alpine.js
-* (L) LiveView
-+ https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html
-+ https://github.com/polymode/polymode/issues/270#issuecomment-1016613072

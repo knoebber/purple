@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.AddFileUploads do
+defmodule Purple.Repo.Migrations.AddFileUploads do
   use Ecto.Migration
 
   def change do

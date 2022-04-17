@@ -1,7 +1,7 @@
-defmodule Petaller.AccountsFixtures do
+defmodule Purple.AccountsFixtures do
   @moduledoc """
   This module defines test helpers for creating
-  entities via the `Petaller.Accounts` context.
+  entities via the `Purple.Accounts` context.
   """
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
@@ -18,7 +18,7 @@ defmodule Petaller.AccountsFixtures do
     {:ok, user} =
       attrs
       |> valid_user_attributes()
-      |> Petaller.Accounts.register_user()
+      |> Purple.Accounts.register_user()
 
     user
   end

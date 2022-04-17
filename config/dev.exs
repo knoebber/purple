@@ -1,11 +1,11 @@
 import Config
 
 # Configure your database
-config :petaller, Petaller.Repo,
+config :purple, Purple.Repo,
   username: System.get_env("USER"),
   password: "",
   hostname: "localhost",
-  database: "petaller",
+  database: "purple",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
@@ -15,7 +15,7 @@ config :petaller, Petaller.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with esbuild to bundle .js and .css sources.
-config :petaller, PetallerWeb.Endpoint,
+config :purple, PurpleWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
@@ -53,13 +53,13 @@ config :petaller, PetallerWeb.Endpoint,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :petaller, PetallerWeb.Endpoint,
+config :purple, PurpleWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/petaller_web/(live|views)/.*(ex)$",
-      ~r"lib/petaller_web/templates/.*(eex)$"
+      ~r"lib/purple_web/(live|views)/.*(ex)$",
+      ~r"lib/purple_web/templates/.*(eex)$"
     ]
   ],
   watchers: [

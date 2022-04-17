@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.MakePinnedNotNull do
+defmodule Purple.Repo.Migrations.MakePinnedNotNull do
   use Ecto.Migration
 
   def change do

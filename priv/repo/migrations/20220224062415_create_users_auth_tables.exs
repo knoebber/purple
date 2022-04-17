@@ -1,4 +1,4 @@
-defmodule Petaller.Repo.Migrations.CreateUsersAuthTables do
+defmodule Purple.Repo.Migrations.CreateUsersAuthTables do
   use Ecto.Migration
 
   def change do
