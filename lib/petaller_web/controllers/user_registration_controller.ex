@@ -10,7 +10,7 @@ defmodule PetallerWeb.UserRegistrationController do
     render(conn, "new.html", changeset: changeset)
   end
 
-  def create(conn, %{"user" => user_params}) do
+  defp create_user(conn, %{"user" => user_params}) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         {:ok, _} =
@@ -25,6 +25,16 @@ defmodule PetallerWeb.UserRegistrationController do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
+    end
+  end
+
+  def create(conn, params) do
+    if Application.get_env(:petaller, :allow_user_registration) do
+      create_user(conn, params)
+    else
+      conn
+      |> put_flash(:error, "User registration is disabled")
+      |> render("new.html", changeset: Accounts.change_user_registration(%User{}))
     end
   end
 end

@@ -22,6 +22,7 @@ config :petaller, PetallerWeb.Endpoint,
 
 config :petaller, :upload_dir, Path.expand("../priv/uploads", __DIR__)
 config :petaller, :default_tz, "America/Anchorage"
+config :petaller, :allow_user_registration, false
 
 # Configures the mailer
 #
