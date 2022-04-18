@@ -21,7 +21,7 @@ defmodule Purple.ActivitiesTest do
     end
 
     test "create_run/1 with valid data creates a run" do
-      valid_attrs = %{description: "some description", miles: 120.5, seconds: 42}
+      valid_attrs = %{description: "some description", miles: 120.5, minute_seconds: 42}
 
       assert {:ok, %Run{} = run} = Activities.create_run(valid_attrs)
       assert run.description == "some description"
@@ -35,7 +35,7 @@ defmodule Purple.ActivitiesTest do
 
     test "update_run/2 with valid data updates the run" do
       run = run_fixture()
-      update_attrs = %{description: "some updated description", miles: 456.7, seconds: 43}
+      update_attrs = %{description: "some updated description", miles: 456.7, minute_seconds: 43}
 
       assert {:ok, %Run{} = run} = Activities.update_run(run, update_attrs)
       assert run.description == "some updated description"
