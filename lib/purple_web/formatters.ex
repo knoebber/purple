@@ -8,6 +8,7 @@ defmodule PurpleWeb.Formatters do
       seconds_per_mile = floor(duration_in_seconds / miles)
       minutes_per_mile = div(seconds_per_mile, 60)
       minute_seconds_per_mile = rem(seconds_per_mile, 60)
+
       String.replace_prefix(
         format_duration(0, minutes_per_mile, minute_seconds_per_mile),
         "00:",
@@ -18,18 +19,19 @@ defmodule PurpleWeb.Formatters do
     end
   end
 
-  def format_duration(hours, minutes, seconds) do
-    if is_number(hours) and is_number(minutes) and is_number(seconds) and
-         hours + minutes + seconds > 0 do
-      Enum.map(
-        [hours, minutes, seconds],
-        fn n -> Integer.to_string(n) |> String.pad_leading(2, "0") end
-      )
-      |> Enum.join(":")
-    else
-      "N/A"
-    end
+  def format_duration(hours, minutes, seconds)
+      when is_number(hours) and
+             is_number(minutes) and
+             is_number(seconds) and
+             hours + minutes + seconds > 0 do
+    Enum.map(
+      [hours, minutes, seconds],
+      fn n -> Integer.to_string(n) |> String.pad_leading(2, "0") end
+    )
+    |> Enum.join(":")
   end
+
+  def format_duration(_, _, _), do: "N/A"
 
   def format_date(%NaiveDateTime{} = ndt) do
     DateTime.from_naive!(ndt, "Etc/UTC")

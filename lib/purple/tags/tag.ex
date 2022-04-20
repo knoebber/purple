@@ -1,5 +1,8 @@
-defmodule Purple.Board.Tag do
+defmodule Purple.Tags.Tag do
+  alias Purple.Tags.Tag
+
   use Ecto.Schema
+
   import Ecto.Changeset
 
   schema "tags" do
@@ -9,9 +12,10 @@ defmodule Purple.Board.Tag do
     timestamps()
   end
 
-  def changeset(tag, attrs) do
-    tag
+  def changeset(attrs) do
+    %Tag{}
     |> cast(attrs, [:name])
     |> validate_required([:name])
+    |> validate_format(:name, ~r/^[a-z0-9]{2,32}$/)
   end
 end
