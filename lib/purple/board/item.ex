@@ -10,7 +10,7 @@ defmodule Purple.Board.Item do
     field :show_files, :boolean, default: false
 
     has_many :entries, Purple.Board.ItemEntry
-    many_to_many :tags, Purple.Board.Tag, join_through: Purple.Board.ItemTag
+    many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.ItemTag
 
     timestamps()
   end

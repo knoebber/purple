@@ -21,6 +21,7 @@ defmodule Purple.Tags do
     end
   end
 
+  # Swap arg order to make pipeline read nicer
   def diff_tags(current_tags, new_tags) do
     diff_tags(
       new_tags,
@@ -56,6 +57,42 @@ defmodule Purple.Tags do
         nil -> Repo.insert!(changeset)
         existing -> existing
       end
+    end)
+  end
+
+  def sync_item_tags(item_id) do
+    # This is close: it's inserting correct.
+    # Now need to add the diff in here some where to cleanup old assocations that don't exist.
+    # Should take this as an excuse to see if i can preload an item with all tags/entries.
+
+    # TODO: Factor out all Item related stuff into own func. Add tags for runs.
+    Repo.transaction(fn ->
+      Enum.reduce(
+        Purple.Board.get_item_entries(item_id),
+        [],
+        fn entry, acc ->
+          acc ++ extract_tags(entry.content)
+        end
+      )
+      |> Enum.uniq()
+      |> get_or_create_tags()
+      # |> diff_tags(item.tags)
+      # |> Enum.map_reduce(...) -> [insert: [%{}, %{}], delete: [1,2,3]
+      # |> then(fn <match on insert, delete>, Repo.insert_all, Repo.delete_all, return insert_count, delete count.
+      |> Enum.map(fn %Tag{} = tag ->
+        %{
+          item_id: item_id,
+          tag_id: tag.id,
+          inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        }
+      end)
+      |> then(fn item_tags ->
+        Repo.insert_all(
+          Purple.Tags.ItemTag,
+          item_tags,
+          on_conflict: :nothing
+        )
+      end)
     end)
   end
 end
