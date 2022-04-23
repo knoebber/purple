@@ -3,47 +3,37 @@ defmodule PurpleWeb.RunLive.FormComponent do
 
   alias Purple.Activities
 
-  defp save_run(socket, :edit, run_params) do
-    case Activities.update_run(socket.assigns.run, run_params) do
-      {:ok, _run} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Run updated")
-         |> push_patch(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
-    end
-  end
-
-  defp save_run(socket, :new, run_params) do
-    case Activities.create_run(run_params) do
-      {:ok, _run} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Run created")
-         |> push_patch(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
-    end
-  end
+  defp save_run(socket, :edit, params), do: Activities.update_run(socket.assigns.run, params)
+  defp save_run(socket, :new, params), do: Activities.create_run(params)
 
   @impl true
   def update(%{run: run} = assigns, socket) do
     changeset = Activities.change_run(run)
 
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(:changeset, changeset)
-     |> assign(:duration_in_seconds, run.seconds)
-     |> assign(:miles, run.miles)}
+    {
+      :ok,
+      socket
+      |> assign(assigns)
+      |> assign(:changeset, changeset)
+      |> assign(:duration_in_seconds, run.seconds)
+      |> assign(:miles, run.miles)
+    }
   end
 
   @impl true
   def handle_event("save", %{"run" => run_params}, socket) do
-    save_run(socket, socket.assigns.action, run_params)
+    case save_run(socket, socket.assigns.action, run_params) do
+      {:ok, run} ->
+        Purple.Tags.sync_run_tags(run.id)
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Run saved")
+         |> push_patch(to: socket.assigns.return_to)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, changeset: changeset)}
+    end
   end
 
   @impl true

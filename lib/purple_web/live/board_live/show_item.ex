@@ -59,6 +59,14 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     end)
   end
 
+  defp save_entry(socket, :create_item_entry, params) do
+    Board.create_item_entry(params)
+  end
+
+  defp save_entry(socket, :edit_item_entry, params) do
+    Board.update_item_entry(socket.assigns.editable_entry, params)
+  end
+
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
@@ -94,30 +102,17 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("update_entry", %{"item_entry" => params}, socket) do
-    case Board.update_item_entry(socket.assigns.editable_entry, params) do
+  def handle_event("save_entry", %{"item_entry" => params}, socket) do
+    case save_entry(socket, socket.assigns.live_action, params) do
       {:ok, entry} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Entry saved")
-         |> push_patch(to: Routes.board_show_item_path(socket, :show_item, entry.item_id))}
+        Purple.Tags.sync_item_tags(entry.item_id)
 
-      _ ->
-        {:noreply, put_flash(socket, :error, "Failed to save entry")}
-    end
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("create_entry", %{"item_entry" => params}, socket) do
-    case Board.create_item_entry(params) do
-      {:ok, entry} ->
-        {:noreply,
-         socket
-         |> assign(:entries, Board.get_item_entries(entry.item_id))
-         |> put_flash(:info, "Entry created")
-         |> push_redirect(
-           to: Routes.board_show_item_path(socket, :show_item, socket.assigns.item.id)
-         )}
+        {
+          :noreply,
+          socket
+          |> put_flash(:info, "Entry saved")
+          |> push_patch(to: Routes.board_show_item_path(socket, :show_item, entry.item_id))
+        }
 
       _ ->
         {:noreply, put_flash(socket, :error, "Failed to create entry")}
@@ -319,8 +314,9 @@ defmodule PurpleWeb.BoardLive.ShowItem do
                   🧩
                 </div>
                 <%= live_patch(
-            to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
-            class: "no-underline") do %>
+                  to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
+                  class: "no-underline"
+                ) do %>
                   <img
                     id={"thumbnail-#{ref.id}"}
                     class="inline border border-purple-500 m-1"
@@ -357,7 +353,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         </div>
         <.entry_form
           rows={5}
-          action="create_entry"
+          action="save_entry"
           changeset={@new_entry_changeset}
           item_id={@item.id}
         />
@@ -371,7 +367,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
             <.entry_form
               rows={@entry_rows}
-              action="update_entry"
+              action="save_entry"
               changeset={@entry_update_changeset}
               item_id={@item.id}
             />

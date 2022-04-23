@@ -3,31 +3,8 @@ defmodule PurpleWeb.BoardLive.ItemForm do
 
   alias Purple.Board
 
-  defp save_item(socket, :edit_item, params) do
-    case Board.update_item(socket.assigns.item, params) do
-      {:ok, _item} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Item updated")
-         |> push_patch(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
-    end
-  end
-
-  defp save_item(socket, :new_item, params) do
-    case Board.create_item(params) do
-      {:ok, _item} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Item created")
-         |> push_patch(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
-    end
-  end
+  defp save_item(socket, :edit_item, params), do: Board.update_item(socket.assigns.item, params)
+  defp save_item(socket, :new_item, params), do: Board.create_item(params)
 
   @impl true
   def update(%{item: item} = assigns, socket) do
@@ -41,6 +18,19 @@ defmodule PurpleWeb.BoardLive.ItemForm do
 
   @impl true
   def handle_event("save", %{"item" => item_params}, socket) do
+    case save_item(socket, socket.assigns.action, item_params) do
+      {:ok, item} ->
+        Purple.Tags.sync_item_tags(item.id)
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Item saved")
+         |> push_patch(to: socket.assigns.return_to)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :changeset, changeset)}
+    end
+
     save_item(socket, socket.assigns.action, item_params)
   end
 
