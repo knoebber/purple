@@ -43,8 +43,8 @@ defmodule Purple.Board do
   def get_item!(id, :entries, :tags) do
       Repo.one!(
         from i in Item,
-          join: e in assoc(i, :entries),
-          join: t in assoc(i, :tags),
+          left_join: e in assoc(i, :entries),
+          left_join: t in assoc(i, :tags),
           where: i.id == ^id,
           preload: [entries: e, tags: t]
       )

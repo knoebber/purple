@@ -9,10 +9,10 @@ defmodule Purple.Board.Item do
     field :is_pinned, :boolean, default: false
     field :show_files, :boolean, default: false
 
+    timestamps()
+
     has_many :entries, Purple.Board.ItemEntry
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.ItemTag
-
-    timestamps()
   end
 
   def changeset(item, attrs) do

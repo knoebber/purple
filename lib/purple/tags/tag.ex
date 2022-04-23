@@ -9,6 +9,7 @@ defmodule Purple.Tags.Tag do
     field :name, :string
 
     many_to_many :items, Purple.Board.Item, join_through: Purple.Tags.ItemTag
+    many_to_many :runs, Purple.Activities.Run, join_through: Purple.Tags.RunTag
     timestamps(updated_at: false)
   end
 

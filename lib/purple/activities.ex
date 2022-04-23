@@ -76,6 +76,15 @@ defmodule Purple.Activities do
     |> Repo.get!(id)
   end
 
+  def get_run!(id, :tags) do
+    Repo.one!(
+      from r in Run,
+        left_join: t in assoc(r, :tags),
+        where: r.id == ^id,
+        preload: [tags: t]
+    )
+  end
+
   @doc """
   Creates a run.
 

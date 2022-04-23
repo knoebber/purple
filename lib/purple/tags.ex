@@ -4,9 +4,22 @@ defmodule Purple.Tags do
 
   import Ecto.Query
 
-  def extract_tags(content) do
+  def extract_tags(content) when is_binary(content) do
     Regex.scan(~r/#([a-zA-Z0-9]{2,})/, content)
     |> Enum.flat_map(fn [_, match] -> [String.downcase(match)] end)
+    |> Enum.uniq()
+  end
+
+  def extract_tags(%Purple.Activities.Run{} = run), do: extract_tags(run.description)
+
+  def extract_tags(%Purple.Board.Item{} = item) do
+    item.entries
+    |> Enum.reduce(
+      extract_tags(item.description),
+      fn entry, acc ->
+        acc ++ extract_tags(entry.content)
+      end
+    )
     |> Enum.uniq()
   end
 
@@ -32,7 +45,7 @@ defmodule Purple.Tags do
     )
   end
 
-  def get_or_create_tags(names) do
+  def get_or_create_tags(names) when is_list(names) do
     existing_tag_map =
       Enum.reduce(
         Tag |> where([t], t.name in ^names) |> Repo.all(),
@@ -58,54 +71,49 @@ defmodule Purple.Tags do
     end)
   end
 
-  def insert_tag_refs(model, tags, ref) do
+  def get_or_create_tags(model) when is_struct(model), do: get_or_create_tags(extract_tags(model))
+
+  defp insert_tag_refs(module, tags, ref_params) do
     Repo.insert_all(
-      model,
+      module,
       Enum.map(tags, fn tag ->
         Map.merge(
           %{
             tag_id: tag.id,
             inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
           },
-          ref
+          ref_params
         )
       end),
       on_conflict: :nothing
     )
   end
 
-  def delete_tag_refs(model, tags) do
-    Repo.delete_all(from(m in model, where: m.tag_id in ^for(t <- tags, do: t.id)))
+  defp delete_tag_refs(module, tags) do
+    Repo.delete_all(from(m in module, where: m.tag_id in ^for(t <- tags, do: t.id)))
   end
 
-  def sync_tag_refs(model, tag_diff, ref) do
+  defp update_tag_refs(module, tag_diff, ref_params)
+       when is_atom(module) and is_list(tag_diff) and is_map(ref_params) do
     Repo.transaction(fn ->
       [
-        add: insert_tag_refs(model, tag_diff[:add], ref),
-        remove: delete_tag_refs(model, tag_diff[:remove])
+        add: insert_tag_refs(module, tag_diff[:add], ref_params),
+        remove: delete_tag_refs(module, tag_diff[:remove])
       ]
     end)
   end
 
-  def get_tag_names_in_item(%Purple.Board.Item{} = item) do
-    item.entries
-    |> Enum.reduce(
-      extract_tags(item.description),
-      fn entry, acc ->
-        acc ++ extract_tags(entry.content)
-      end
-    )
-    |> Enum.uniq()
-  end
+  def sync_model_tags(module, model, ref_params)
+      when is_atom(module) and is_struct(model) and is_map(ref_params),
+      do: update_tag_refs(module, get_or_create_tags(model) |> diff_tags(model.tags), ref_params)
 
   def sync_item_tags(item_id) do
     item = Purple.Board.get_item!(item_id, :entries, :tags)
-    new_tags = get_or_create_tags(get_tag_names_in_item(item))
+    sync_model_tags(Purple.Tags.ItemTag, item, %{item_id: item_id})
+  end
 
-    sync_tag_refs(
-      Purple.Tags.ItemTag,
-      diff_tags(new_tags, item.tags),
-      %{item_id: item_id}
-    )
+  def sync_run_tags(run_id) do
+    run = Purple.Activities.get_run!(run_id, :tags)
+    sync_model_tags(Purple.Tags.RunTag, run, %{run_id: run_id})
   end
 end

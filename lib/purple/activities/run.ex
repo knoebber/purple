@@ -13,6 +13,8 @@ defmodule Purple.Activities.Run do
     field :minute_seconds, :integer, default: 0, virtual: true
 
     timestamps()
+
+    many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.RunTag
   end
 
   defp calculate_seconds(changeset) do
