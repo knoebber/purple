@@ -73,6 +73,8 @@ defmodule Purple.Tags do
 
   def get_or_create_tags(model) when is_struct(model), do: get_or_create_tags(extract_tags(model))
 
+  defp insert_tag_refs(_, [], _), do: {0, nil}
+
   defp insert_tag_refs(module, tags, ref_params) do
     Repo.insert_all(
       module,
@@ -89,9 +91,13 @@ defmodule Purple.Tags do
     )
   end
 
+  defp delete_tag_refs(_, []), do: {0, nil}
+
   defp delete_tag_refs(module, tags) do
     Repo.delete_all(from(m in module, where: m.tag_id in ^for(t <- tags, do: t.id)))
   end
+
+  defp update_tag_refs(_, [add: [], remove: []], _), do: {:ok, [add: {0, nil}, remove: {0, nil}]}
 
   defp update_tag_refs(module, tag_diff, ref_params)
        when is_atom(module) and is_list(tag_diff) and is_map(ref_params) do
