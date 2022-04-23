@@ -5,6 +5,6 @@ defmodule Purple.Tags.ItemTag do
     belongs_to :item, Purple.Board.Item
     belongs_to :tag, Purple.Tags.Tag
 
-    timestamps()
+    timestamps(updated_at: false)
   end
 end

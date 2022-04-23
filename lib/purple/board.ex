@@ -37,8 +37,17 @@ defmodule Purple.Board do
   end
 
   def get_item!(id) do
-    Item
-    |> Repo.get!(id)
+    Repo.get!(Item, id)
+  end
+
+  def get_item!(id, :entries, :tags) do
+      Repo.one!(
+        from i in Item,
+          join: e in assoc(i, :entries),
+          join: t in assoc(i, :tags),
+          where: i.id == ^id,
+          preload: [entries: e, tags: t]
+      )
   end
 
   def get_item_entries(item_id) do

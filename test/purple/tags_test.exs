@@ -23,11 +23,12 @@ defmodule Purple.TagsTest do
       a = %Tag{id: 1, name: "one"}
       b = %Tag{id: 2, name: "two"}
       c = %Tag{id: 3, name: "three"}
+      d = %Tag{id: 4, name: "four"}
 
-      assert Tags.diff_tags([], []) == []
-      assert Tags.diff_tags([a], [a]) == []
-      assert Tags.diff_tags([a], [b]) == [{:insert, b}, {:delete, a}]
-      assert Tags.diff_tags([a, b], [b, c]) == [{:insert, c}, {:delete, a}]
+      assert Tags.diff_tags([], []) == [add: [], remove: []]
+      assert Tags.diff_tags([a], [a]) == [add: [], remove: []]
+      assert Tags.diff_tags([b], [a]) == [add: [b], remove: [a]]
+      assert Tags.diff_tags([b, c, d], [a, b]) == [add: [c, d], remove: [a]]
     end
   end
 end

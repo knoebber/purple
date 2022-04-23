@@ -10,23 +10,21 @@ defmodule Purple.Tags do
     |> Enum.uniq()
   end
 
-  def diff_tags([], current_tag_map, result) do
-    result ++ for t <- Map.values(current_tag_map), do: {:delete, t}
-  end
+  defp diff_tags_kernel([], %{} = old_tag_map, add_list),
+    do: [add: add_list, remove: for(t <- Map.values(old_tag_map), do: t)]
 
-  def diff_tags([%Tag{} = head | tail], current_tag_map, result) do
-    case Map.pop(current_tag_map, head.id) do
-      {nil, current_tag_map} -> diff_tags(tail, current_tag_map, result ++ [{:insert, head}])
-      {_, current_tag_map} -> diff_tags(tail, current_tag_map, result)
+  defp diff_tags_kernel([%Tag{} = head | tail], %{} = old_tag_map, add_list) do
+    case Map.pop(old_tag_map, head.id) do
+      {nil, old_tag_map} -> diff_tags_kernel(tail, old_tag_map, add_list ++ [head])
+      {_, old_tag_map} -> diff_tags_kernel(tail, old_tag_map, add_list)
     end
   end
 
-  # Swap arg order to make pipeline read nicer
-  def diff_tags(current_tags, new_tags) do
-    diff_tags(
+  def diff_tags(new_tags, old_tags) do
+    diff_tags_kernel(
       new_tags,
       Enum.reduce(
-        current_tags,
+        old_tags,
         %{},
         fn tag = %Tag{}, acc -> Map.put(acc, tag.id, tag) end
       ),
@@ -60,39 +58,54 @@ defmodule Purple.Tags do
     end)
   end
 
-  def sync_item_tags(item_id) do
-    # This is close: it's inserting correct.
-    # Now need to add the diff in here some where to cleanup old assocations that don't exist.
-    # Should take this as an excuse to see if i can preload an item with all tags/entries.
-
-    # TODO: Factor out all Item related stuff into own func. Add tags for runs.
-    Repo.transaction(fn ->
-      Enum.reduce(
-        Purple.Board.get_item_entries(item_id),
-        [],
-        fn entry, acc ->
-          acc ++ extract_tags(entry.content)
-        end
-      )
-      |> Enum.uniq()
-      |> get_or_create_tags()
-      # |> diff_tags(item.tags)
-      # |> Enum.map_reduce(...) -> [insert: [%{}, %{}], delete: [1,2,3]
-      # |> then(fn <match on insert, delete>, Repo.insert_all, Repo.delete_all, return insert_count, delete count.
-      |> Enum.map(fn %Tag{} = tag ->
-        %{
-          item_id: item_id,
-          tag_id: tag.id,
-          inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-        }
-      end)
-      |> then(fn item_tags ->
-        Repo.insert_all(
-          Purple.Tags.ItemTag,
-          item_tags,
-          on_conflict: :nothing
+  def insert_tag_refs(model, tags, ref) do
+    Repo.insert_all(
+      model,
+      Enum.map(tags, fn tag ->
+        Map.merge(
+          %{
+            tag_id: tag.id,
+            inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          },
+          ref
         )
-      end)
+      end),
+      on_conflict: :nothing
+    )
+  end
+
+  def delete_tag_refs(model, tags) do
+    Repo.delete_all(from(m in model, where: m.tag_id in ^for(t <- tags, do: t.id)))
+  end
+
+  def sync_tag_refs(model, tag_diff, ref) do
+    Repo.transaction(fn ->
+      [
+        add: insert_tag_refs(model, tag_diff[:add], ref),
+        remove: delete_tag_refs(model, tag_diff[:remove])
+      ]
     end)
+  end
+
+  def get_tag_names_in_item(%Purple.Board.Item{} = item) do
+    item.entries
+    |> Enum.reduce(
+      extract_tags(item.description),
+      fn entry, acc ->
+        acc ++ extract_tags(entry.content)
+      end
+    )
+    |> Enum.uniq()
+  end
+
+  def sync_item_tags(item_id) do
+    item = Purple.Board.get_item!(item_id, :entries, :tags)
+    new_tags = get_or_create_tags(get_tag_names_in_item(item))
+
+    sync_tag_refs(
+      Purple.Tags.ItemTag,
+      diff_tags(new_tags, item.tags),
+      %{item_id: item_id}
+    )
   end
 end
