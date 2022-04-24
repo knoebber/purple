@@ -94,6 +94,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def handle_event("delete_entry", %{"id" => id}, socket) do
     {entry_id, _} = Integer.parse(id)
     Board.delete_entry!(%ItemEntry{id: entry_id})
+    Purple.Tags.sync_item_tags(socket.assigns.item.id)
 
     {:noreply,
      socket

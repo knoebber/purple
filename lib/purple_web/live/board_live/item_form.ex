@@ -4,7 +4,7 @@ defmodule PurpleWeb.BoardLive.ItemForm do
   alias Purple.Board
 
   defp save_item(socket, :edit_item, params), do: Board.update_item(socket.assigns.item, params)
-  defp save_item(socket, :new_item, params), do: Board.create_item(params)
+  defp save_item(_, :new_item, params), do: Board.create_item(params)
 
   @impl true
   def update(%{item: item} = assigns, socket) do
@@ -30,8 +30,6 @@ defmodule PurpleWeb.BoardLive.ItemForm do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
     end
-
-    save_item(socket, socket.assigns.action, item_params)
   end
 
   @impl true
