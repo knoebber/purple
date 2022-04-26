@@ -47,24 +47,6 @@ defmodule PurpleWeb.Formatters do
     Calendar.strftime(d, "%a %m/%d/%Y")
   end
 
-  def strip_markdown(markdown) do
-    Regex.replace(~r/[#`*\n]/, markdown, "")
-  end
-
-  def markdown_to_html(markdown) do
-    add_target = fn node ->
-      Earmark.AstTools.merge_atts_in_node(node, target: "_blank")
-    end
-
-    processors = [
-      {"a", add_target}
-    ]
-
-    Earmark.as_html!(markdown, registered_processors: processors)
-    |> HtmlSanitizeEx.markdown_html()
-    |> Phoenix.HTML.raw()
-  end
-
   def changeset_to_reason_list(%Ecto.Changeset{errors: errors}) do
     Enum.map(
       errors,

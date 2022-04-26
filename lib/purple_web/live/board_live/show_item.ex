@@ -4,6 +4,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   alias Purple.Board
   alias Purple.Board.ItemEntry
   alias Purple.Uploads
+  alias PurpleWeb.Markdown
 
   defp page_title(item_id, :show_item), do: "Item #{item_id}"
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
@@ -219,7 +220,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       </div>
       <%= if @entry.is_collapsed do %>
         <strong class="whitespace-nowrap overflow-hidden text-ellipsis w-1/2 text-purple-900">
-          <%= String.slice(strip_markdown(@entry.content), 0, 100) %>
+          <%= String.slice(Markdown.strip_markdown(@entry.content), 0, 100) %>
         </strong>
       <% end %>
       <i>
@@ -376,7 +377,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
             <%= unless entry.is_collapsed do %>
               <div class="markdown-content">
-                <%= markdown_to_html(entry.content) %>
+                <%= Markdown.markdown_to_html(entry.content) %>
               </div>
             <% end %>
           <% end %>

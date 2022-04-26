@@ -4,8 +4,46 @@ defmodule Purple.Tags do
 
   import Ecto.Query
 
+  @valid_tag_parents ["p", "li"]
+
+  def valid_tag_parents, do: @valid_tag_parents
+  def tag_pattern, do: ~r/#([a-zA-Z0-9]{2,})/
+  def anchored_tag_pattern, do: ~r/^#([a-zA-Z0-9]{2,})$/
+
+  def extract_tags_from_earmark_ast(ast) do
+    {_, result} =
+      Earmark.Transform.map_ast_with(
+        ast,
+        [],
+        fn
+          {tag, _, children, _} = node, result when tag in @valid_tag_parents ->
+            {
+              node,
+              Enum.reduce(children, result, fn
+                text_leaf, acc when is_binary(text_leaf) -> extract_tags(text_leaf) ++ acc
+                _, acc -> acc
+              end)
+            }
+
+          node, result ->
+            {node, result}
+        end,
+        true
+      )
+
+    result
+  end
+
+  def extract_tags_from_markdown(md) do
+    case EarmarkParser.as_ast(md) do
+      {:ok, ast, _} -> extract_tags_from_earmark_ast(ast)
+      _ -> []
+    end
+  end
+
   def extract_tags(content) when is_binary(content) do
-    Regex.scan(~r/#([a-zA-Z0-9]{2,})/, content)
+    tag_pattern()
+    |> Regex.scan(content)
     |> Enum.flat_map(fn [_, match] -> [String.downcase(match)] end)
     |> Enum.uniq()
   end
@@ -17,7 +55,7 @@ defmodule Purple.Tags do
     |> Enum.reduce(
       extract_tags(item.description),
       fn entry, acc ->
-        acc ++ extract_tags(entry.content)
+        acc ++ extract_tags_from_markdown(entry.content)
       end
     )
     |> Enum.uniq()

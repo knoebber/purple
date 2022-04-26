@@ -5,6 +5,32 @@ defmodule Purple.TagsTest do
   alias Purple.Tags.Tag
 
   describe "tags" do
+    test "extract_tags_from_markdown\1" do
+      assert Tags.extract_tags_from_markdown("#invalid\n```") == []
+
+      result =
+        Tags.extract_tags_from_markdown(~s"""
+        # header1 #header1
+
+        * #list1
+        * #list2
+        * 3
+
+        ```
+        code #code is a comment not a tag
+        ```
+
+        `also invalid #inlinecode`
+
+        https://example.com#linkanchor
+
+        normal #paragraph hashtag
+        """)
+        |> Enum.sort()
+
+      assert result == ["list1", "list2", "paragraph"]
+    end
+
     test "extract_tags/1" do
       assert Tags.extract_tags("") == []
       assert Tags.extract_tags("#") == []
