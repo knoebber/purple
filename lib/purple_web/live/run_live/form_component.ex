@@ -4,7 +4,7 @@ defmodule PurpleWeb.RunLive.FormComponent do
   alias Purple.Activities
 
   defp save_run(socket, :edit, params), do: Activities.update_run(socket.assigns.run, params)
-  defp save_run(socket, :new, params), do: Activities.create_run(params)
+  defp save_run(_socket, :new, params), do: Activities.create_run(params)
 
   @impl true
   def update(%{run: run} = assigns, socket) do
