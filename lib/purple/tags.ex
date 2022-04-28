@@ -4,7 +4,7 @@ defmodule Purple.Tags do
 
   import Ecto.Query
 
-  @valid_tag_parents ["p", "li"]
+  @valid_tag_parents ["p", "li", "h1", "h2", "h3"]
 
   def valid_tag_parents, do: @valid_tag_parents
   def tag_pattern, do: ~r/#([a-zA-Z0-9]{2,})/

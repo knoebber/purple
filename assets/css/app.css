@@ -87,6 +87,11 @@
     img {
         image-orientation: from-image;
     }
+
+    a.tag {
+        @apply font-bold;
+        @apply text-purple-700;
+    }
 }
 
 @layer components {
@@ -162,10 +167,5 @@
 
     .markdown-content h1, .markdown-content h2, .markdown-content h3 {
         @apply mb-2;
-    }
-
-    .markdown-content .tag {
-        @apply font-bold;
-        @apply text-purple-700;
     }
 }
