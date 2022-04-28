@@ -24,9 +24,7 @@ defmodule PurpleWeb.Markdown do
     end)
   end
 
-  def map_ast(ast), do: map_ast(ast, false)
-
-  def map_ast(ast, text_is_eligible_for_hashtag) do
+  def map_ast(ast, text_is_eligible_for_hashtag \\ false) do
     Enum.map(ast, fn
       {"a", _, _, _} = node ->
         Earmark.AstTools.merge_atts_in_node(node, target: "_blank")
@@ -42,8 +40,7 @@ defmodule PurpleWeb.Markdown do
   def markdown(md) do
     case EarmarkParser.as_ast(md) do
       {:ok, ast, _} ->
-        map_ast(ast)
-        |> Earmark.Transform.transform()
+        map_ast(ast) |> Earmark.Transform.transform()
 
       _ ->
         md
@@ -51,8 +48,6 @@ defmodule PurpleWeb.Markdown do
   end
 
   def markdown_to_html(md) do
-    markdown(md)
-    |> HtmlSanitizeEx.markdown_html()
-    |> Phoenix.HTML.raw()
+    markdown(md) |> Phoenix.HTML.raw()
   end
 end
