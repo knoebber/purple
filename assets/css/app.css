@@ -14,14 +14,20 @@
         @apply mx-auto;
     }
 
-    h1 {
+    h1, h2, h3 {
         @apply font-bold;
+    }
+
+    h1 {
         @apply text-2xl;
     }
 
     h2 {
-        @apply font-bold;
         @apply text-xl;
+    }
+
+    h3 {
+        @apply text-lg;
     }
 
     a {
@@ -156,5 +162,10 @@
 
     .markdown-content h1, .markdown-content h2, .markdown-content h3 {
         @apply mb-2;
+    }
+
+    .markdown-content .tag {
+        @apply font-bold;
+        @apply text-purple-700;
     }
 }
