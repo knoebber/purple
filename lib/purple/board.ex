@@ -41,13 +41,13 @@ defmodule Purple.Board do
   end
 
   def get_item!(id, :entries, :tags) do
-      Repo.one!(
-        from i in Item,
-          left_join: e in assoc(i, :entries),
-          left_join: t in assoc(i, :tags),
-          where: i.id == ^id,
-          preload: [entries: e, tags: t]
-      )
+    Repo.one!(
+      from i in Item,
+        left_join: e in assoc(i, :entries),
+        left_join: t in assoc(i, :tags),
+        where: i.id == ^id,
+        preload: [entries: e, tags: t]
+    )
   end
 
   def get_item_entries(item_id) do
@@ -99,26 +99,26 @@ defmodule Purple.Board do
     end)
   end
 
-  def list_pinned_items() do
-    Item
-    |> where([i], i.is_pinned == true)
-    |> order_by(asc: :priority, desc: :updated_at)
-    |> Repo.all()
+  def tag_filter(query, ""), do: query
+
+  def tag_filter(query, tagname) do
+    where(
+      query,
+      [i],
+      i.id in subquery(
+        from(it in Purple.Tags.ItemTag,
+          select: it.item_id,
+          join: t in assoc(it, :tag),
+          where: t.name == ^tagname
+        )
+      )
+    )
   end
 
-  def list_incomplete_items() do
+  def list_items(tagname \\ "") do
     Item
-    |> where([i], is_nil(i.completed_at))
-    |> where([i], i.is_pinned == false)
-    |> order_by(asc: :priority, desc: :inserted_at)
-    |> Repo.all()
-  end
-
-  def list_complete_items() do
-    Item
-    |> where([i], not is_nil(i.completed_at))
-    |> where([i], i.is_pinned == false)
-    |> order_by(desc: :completed_at)
+    |> order_by(desc: :is_pinned, desc: :completed_at, asc: :priority)
+    |> tag_filter(tagname)
     |> Repo.all()
   end
 
@@ -128,6 +128,7 @@ defmodule Purple.Board do
 
   def delete_item!(%Item{} = item) do
     Purple.Uploads.delete_file_uploads_in_item!(item.id)
+
     Repo.transaction(fn ->
       ItemEntry
       |> where([e], e.item_id == ^item.id)

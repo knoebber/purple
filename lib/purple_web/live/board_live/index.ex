@@ -23,19 +23,18 @@ defmodule PurpleWeb.BoardLive.Index do
     |> assign(:item, nil)
   end
 
-  defp load_items(socket) do
-    socket
-    |> assign(:complete_items, Board.list_complete_items())
-    |> assign(:incomplete_items, Board.list_incomplete_items())
-    |> assign(:pinned_items, Board.list_pinned_items())
+  defp load_items(socket, tag \\ "") do
+    assign(socket, :items, Board.list_items(tag))
   end
 
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
-    {:noreply,
-     socket
-     |> load_items
-     |> apply_action(socket.assigns.live_action, params)}
+    {
+      :noreply,
+      socket
+      |> load_items(Map.get(params, "tag", ""))
+      |> apply_action(socket.assigns.live_action, params)
+    }
   end
 
   @impl Phoenix.LiveView
@@ -64,8 +63,12 @@ defmodule PurpleWeb.BoardLive.Index do
   def render(assigns) do
     ~H"""
     <div class="flex">
-      <%= live_patch(to: Routes.board_index_path(@socket, :new_item), class: "text-xl") do %>
-        <h1>Add Item</h1>
+      <h1>Items</h1>
+      <%= live_patch(
+        to: Routes.board_index_path(@socket, :new_item),
+        class: "text-xl self-end ml-1 mb-2")
+      do %>
+        <button>➕</button>
       <% end %>
     </div>
     <%= if @live_action in [:new_item, :edit_item] do %>
@@ -80,12 +83,7 @@ defmodule PurpleWeb.BoardLive.Index do
         />
       </.modal>
     <% end %>
-    <h2 class="mt-2 mb-2">Pinned</h2>
-    <Components.item_table socket={@socket} items={@pinned_items} />
-    <h2 class="mt-2 mb-2">Incomplete</h2>
-    <Components.item_table socket={@socket} items={@incomplete_items} />
-    <h2 class="mt-2 mb-2">Complete</h2>
-    <Components.item_table socket={@socket} items={@complete_items} />
+    <Components.item_table socket={@socket} items={@items} />
     """
   end
 end
