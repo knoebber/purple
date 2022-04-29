@@ -54,6 +54,7 @@ defmodule PurpleWeb.BoardLive.Components do
             </td>
             <td>
               <%= link("📌",
+                class: if(!item.is_pinned, do: "opacity-30"),
                 phx_click: "toggle_pin",
                 phx_value_id: item.id,
                 to: "#"
