@@ -2,3 +2,8 @@
 
 Toy app for learning Elixir + Phoenix + LiveView + Tailwind
 
+* Starting the Server
+
+Running ~make~ will install dependencies, create the database, run
+pending migrations, and start the server. If all these steps aren't
+needed, just run ~mix phx.server~
