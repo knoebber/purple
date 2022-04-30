@@ -10,7 +10,7 @@ defmodule Purple.TagsTest do
 
       result =
         Tags.extract_tags_from_markdown(~s"""
-        # header1 #header1
+        # header #header1
 
         * #list1
         * #list2
@@ -28,7 +28,12 @@ defmodule Purple.TagsTest do
         """)
         |> Enum.sort()
 
-      assert result == ["list1", "list2", "paragraph"]
+      assert result == [
+               "header1",
+               "list1",
+               "list2",
+               "paragraph"
+             ]
     end
 
     test "extract_tags/1" do
