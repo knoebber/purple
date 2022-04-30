@@ -1,15 +1,18 @@
 ifeq "$(MIX_ENV)" "prod"
     DEPS_FLAGS:= --only prod
+    NPM_FLAGS:= --omit=dev
 endif
 
-server: deps create_db compile assets migrate
-	mix phx.server
+all: deps create_db js compile assets migrate
 
 deps:
 	mix deps.get $(DEPS_FLAGS)
 
 create_db:
 	mix ecto.create
+
+js:
+	cd assets/; npm i $(NPM_FLAGS)
 
 compile:
 	mix compile
@@ -20,7 +23,4 @@ assets:
 migrate:
 	mix ecto.migrate
 
-test:
-	mix test
-
-.PHONY: compile assets server deps test migrate create_db
+.PHONY: all deps create_db js compile assets migrate
