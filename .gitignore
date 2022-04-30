@@ -25,6 +25,9 @@ purple-*.tar
 
 # Ignore assets that are produced by build tools.
 /priv/static/assets/
+/priv/static/favicon-*
+/priv/static/robots-*
+/priv/static/robots.txt.gz
 
 # Ignore user uploads
 /priv/static/uploads
