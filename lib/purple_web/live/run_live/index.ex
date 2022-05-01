@@ -54,7 +54,7 @@ defmodule PurpleWeb.RunLive.Index do
         <button>➕</button>
       <% end %>
       <i class="self-end">
-        <%= Activities.get_miles_in_current_week(@runs) |> Float.round(2) %> this week
+        <%= Activities.sum_miles_in_current_week %> this week
       </i>
     </div>
 

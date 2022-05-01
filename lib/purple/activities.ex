@@ -17,27 +17,20 @@ defmodule Purple.Activities do
     })
   end
 
-  def get_miles_in_week([], _), do: 0
-
-  def get_miles_in_week([%Run{} = head | tail], %Date{} = start_date) do
-    if Date.compare(head.date, Date.beginning_of_week(start_date)) == :lt do
-      0
-    else
-      head.miles + get_miles_in_week(tail, start_date)
-    end
-  end
-
   @doc """
   Returns the sum of miles in the current week.
-  Runs must be ordered by date descending.
   """
-  def get_miles_in_current_week(runs) do
-    get_miles_in_week(
-      runs,
+  def sum_miles_in_current_week do
+    week_start =
       DateTime.utc_now()
       |> DateTime.shift_zone!(Application.get_env(:purple, :default_tz))
       |> DateTime.to_date()
-    )
+      |> Date.beginning_of_week()
+
+    Run
+    |> where([d], d.date >= ^week_start)
+    |> Repo.aggregate(:sum, :miles)
+    |> Float.round(2)
   end
 
   defp tag_filter(query, ""), do: query
