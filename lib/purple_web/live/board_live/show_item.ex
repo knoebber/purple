@@ -230,7 +230,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     """
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1>
