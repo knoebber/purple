@@ -99,9 +99,9 @@ defmodule Purple.Board do
     end)
   end
 
-  def tag_filter(query, ""), do: query
+  defp tag_filter(query, ""), do: query
 
-  def tag_filter(query, tagname) do
+  defp tag_filter(query, tagname) do
     where(
       query,
       [i],

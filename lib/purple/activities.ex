@@ -40,6 +40,22 @@ defmodule Purple.Activities do
     )
   end
 
+  defp tag_filter(query, ""), do: query
+
+  defp tag_filter(query, tagname) do
+    where(
+      query,
+      [r],
+      r.id in subquery(
+        from(rt in Purple.Tags.RunTag,
+          select: rt.run_id,
+          join: t in assoc(rt, :tag),
+          where: t.name == ^tagname
+        )
+      )
+    )
+  end
+
   @doc """
   Returns the list of runs.
 
@@ -49,9 +65,10 @@ defmodule Purple.Activities do
       [%Run{}, ...]
 
   """
-  def list_runs do
+  def list_runs(tagname \\ "") do
     Run
     |> run_select
+    |> tag_filter(tagname)
     |> order_by(desc: :date)
     |> Repo.all()
   end

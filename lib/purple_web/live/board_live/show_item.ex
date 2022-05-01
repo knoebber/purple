@@ -274,7 +274,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         </div>
       <% else %>
         <div class="markdown-content">
-          <%= Markdown.markdown_to_html("## #{@item.description}") %>
+          <%= Markdown.markdown_to_html("## #{@item.description}", :board) %>
         </div>
       <% end %>
       <div>
@@ -379,7 +379,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
             <%= unless entry.is_collapsed do %>
               <div class="markdown-content">
-                <%= Markdown.markdown_to_html(entry.content) %>
+                <%= Markdown.markdown_to_html(entry.content, :board) %>
               </div>
             <% end %>
           <% end %>

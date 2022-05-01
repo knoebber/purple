@@ -1,11 +1,17 @@
 defmodule PurpleWeb.Markdown do
+  alias PurpleWeb.Router.Helpers, as: Routes
+  alias PurpleWeb.Endpoint
   alias Purple.Tags
+
+  def get_link(tag, :board), do: Routes.board_index_path(Endpoint, :index, tag: tag)
+  def get_link(tag, :run), do: Routes.run_index_path(Endpoint, :index, tag: tag)
+  def get_link(tag, _), do: "?tag=#{tag}"
 
   def strip_markdown(markdown) do
     Regex.replace(~r/[#`*\n]/, markdown, "")
   end
 
-  def parse_tags(text_leaf) when is_binary(text_leaf) do
+  def parse_tags(text_leaf, link_type) when is_binary(text_leaf) do
     Regex.split(
       Tags.tag_pattern(),
       text_leaf,
@@ -16,7 +22,7 @@ defmodule PurpleWeb.Markdown do
         {"a",
          [
            {"class", "tag"},
-           {"href", "/board?tag=#{tagname}"}
+           {"href", get_link(tagname, link_type)},
          ], [tagname], %{}}
 
       text ->
@@ -24,30 +30,33 @@ defmodule PurpleWeb.Markdown do
     end)
   end
 
-  def map_ast(ast, text_is_eligible_for_hashtag \\ false) do
+  def map_ast(ast, link_type, text_is_eligible_for_hashtag \\ false) do
     Enum.map(ast, fn
       {"a", _, _, _} = node ->
         Earmark.AstTools.merge_atts_in_node(node, target: "_blank")
 
       {tag, atts, children, m} ->
-        {tag, atts, map_ast(children, tag in Tags.valid_tag_parents()), m}
+        {tag, atts, map_ast(children, link_type, tag in Tags.valid_tag_parents()), m}
+
+      text_leaf when text_is_eligible_for_hashtag ->
+        parse_tags(text_leaf, link_type)
 
       text_leaf ->
-        if text_is_eligible_for_hashtag, do: parse_tags(text_leaf), else: text_leaf
+        text_leaf
     end)
   end
 
-  def markdown(md) do
+  def markdown(md, link_type) do
     case EarmarkParser.as_ast(md) do
       {:ok, ast, _} ->
-        map_ast(ast) |> Earmark.Transform.transform()
+        map_ast(ast, link_type) |> Earmark.Transform.transform()
 
       _ ->
         md
     end
   end
 
-  def markdown_to_html(md) do
-    markdown(md) |> Phoenix.HTML.raw()
+  def markdown_to_html(md, link_type) do
+    markdown(md, link_type) |> Phoenix.HTML.raw()
   end
 end

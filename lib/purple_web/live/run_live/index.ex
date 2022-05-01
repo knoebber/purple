@@ -22,15 +22,15 @@ defmodule PurpleWeb.RunLive.Index do
     |> assign(:run, nil)
   end
 
-  defp list_runs do
-    Activities.list_runs()
+  defp load_runs(socket, tag \\ "") do
+    assign(socket, :runs, Activities.list_runs(tag))
   end
 
   @impl Phoenix.LiveView
   def handle_params(params, _session, socket) do
     {:noreply,
      socket
-     |> assign(:runs, list_runs())
+     |> load_runs(Map.get(params, "tag", ""))
      |> apply_action(socket.assigns.live_action, params)}
   end
 
@@ -39,7 +39,7 @@ defmodule PurpleWeb.RunLive.Index do
     run = Activities.get_run!(id)
     {:ok, _} = Activities.delete_run(run)
 
-    {:noreply, assign(socket, :runs, list_runs())}
+    {:noreply, load_runs(socket)}
   end
 
   @impl Phoenix.LiveView

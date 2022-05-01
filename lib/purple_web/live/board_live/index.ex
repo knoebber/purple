@@ -62,11 +62,11 @@ defmodule PurpleWeb.BoardLive.Index do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="flex">
+    <div class="flex mb-2">
       <h1>Items</h1>
       <%= live_patch(
         to: Routes.board_index_path(@socket, :new_item),
-        class: "text-xl self-end ml-1 mb-2")
+        class: "text-xl self-end ml-1")
       do %>
         <button>➕</button>
       <% end %>

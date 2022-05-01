@@ -54,7 +54,7 @@ defmodule PurpleWeb.RunLive.Show do
         </div>
       <% else %>
         <div class="markdown-content">
-          <%= Markdown.markdown_to_html(@run.description) %>
+          <%= Markdown.markdown_to_html(@run.description, :run) %>
         </div>
       <% end %>
       </section>
