@@ -24,23 +24,31 @@ defmodule PurpleWeb.RunLive.Show do
   def render(assigns) do
     ~H"""
     <h1>
-      <%= live_patch("Runs", to: Routes.run_index_path(@socket, :index)) %> /
-      <%= "#{@run.id}" %>
+      <%= live_patch("Runs", to: Routes.run_index_path(@socket, :index)) %> / <%= "#{@run.id}" %>
     </h1>
     <section class="mt-2 mb-2 window">
-      <div class="inline-links bg-purple-300 p-1">
-        <%= if @live_action == :edit do %>
-          <strong>Edit Item</strong>
-          <span>|</span>
-          <%= live_patch("Cancel",
-            to: Routes.run_show_path(@socket, :show, @run)
-          ) %>
-        <% else %>
-          <%= live_patch(
-            "Edit",
-            to: Routes.run_show_path(@socket, :edit, @run)
-          ) %>
-        <% end %>
+      <div class="flex justify-between bg-purple-300 p-1">
+        <div class="inline-links">
+        <strong>
+          <%= @run.miles %> miles@<%= format_pace(@run.miles, @run.seconds) %>
+        </strong>
+        <span>|</span>
+          <%= if @live_action == :edit do %>
+            <strong>Edit Item</strong>
+            <span>|</span>
+            <%= live_patch("Cancel",
+              to: Routes.run_show_path(@socket, :show, @run)
+            ) %>
+          <% else %>
+            <%= live_patch(
+              "Edit",
+              to: Routes.run_show_path(@socket, :edit, @run)
+            ) %>
+          <% end %>
+        </div>
+        <i>
+          <%= format_date(@run.date) %>
+        </i>
       </div>
       <%= if @live_action == :edit do %>
         <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
@@ -57,7 +65,7 @@ defmodule PurpleWeb.RunLive.Show do
           <%= Markdown.markdown_to_html(@run.description, :run) %>
         </div>
       <% end %>
-      </section>
+    </section>
     """
   end
 end
