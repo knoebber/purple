@@ -64,8 +64,6 @@ defmodule PurpleWeb.Router do
 
     live_session :default, on_mount: PurpleWeb.UserAuthLive do
       live "/runs", RunLive.Index, :index
-      live "/runs/new", RunLive.Index, :new
-      live "/runs/:id/edit", RunLive.Index, :edit
       live "/runs/:id", RunLive.Show, :show
       live "/runs/:id/show/edit", RunLive.Show, :edit
 

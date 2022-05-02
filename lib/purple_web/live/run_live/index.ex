@@ -4,6 +4,20 @@ defmodule PurpleWeb.RunLive.Index do
   alias Purple.Activities
   alias Purple.Activities.Run
 
+  defp index_path(params, new_params = %{}) do
+    Routes.run_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
+  end
+
+  defp index_path(params, :new), do: index_path(params, %{action: "new"})
+  defp index_path(params, :edit, run_id), do: index_path(params, %{action: "edit", id: run_id})
+
+  defp index_path(params) do
+    index_path(
+      Map.reject(params, fn {key, _} -> key in ["action", "id"] end),
+      %{}
+    )
+  end
+
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Run")
@@ -16,22 +30,36 @@ defmodule PurpleWeb.RunLive.Index do
     |> assign(:run, %Run{})
   end
 
-  defp apply_action(socket, :index, _params) do
+  defp apply_action(socket, _, _) do
     socket
     |> assign(:page_title, "Runs")
     |> assign(:run, nil)
   end
 
-  defp load_runs(socket, tag \\ "") do
-    assign(socket, :runs, Activities.list_runs(tag))
+  defp assign_runs(socket, tag \\ "") do
+    socket
+    |> assign(:runs, Activities.list_runs(tag))
+    |> assign(:weekly_total, Activities.sum_miles_in_current_week())
+  end
+
+  defp get_action(params) do
+    case params do
+      %{"action" => "edit", "id" => _} -> :edit
+      %{"action" => "new"} -> :new
+      _ -> :index
+    end
   end
 
   @impl Phoenix.LiveView
   def handle_params(params, _session, socket) do
+    action = get_action(params)
+
     {:noreply,
      socket
-     |> load_runs(Map.get(params, "tag", ""))
-     |> apply_action(socket.assigns.live_action, params)}
+     |> assign(:params, params)
+     |> assign(:action, action)
+     |> assign_runs(Map.get(params, "tag", ""))
+     |> apply_action(action, params)}
   end
 
   @impl Phoenix.LiveView
@@ -39,7 +67,7 @@ defmodule PurpleWeb.RunLive.Index do
     run = Activities.get_run!(id)
     {:ok, _} = Activities.delete_run(run)
 
-    {:noreply, load_runs(socket)}
+    {:noreply, assign_runs(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -48,24 +76,24 @@ defmodule PurpleWeb.RunLive.Index do
     <div class="flex">
       <h1>Runs</h1>
       <%= live_patch(
-        to: Routes.run_index_path(@socket, :new),
+        to: index_path(@params, :new),
         class: "text-xl self-end ml-1 mr-1")
     do %>
         <button>➕</button>
       <% end %>
       <i class="self-end">
-        <%= Activities.sum_miles_in_current_week %> this week
+        <%= @weekly_total %> this week
       </i>
     </div>
 
-    <%= if @live_action in [:new, :edit] do %>
-      <.modal return_to={Routes.run_index_path(@socket, :index)} title={@page_title}>
+    <%= if @action in [:new, :edit] do %>
+      <.modal return_to={index_path(@params)} title={@page_title}>
         <.live_component
           module={PurpleWeb.RunLive.FormComponent}
           id={@run.id || :new}
-          action={@live_action}
+          action={@action}
           run={@run}
-          return_to={Routes.run_index_path(@socket, :index)}
+          return_to={index_path(@params)}
         />
       </.modal>
     <% end %>
@@ -96,7 +124,7 @@ defmodule PurpleWeb.RunLive.Index do
               <%= format_date(run.date, :dayname) %>
             </td>
             <td>
-              <%= live_patch("Edit", to: Routes.run_index_path(@socket, :edit, run)) %>
+              <%= live_patch("Edit", to: index_path(@params, :edit, run.id)) %>
             </td>
             <td>
               <%= link("Delete",
