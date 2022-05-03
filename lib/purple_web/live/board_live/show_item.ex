@@ -6,10 +6,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   alias Purple.Uploads
   alias PurpleWeb.Markdown
 
-  defp page_title(item_id, :show_item), do: "Item #{item_id}"
+  defp page_title(item_id, :show), do: "Item #{item_id}"
   defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
-  defp page_title(_, :create_item_entry), do: "Create Item Entry"
-  defp page_title(_, :edit_item_entry), do: "Edit Item Entry"
+  defp page_title(_, :create_entry), do: "Create Item Entry"
+  defp page_title(_, :edit_entry), do: "Edit Item Entry"
 
   defp assign_uploads(socket, item_id) do
     files = Uploads.get_files_by_item(item_id)
@@ -28,7 +28,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     |> assign(:entries, Board.get_item_entries(item_id))
   end
 
-  defp apply_action(socket, :edit_item_entry, %{"id" => item_id, "entry_id" => entry_id}) do
+  defp apply_action(socket, :edit_entry, %{"id" => item_id, "entry_id" => entry_id}) do
     socket = assign_default_params(socket, item_id)
 
     editable_entry = get_entry(socket, entry_id)
@@ -44,7 +44,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))
   end
 
-  defp apply_action(socket, :create_item_entry, %{"id" => item_id}) do
+  defp apply_action(socket, :create_entry, %{"id" => item_id}) do
     socket
     |> assign_default_params(item_id)
     |> assign(:new_entry_changeset, Board.change_item_entry(%ItemEntry{}))
@@ -60,11 +60,11 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     end)
   end
 
-  defp save_entry(_socket, :create_item_entry, params) do
+  defp save_entry(_socket, :create_entry, params) do
     Board.create_item_entry(params)
   end
 
-  defp save_entry(socket, :edit_item_entry, params) do
+  defp save_entry(socket, :edit_entry, params) do
     Board.update_item_entry(socket.assigns.editable_entry, params)
   end
 
@@ -207,7 +207,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             class: "no-underline font-mono"
           ) %>
           <%= live_patch("Edit",
-            to: Routes.board_show_item_path(@socket, :edit_item_entry, @item.id, @entry.id)
+            to: Routes.board_show_item_path(@socket, :edit_entry, @item.id, @entry.id)
           ) %>
           <span>|</span>
           <%= link("Delete",
@@ -259,7 +259,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         <span>|</span>
         <%= live_patch(
           "Create Entry",
-          to: Routes.board_show_item_path(@socket, :create_item_entry, @item)
+          to: Routes.board_show_item_path(@socket, :create_entry, @item)
         ) %>
       </div>
       <%= if @live_action == :edit_item do %>
@@ -346,7 +346,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <% end %>
     </section>
 
-    <%= if @live_action == :create_item_entry do %>
+    <%= if @live_action == :create_entry do %>
       <section class="window mt-2 mb-2">
         <div class="flex justify-between bg-purple-300 p-1">
           <div class="inline-links">
@@ -367,7 +367,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     <div id="entry-container" phx-hook="Sortable">
       <%= for entry <- @entries do %>
         <section class="window mt-2 mb-2 js-sortable-item" id={Integer.to_string(entry.id)}>
-          <%= if @live_action == :edit_item_entry and @editable_entry.id == entry.id do %>
+          <%= if @live_action == :edit_entry and @editable_entry.id == entry.id do %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
             <.entry_form
               rows={@entry_rows}

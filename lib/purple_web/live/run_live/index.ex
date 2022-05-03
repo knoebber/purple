@@ -36,30 +36,28 @@ defmodule PurpleWeb.RunLive.Index do
     |> assign(:run, nil)
   end
 
-  defp assign_runs(socket, tag \\ "") do
+  defp assign_runs(socket, params \\ %{}) do
     socket
-    |> assign(:runs, Activities.list_runs(tag))
+    |> assign(:runs, Activities.list_runs(Map.get(params, "tag", "")))
     |> assign(:weekly_total, Activities.sum_miles_in_current_week())
   end
 
-  defp get_action(params) do
-    case params do
-      %{"action" => "edit", "id" => _} -> :edit
-      %{"action" => "new"} -> :new
-      _ -> :index
-    end
-  end
+  defp get_action(%{"action" => "edit", "id" => _}), do: :edit
+  defp get_action(%{"action" => "new"}), do: :new
+  defp get_action(_), do: :index
 
   @impl Phoenix.LiveView
   def handle_params(params, _session, socket) do
     action = get_action(params)
 
-    {:noreply,
-     socket
-     |> assign(:params, params)
-     |> assign(:action, action)
-     |> assign_runs(Map.get(params, "tag", ""))
-     |> apply_action(action, params)}
+    {
+      :noreply,
+      socket
+      |> assign(:params, params)
+      |> assign(:action, action)
+      |> assign_runs(params)
+      |> apply_action(action, params)
+    }
   end
 
   @impl Phoenix.LiveView

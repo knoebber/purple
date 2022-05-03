@@ -65,19 +65,15 @@ defmodule PurpleWeb.Router do
     live_session :default, on_mount: PurpleWeb.UserAuthLive do
       live "/runs", RunLive.Index, :index
       live "/runs/:id", RunLive.Show, :show
-      live "/runs/:id/show/edit", RunLive.Show, :edit
+      live "/runs/:id/edit", RunLive.Show, :edit
 
       live "/board", BoardLive.Index, :index
-      live "/board/item/:id/edit", BoardLive.Index, :edit_item
-
+      live "/board/item/:id", BoardLive.ShowItem, :show
+      live "/board/item/:id/edit", BoardLive.ShowItem, :edit_item
+      live "/board/item/:id/entry/new", BoardLive.ShowItem, :create_entry
+      live "/board/item/:id/entry/:entry_id", BoardLive.ShowItem, :edit_entry
       live "/board/item/:id/files/:file_id", BoardLive.ShowItemFile, :show
       live "/board/item/:id/files", BoardLive.ItemGallery, :index
-
-      live "/board/item/:id/show", BoardLive.ShowItem, :show_item
-      live "/board/item/:id/show/edit", BoardLive.ShowItem, :edit_item
-      live "/board/item/:id/show/entry/new", BoardLive.ShowItem, :create_item_entry
-      live "/board/item/:id/show/entry/:entry_id", BoardLive.ShowItem, :edit_item_entry
-      live "/board/new_item", BoardLive.Index, :new_item
     end
   end
 
