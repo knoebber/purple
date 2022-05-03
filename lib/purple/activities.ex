@@ -17,6 +17,9 @@ defmodule Purple.Activities do
     })
   end
 
+  defp float_or_0(n) when is_float(n), do: n
+  defp float_or_0(_), do: 0.0
+
   @doc """
   Returns the sum of miles in the current week.
   """
@@ -30,6 +33,7 @@ defmodule Purple.Activities do
     Run
     |> where([d], d.date >= ^week_start)
     |> Repo.aggregate(:sum, :miles)
+    |> float_or_0
     |> Float.round(2)
   end
 
