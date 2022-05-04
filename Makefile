@@ -26,4 +26,4 @@ assets:
 migrate:
 	mix ecto.migrate
 
-.PHONY: all deps create_db js compile assets migrate
+.PHONY: all hex deps create_db js compile assets migrate
