@@ -113,7 +113,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           :noreply,
           socket
           |> put_flash(:info, "Entry saved")
-          |> push_patch(to: Routes.board_show_item_path(socket, :show_item, entry.item_id))
+          |> push_patch(to: Routes.board_show_item_path(socket, :show, entry.item_id))
         }
 
       _ ->
@@ -170,7 +170,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   defp cancel_link(assigns) do
     ~H"""
     <%= live_patch("Cancel",
-      to: Routes.board_show_item_path(@socket, :show_item, @item.id)
+      to: Routes.board_show_item_path(@socket, :show, @item.id)
     ) %>
     """
   end
@@ -269,7 +269,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             id={@item.id}
             action={@live_action}
             item={@item}
-            return_to={Routes.board_show_item_path(@socket, :show_item, @item)}
+            return_to={Routes.board_show_item_path(@socket, :show, @item)}
           />
         </div>
       <% else %>
@@ -301,7 +301,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             id={"item-#{@item.id}-upload"}
             max_entries={20}
             module={PurpleWeb.LiveUpload}
-            return_to={Routes.board_show_item_path(@socket, :show_item, @item.id)}
+            return_to={Routes.board_show_item_path(@socket, :show, @item.id)}
           />
         </div>
         <%= if length(@image_refs) > 0 do %>
