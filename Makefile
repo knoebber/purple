@@ -8,7 +8,10 @@ all: deps create_db js compile assets migrate
 hex:
 	mix local.hex --force
 
-deps: hex
+rebar:
+	mix local.rebar --force
+
+deps: hex rebar
 	mix deps.get $(DEPS_FLAGS)
 
 create_db:
@@ -26,4 +29,4 @@ assets:
 migrate:
 	mix ecto.migrate
 
-.PHONY: all hex deps create_db js compile assets migrate
+.PHONY: all hex rebar deps create_db js compile assets migrate
