@@ -5,7 +5,10 @@ endif
 
 all: deps create_db js compile assets migrate
 
-deps:
+hex:
+	mix local.hex --force
+
+deps: hex
 	mix deps.get $(DEPS_FLAGS)
 
 create_db:
