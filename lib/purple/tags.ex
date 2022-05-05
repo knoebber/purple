@@ -48,7 +48,9 @@ defmodule Purple.Tags do
     |> Enum.uniq()
   end
 
-  def extract_tags(%Purple.Activities.Run{} = run), do: extract_tags(run.description)
+  def extract_tags(%Purple.Activities.Run{} = run) do
+    extract_tags(run.description)
+  end
 
   def extract_tags(%Purple.Board.Item{} = item) do
     item.entries
