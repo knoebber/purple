@@ -10,6 +10,9 @@ defmodule Purple.Uploads do
   defp remove_repeating_underscore(s), do: Regex.replace(~r/__+/, s, "_")
   defp remove_non_alphanum(s), do: Regex.replace(~r/[^a-z0-9]/, s, "_")
 
+  defp convert_file_type(f = %FileRef{extension: ".heic"}), do: %FileRef{f | extension: ".jpeg"}
+  defp convert_file_type(f = %FileRef{}), do: f
+
   def thumb_format, do: "png"
   def thumb_x, do: 250
   def thumb_y, do: 250
@@ -112,12 +115,37 @@ defmodule Purple.Uploads do
     )
   end
 
+  # TODO: add custom is_image guard
+  defp post_process_file!(%FileRef{image_height: nil} = file_ref), do: file_ref
+
+  defp post_process_file!(%FileRef{} = file_ref) do
+    converted = convert_file_type(file_ref)
+    changed = converted.extension != file_ref.extension
+
+    img = Mogrify.open(get_full_upload_path(file_ref))
+
+    if changed do
+      Mogrify.format(img, String.trim(converted.extension, "."))
+    else
+      img
+    end
+    |> Mogrify.auto_orient()
+    |> Mogrify.save(in_place: true)
+
+    if changed do
+      Repo.update!(FileRef.changeset(file_ref, Map.from_struct(converted)))
+    else
+      file_ref
+    end
+  end
+
   def save_file_upload(source_path, params) do
     case Repo.insert(FileRef.changeset(%FileRef{}, params)) do
       {:ok, file_ref} ->
         file_ref
         |> write_upload!(source_path)
         |> write_thumbnail!()
+        |> post_process_file!
 
       {:error, changeset} ->
         {:error, changeset}
