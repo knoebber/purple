@@ -20,7 +20,7 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
     <h1>
       Board /
       <%= live_patch("Item #{@item_id}",
-        to: Routes.board_show_item_path(@socket, :show_item, @item_id)
+        to: Routes.board_show_item_path(@socket, :show, @item_id)
       ) %> / Gallery
     </h1>
     <%= for ref <- @image_refs do %>
