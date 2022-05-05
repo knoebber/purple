@@ -315,7 +315,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
                   value={Routes.file_path(@socket, :show, ref)}
                   class="cursor-pointer w-1/6"
                 >
-                  🧩
+                  🔗
                 </div>
                 <%= live_patch(
                   to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
@@ -355,12 +355,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.cancel_link item={@item} socket={@socket} />
           </div>
         </div>
-        <.entry_form
-          rows={5}
-          action="save_entry"
-          changeset={@new_entry_changeset}
-          item_id={@item.id}
-        />
+        <.entry_form rows={5} action="save_entry" changeset={@new_entry_changeset} item_id={@item.id} />
       </section>
     <% end %>
 
