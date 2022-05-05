@@ -39,7 +39,7 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
         to: Routes.board_index_path(@socket, :index)
       ) %> /
       <%= live_patch("Item #{@item_id}",
-        to: Routes.board_show_item_path(@socket, :show_item, @item_id)
+        to: Routes.board_show_item_path(@socket, :show, @item_id)
       ) %> / <%= @page_title %>
     </h1>
 
