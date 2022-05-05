@@ -108,11 +108,7 @@ defmodule PurpleWeb.LiveUpload do
        }}
     )
 
-    {
-      :noreply,
-      socket
-      |> set_files_to_socket(result.upload_config)
-    }
+    {:noreply, set_files_to_socket(socket, result.upload_config)}
   end
 
   @impl Phoenix.LiveComponent
@@ -143,18 +139,13 @@ defmodule PurpleWeb.LiveUpload do
   def render(assigns) do
     ~H"""
     <div phx-drop-target={@uploads.files.ref} phx-target={@myself}>
-      <form
-        id="upload-form"
-        phx-change="validate"
-        phx-submit="upload"
-        phx-target={@myself}
-      >
+      <form id="upload-form" phx-change="validate" phx-submit="upload" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= live_file_input(@uploads.files) %>
         </div>
-      <%= if Enum.count(@uploads.files.entries) > 0 do %>
-        <button type="submit">Upload</button>
-      <% end %>
+        <%= if Enum.count(@uploads.files.entries) > 0 do %>
+          <button type="submit">Upload</button>
+        <% end %>
       </form>
       <%= if Enum.count(@uploads.files.entries) > 0 do %>
         <div class="mb-3 grid xs:grid-cols-1 sm:grid-cols-3">
@@ -171,7 +162,11 @@ defmodule PurpleWeb.LiveUpload do
                 Cancel
               </a>
               <%= live_img_preview(entry) %>
-              <form class="w-5/6 self-start flex items-end" phx-change="update_client_name" phx-target={@myself}>
+              <form
+                class="w-5/6 self-start flex items-end"
+                phx-change="update_client_name"
+                phx-target={@myself}
+              >
                 <input
                   class="p-0 text-sm w-5/6 mt-2"
                   name={entry.ref}
