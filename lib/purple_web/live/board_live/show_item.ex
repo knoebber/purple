@@ -195,7 +195,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <div class="inline-links">
         <%= if @editing do %>
           <strong>
-            Edit Entry
+            Edit
           </strong>
           <span>|</span>
           <.cancel_link item={@item} socket={@socket} />
@@ -239,7 +239,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <%= if @live_action == :edit_item do %>
-            <strong>Edit Item</strong>
+            <strong>Edit</strong>
             <span>|</span>
             <.cancel_link item={@item} socket={@socket} />
           <% else %>
