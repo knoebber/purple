@@ -14,10 +14,12 @@ defmodule PurpleWeb.RunLive.Show do
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => id}, _, socket) do
-    {:noreply,
-     socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:run, Activities.get_run!(id))}
+    {
+      :noreply,
+      socket
+      |> assign(:page_title, page_title(socket.assigns.live_action))
+      |> assign(:run, Activities.get_run!(id))
+    }
   end
 
   @impl Phoenix.LiveView
@@ -29,10 +31,10 @@ defmodule PurpleWeb.RunLive.Show do
     <section class="mt-2 mb-2 window">
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
-        <strong>
-          <%= @run.miles %> miles@<%= format_pace(@run.miles, @run.seconds) %>
-        </strong>
-        <span>|</span>
+          <strong>
+            <%= @run.miles %> miles@<%= format_pace(@run.miles, @run.seconds) %>
+          </strong>
+          <span>|</span>
           <%= if @live_action == :edit do %>
             <strong>Edit Item</strong>
             <span>|</span>

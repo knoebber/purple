@@ -274,7 +274,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         </div>
       <% else %>
         <div class="markdown-content">
-          <%= Markdown.markdown_to_html("## #{@item.description}", :board) %>
+          <%= Markdown.markdown_to_html("# #{@item.description}", :board) %>
         </div>
       <% end %>
       <div>

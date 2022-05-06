@@ -35,6 +35,15 @@ defmodule PurpleWeb.Markdown do
       {"a", _, _, _} = node ->
         Earmark.AstTools.merge_atts_in_node(node, target: "_blank")
 
+      {"h1", atts, children, m} ->
+        {"h2", atts, children, m}
+
+      {"h2", atts, children, m} ->
+        {"h3", atts, children, m}
+
+      {"h3", atts, children, m} ->
+        {"h4", atts, children, m}
+
       {tag, atts, children, m} ->
         {tag, atts, map_ast(children, link_type, tag in Tags.valid_tag_parents()), m}
 
