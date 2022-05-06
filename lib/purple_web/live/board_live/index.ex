@@ -64,13 +64,6 @@ defmodule PurpleWeb.BoardLive.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("toggle_complete", %{"id" => id}, socket) do
-    item = Board.get_item!(id)
-    Board.set_item_complete!(item, !item.completed_at)
-    {:noreply, assign_items(socket)}
-  end
-
-  @impl Phoenix.LiveView
   def handle_event("toggle_pin", %{"id" => id}, socket) do
     item = Board.get_item!(id)
     Board.pin_item(item, !item.is_pinned)
@@ -83,17 +76,6 @@ defmodule PurpleWeb.BoardLive.Index do
     |> Board.delete_item!()
 
     {:noreply, assign_items(socket)}
-  end
-
-  def toggle_complete(assigns) do
-    ~H"""
-    <input
-      phx-click="toggle_complete"
-      phx-value-id={@item.id}
-      type="checkbox"
-      checked={!!@item.completed_at}
-    />
-    """
   end
 
   @impl Phoenix.LiveView
@@ -125,8 +107,8 @@ defmodule PurpleWeb.BoardLive.Index do
           <th>Item</th>
           <th>Description</th>
           <th>Priority</th>
+          <th>Status</th>
           <th>Created</th>
-          <th>Complete</th>
           <th></th>
           <th></th>
           <th></th>
@@ -148,14 +130,11 @@ defmodule PurpleWeb.BoardLive.Index do
             <td class="text-center">
               <%= item.priority %>
             </td>
-            <td>
-              <%= format_date(item.inserted_at) %>
-            </td>
             <td class="text-center">
-              <.toggle_complete item={item} />
+              <%= item.status %>
             </td>
             <td>
-              <%= live_patch("Edit", to: index_path(@params, :edit_item, item.id)) %>
+              <%= format_date(item.inserted_at, :mdy) %>
             </td>
             <td>
               <%= link("📌",
@@ -164,6 +143,9 @@ defmodule PurpleWeb.BoardLive.Index do
                 phx_value_id: item.id,
                 to: "#"
               ) %>
+            </td>
+            <td>
+              <%= live_patch("Edit", to: index_path(@params, :edit_item, item.id)) %>
             </td>
             <td>
               <%= link("Delete",
