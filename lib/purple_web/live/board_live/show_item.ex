@@ -236,29 +236,34 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <%= "Item #{@item.id}" %>
     </h1>
     <section class="mt-2 mb-2 window">
-      <div class="inline-links bg-purple-300 p-1">
-        <%= if @live_action == :edit_item do %>
-          <strong>Edit Item</strong>
+      <div class="flex justify-between bg-purple-300 p-1">
+        <div class="inline-links">
+          <%= if @live_action == :edit_item do %>
+            <strong>Edit Item</strong>
+            <span>|</span>
+            <.cancel_link item={@item} socket={@socket} />
+          <% else %>
+            <strong><%= @item.status %></strong>
+            <span>|</span>
+            <%= live_patch(
+              "Edit",
+              to: Routes.board_show_item_path(@socket, :edit_item, @item)
+            ) %>
+          <% end %>
           <span>|</span>
-          <.cancel_link item={@item} socket={@socket} />
-        <% else %>
-          <%= live_patch(
-            "Edit",
-            to: Routes.board_show_item_path(@socket, :edit_item, @item)
+          <%= link("Delete",
+            phx_click: "delete",
+            phx_value_id: @item.id,
+            data: [confirm: "Are you sure?"],
+            to: "#"
           ) %>
-        <% end %>
-        <span>|</span>
-        <%= link("Delete",
-          phx_click: "delete",
-          phx_value_id: @item.id,
-          data: [confirm: "Are you sure?"],
-          to: "#"
-        ) %>
-        <span>|</span>
-        <%= live_patch(
-          "Create Entry",
-          to: Routes.board_show_item_path(@socket, :create_entry, @item)
-        ) %>
+          <span>|</span>
+          <%= live_patch(
+            "Create Entry",
+            to: Routes.board_show_item_path(@socket, :create_entry, @item)
+          ) %>
+        </div>
+        <.timestamp model={@item} />
       </div>
       <%= if @live_action == :edit_item do %>
         <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">

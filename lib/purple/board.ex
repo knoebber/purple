@@ -122,6 +122,10 @@ defmodule Purple.Board do
     |> Repo.all()
   end
 
+  def item_status_mappings do
+    Ecto.Enum.mappings(Item, :status)
+  end
+
   def delete_entry!(%ItemEntry{} = item_entry) do
     Repo.delete!(item_entry)
   end

@@ -3,11 +3,12 @@ defmodule Purple.Board.Item do
   import Ecto.Changeset
 
   schema "items" do
-    field :description, :string
-    field :priority, :integer, default: 3
     field :completed_at, :naive_datetime
+    field :description, :string
     field :is_pinned, :boolean, default: false
+    field :priority, :integer, default: 3
     field :show_files, :boolean, default: false
+    field :status, Ecto.Enum, values: [:TODO, :INFO, :DONE], default: :TODO
 
     timestamps()
 
@@ -15,18 +16,35 @@ defmodule Purple.Board.Item do
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.ItemTag
   end
 
+  defp set_completed_at(changeset) do
+    case fetch_change(changeset, :status) do
+      {:ok, :DONE} ->
+        put_change(
+          changeset,
+          :completed_at,
+          NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        )
+
+      _ ->
+        changeset
+    end
+  end
+
   def changeset(item, attrs) do
     item
     |> cast(attrs, [
-      :description,
-      :priority,
       :completed_at,
+      :description,
       :is_pinned,
-      :show_files
+      :priority,
+      :show_files,
+      :status
     ])
     |> validate_required([
       :description,
-      :priority
+      :priority,
+      :status
     ])
+    |> set_completed_at
   end
 end
