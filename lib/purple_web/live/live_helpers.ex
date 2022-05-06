@@ -1,8 +1,17 @@
 defmodule PurpleWeb.LiveHelpers do
   import Phoenix.LiveView
   import Phoenix.LiveView.Helpers
+  import PurpleWeb.Formatters
 
   alias Phoenix.LiveView.JS
+
+  def timestamp(assigns) do
+    ~H"""
+    <i title={"updated: #{format_date(@model.updated_at)}"}>
+      <%= format_date(@model.inserted_at) %>
+    </i>
+    """
+  end
 
   @doc """
   Renders a live component inside a modal.

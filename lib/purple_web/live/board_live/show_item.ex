@@ -223,9 +223,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <%= String.slice(Markdown.strip_markdown(@entry.content), 0, 100) %>
         </strong>
       <% end %>
-      <i>
-        <%= format_date(@entry.updated_at) %>
-      </i>
+      <.timestamp model={@entry} />
     </div>
     """
   end

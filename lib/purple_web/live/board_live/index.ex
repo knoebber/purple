@@ -3,7 +3,6 @@ defmodule PurpleWeb.BoardLive.Index do
 
   alias Purple.Board
   alias Purple.Board.Item
-  alias PurpleWeb.BoardLive.Components
 
   defp index_path(params, new_params = %{}) do
     Routes.board_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
