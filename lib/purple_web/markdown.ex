@@ -35,6 +35,7 @@ defmodule PurpleWeb.Markdown do
       {"a", _, _, _} = node ->
         Earmark.AstTools.merge_atts_in_node(node, target: "_blank")
 
+      # TODO - breaks parsing tags in headers.
       {"h1", atts, children, m} ->
         {"h2", atts, children, m}
 

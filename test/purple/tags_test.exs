@@ -25,6 +25,9 @@ defmodule Purple.TagsTest do
         https://example.com#linkanchor
 
         normal #paragraph hashtag
+        ---
+        * https://github.com/knoebber/nicolasknoebber.com/commit/7ffba4a96283a30a2d4ba91243814ce8dbb5a2a6
+        * https://runsignup.com/Race/Results/110531?rsus=100-200-bb2f0d15-6ebe-4ce9-b695-5a9efb2a5891#resultSetId-263870;perpage:100
         """)
         |> Enum.sort()
 

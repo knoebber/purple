@@ -12,7 +12,7 @@ defmodule Purple.ActivitiesTest do
 
     test "list_runs/0 returns all runs" do
       run = run_fixture()
-      assert Activities.list_runs() == [run]
+      assert Activities.list_runs(%{}) == [run]
     end
 
     test "get_run!/1 returns the run with given id" do

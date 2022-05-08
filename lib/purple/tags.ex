@@ -51,7 +51,7 @@ defmodule Purple.Tags do
   end
 
   def extract_tags(%Purple.Activities.Run{} = run) do
-    extract_tags(run.description)
+    extract_tags_from_markdown(run.description)
   end
 
   def extract_tags(%Purple.Board.Item{} = item) do
