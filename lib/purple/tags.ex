@@ -183,7 +183,7 @@ defmodule Purple.Tags do
         from(m in model,
           select: ^[join_col],
           join: t in assoc(m, :tag),
-          where: t.name == ^tagname
+          where: ilike(t.name, ^tagname)
         )
       )
     )
