@@ -95,7 +95,9 @@ defmodule PurpleWeb do
       import Phoenix.View
 
       import PurpleWeb.ErrorHelpers
+      import PurpleWeb.Filter
       import PurpleWeb.Formatters
+
       alias PurpleWeb.Router.Helpers, as: Routes
     end
   end

@@ -3,6 +3,7 @@ defmodule PurpleWeb.BoardLive.Index do
 
   alias Purple.Board
   alias Purple.Board.Item
+  alias Purple.Tags
 
   defp index_path(params, new_params = %{}) do
     Routes.board_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
@@ -18,7 +19,10 @@ defmodule PurpleWeb.BoardLive.Index do
 
   defp index_path(params) do
     index_path(
-      Map.reject(params, fn {key, _} -> key in ["action", "id"] end),
+      Map.reject(
+        params,
+        fn {key, val} -> key in ["action", "id"] or val == "" end
+      ),
       %{}
     )
   end
@@ -41,8 +45,21 @@ defmodule PurpleWeb.BoardLive.Index do
     |> assign(:item, nil)
   end
 
-  defp assign_items(socket, params \\ %{}) do
-    assign(socket, :items, Board.list_items(Map.get(params, "tag", "")))
+  defp make_tag_select_options do
+    [
+      # Emacs isn't displaying an emoji in below string
+      {"🏷 All tags", ""}
+      | Enum.map(
+          Tags.list_item_tags(),
+          fn %{count: count, name: name} -> {"#{name} (#{count})", name} end
+        )
+    ]
+  end
+
+  defp assign_items(socket) do
+    socket
+    |> assign(:items, Board.list_items(socket.assigns.filter.changes))
+    |> assign(:tag_options, make_tag_select_options())
   end
 
   defp get_action(%{"action" => "edit_item", "id" => _}), do: :edit_item
@@ -56,11 +73,17 @@ defmodule PurpleWeb.BoardLive.Index do
     {
       :noreply,
       socket
+      |> assign(:filter, make_filter(params))
       |> assign(:params, params)
       |> assign(:action, action)
-      |> assign_items(params)
+      |> assign_items()
       |> apply_action(action, params)
     }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("search", %{"filter" => params}, socket) do
+    {:noreply, push_patch(socket, to: index_path(params), replace: true)}
   end
 
   @impl Phoenix.LiveView
@@ -72,8 +95,7 @@ defmodule PurpleWeb.BoardLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
-    Board.get_item!(id)
-    |> Board.delete_item!()
+    Board.get_item!(id) |> Board.delete_item!()
 
     {:noreply, assign_items(socket)}
   end
@@ -101,6 +123,17 @@ defmodule PurpleWeb.BoardLive.Index do
         />
       </.modal>
     <% end %>
+    <.form
+      class="flex mb-2 gap-1"
+      for={@filter}
+      let={f}
+      method="get"
+      phx-change="search"
+      phx-submit="search"
+    >
+      <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
+      <%= select(f, :tag, @tag_options) %>
+    </.form>
     <table class="window">
       <thead class="bg-purple-300">
         <tr>
@@ -116,7 +149,7 @@ defmodule PurpleWeb.BoardLive.Index do
       </thead>
       <tbody>
         <%= for item <- @items do %>
-          <tr>
+          <tr id={"item-#{item.id}"}>
             <td>
               <%= live_redirect(item.id,
                 to: Routes.board_show_item_path(@socket, :show, item)

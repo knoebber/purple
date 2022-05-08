@@ -1,5 +1,7 @@
 defmodule Purple.Tags do
   alias Purple.Repo
+  alias Purple.Tags.ItemTag
+  alias Purple.Tags.RunTag
   alias Purple.Tags.Tag
 
   import Ecto.Query
@@ -155,11 +157,57 @@ defmodule Purple.Tags do
 
   def sync_item_tags(item_id) do
     item = Purple.Board.get_item!(item_id, :entries, :tags)
-    sync_model_tags(Purple.Tags.ItemTag, item, %{item_id: item_id})
+    sync_model_tags(ItemTag, item, %{item_id: item_id})
   end
 
   def sync_run_tags(run_id) do
     run = Purple.Activities.get_run!(run_id, :tags)
-    sync_model_tags(Purple.Tags.RunTag, run, %{run_id: run_id})
+    sync_model_tags(RunTag, run, %{run_id: run_id})
+  end
+
+  def filter_by_tag(query, %{tag: tagname}, :item) do
+    apply_tag_filter(query, ItemTag, tagname, :item_id)
+  end
+
+  def filter_by_tag(query, %{tag: tagname}, :run) do
+    apply_tag_filter(query, RunTag, tagname, :run_id)
+  end
+
+  def filter_by_tag(query, _, _), do: query
+
+  defp apply_tag_filter(query, model, tagname, join_col) do
+    where(
+      query,
+      [parent],
+      parent.id in subquery(
+        from(m in model,
+          select: ^[join_col],
+          join: t in assoc(m, :tag),
+          where: t.name == ^tagname
+        )
+      )
+    )
+  end
+
+  def list_tags do
+    Repo.all(Tag)
+  end
+
+  defp list_model_tags(model) when is_atom(model) do
+    Repo.all(
+      from m in model,
+        join: t in assoc(m, :tag),
+        select: %{count: count(t.id), id: t.id, name: t.name},
+        group_by: t.id,
+        order_by: t.name
+    )
+  end
+
+  def list_item_tags do
+    list_model_tags(ItemTag)
+  end
+
+  def list_run_tags do
+    list_model_tags(RunTag)
   end
 end

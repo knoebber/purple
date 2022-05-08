@@ -1,6 +1,7 @@
 defmodule Purple.Board do
-  alias Purple.Repo
   alias Purple.Board.{ItemEntry, Item}
+  alias Purple.Repo
+  alias Purple.Tags
 
   import Ecto.Query
 
@@ -99,26 +100,17 @@ defmodule Purple.Board do
     end)
   end
 
-  defp tag_filter(query, ""), do: query
-
-  defp tag_filter(query, tagname) do
-    where(
-      query,
-      [i],
-      i.id in subquery(
-        from(it in Purple.Tags.ItemTag,
-          select: it.item_id,
-          join: t in assoc(it, :tag),
-          where: t.name == ^tagname
-        )
-      )
-    )
+  defp item_text_search(query, %{query: q}) do
+    where(query, [i], ilike(i.description, ^"%#{q}%"))
   end
 
-  def list_items(tagname \\ "") do
+  defp item_text_search(query, _), do: query
+
+  def list_items(filter) do
     Item
     |> order_by(desc: :is_pinned, desc: :completed_at, asc: :priority)
-    |> tag_filter(tagname)
+    |> item_text_search(filter)
+    |> Tags.filter_by_tag(filter, :item)
     |> Repo.all()
   end
 

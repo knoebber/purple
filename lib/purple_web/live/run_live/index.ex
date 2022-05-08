@@ -38,7 +38,7 @@ defmodule PurpleWeb.RunLive.Index do
 
   defp assign_runs(socket, params \\ %{}) do
     socket
-    |> assign(:runs, Activities.list_runs(Map.get(params, "tag", "")))
+    |> assign(:runs, Activities.list_runs())
     |> assign(:weekly_total, Activities.sum_miles_in_current_week())
   end
 
