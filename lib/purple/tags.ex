@@ -203,11 +203,11 @@ defmodule Purple.Tags do
     )
   end
 
-  def list_item_tags do
+  def list_tags(:item) do
     list_model_tags(ItemTag)
   end
 
-  def list_run_tags do
+  def list_tags(:run) do
     list_model_tags(RunTag)
   end
 end

@@ -13,7 +13,7 @@ defmodule PurpleWeb.RunLive.Index do
 
   defp index_path(params) do
     index_path(
-      Map.reject(params, fn {key, _} -> key in ["action", "id"] end),
+      Map.reject(params, fn {key, val} -> key in ["action", "id"] or val == "" end),
       %{}
     )
   end
@@ -36,10 +36,11 @@ defmodule PurpleWeb.RunLive.Index do
     |> assign(:run, nil)
   end
 
-  defp assign_runs(socket, params \\ %{}) do
+  defp assign_runs(socket) do
     socket
-    |> assign(:runs, Activities.list_runs())
+    |> assign(:runs, Activities.list_runs(socket.assigns.filter.changes))
     |> assign(:weekly_total, Activities.sum_miles_in_current_week())
+    |> assign(:tag_options, Purple.Filter.make_tag_select_options(:run))
   end
 
   defp get_action(%{"action" => "edit", "id" => _}), do: :edit
@@ -53,11 +54,17 @@ defmodule PurpleWeb.RunLive.Index do
     {
       :noreply,
       socket
+      |> assign(:filter, Purple.Filter.make_filter(params))
       |> assign(:params, params)
       |> assign(:action, action)
-      |> assign_runs(params)
+      |> assign_runs()
       |> apply_action(action, params)
     }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("search", %{"filter" => params}, socket) do
+    {:noreply, push_patch(socket, to: index_path(params), replace: true)}
   end
 
   @impl Phoenix.LiveView
@@ -95,6 +102,17 @@ defmodule PurpleWeb.RunLive.Index do
         />
       </.modal>
     <% end %>
+    <.form
+      class="flex mb-2 gap-1"
+      for={@filter}
+      let={f}
+      method="get"
+      phx-change="search"
+      phx-submit="search"
+    >
+      <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
+      <%= select(f, :tag, @tag_options) %>
+    </.form>
     <table class="window mt-2">
       <thead class="bg-purple-300">
         <tr>

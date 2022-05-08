@@ -3,7 +3,6 @@ defmodule PurpleWeb.BoardLive.Index do
 
   alias Purple.Board
   alias Purple.Board.Item
-  alias Purple.Tags
 
   defp index_path(params, new_params = %{}) do
     Routes.board_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
@@ -45,21 +44,10 @@ defmodule PurpleWeb.BoardLive.Index do
     |> assign(:item, nil)
   end
 
-  defp make_tag_select_options do
-    [
-      # Emacs isn't displaying an emoji in below string
-      {"🏷 All tags", ""}
-      | Enum.map(
-          Tags.list_item_tags(),
-          fn %{count: count, name: name} -> {"#{name} (#{count})", name} end
-        )
-    ]
-  end
-
   defp assign_items(socket) do
     socket
     |> assign(:items, Board.list_items(socket.assigns.filter.changes))
-    |> assign(:tag_options, make_tag_select_options())
+    |> assign(:tag_options, Purple.Filter.make_tag_select_options(:item))
   end
 
   defp get_action(%{"action" => "edit_item", "id" => _}), do: :edit_item
@@ -73,7 +61,7 @@ defmodule PurpleWeb.BoardLive.Index do
     {
       :noreply,
       socket
-      |> assign(:filter, make_filter(params))
+      |> assign(:filter, Purple.Filter.make_filter(params))
       |> assign(:params, params)
       |> assign(:action, action)
       |> assign_items()

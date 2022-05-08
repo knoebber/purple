@@ -38,6 +38,21 @@ defmodule Purple.Activities do
     |> Float.round(2)
   end
 
+  defp run_text_search(query, %{query: q}) do
+    case Integer.parse(q) do
+      {i, extra} when extra in ["", "."] ->
+        where(query, [_], fragment("trunc(miles)") == ^i)
+
+      _ ->
+        case Float.parse(q) do
+          {f, ""} -> where(query, [_], fragment("round(miles::numeric, 1)") == ^Float.round(f, 1))
+          _ -> where(query, [r], ilike(r.description, ^"%#{q}%"))
+        end
+    end
+  end
+
+  defp run_text_search(query, _), do: query
+
   @doc """
   Returns the list of runs.
 
@@ -47,10 +62,11 @@ defmodule Purple.Activities do
       [%Run{}, ...]
 
   """
-  def list_runs() do
+  def list_runs(filter) do
     Run
     |> run_select
-    # |> Tags.filter_by_tag(:run, %{tag: tagname})
+    |> run_text_search(filter)
+    |> Tags.filter_by_tag(filter, :run)
     |> order_by(desc: :date)
     |> Repo.all()
   end
