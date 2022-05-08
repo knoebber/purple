@@ -14,11 +14,19 @@ defmodule PurpleWeb.RunLive.Show do
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => id}, _, socket) do
+    run = Activities.get_run!(id)
+
+    run_rows =
+      run.description
+      |> String.split("\n")
+      |> length()
+
     {
       :noreply,
       socket
       |> assign(:page_title, page_title(socket.assigns.live_action))
-      |> assign(:run, Activities.get_run!(id))
+      |> assign(:run, run)
+      |> assign(:run_rows, run_rows + 1)
     }
   end
 
@@ -58,6 +66,7 @@ defmodule PurpleWeb.RunLive.Show do
             module={PurpleWeb.RunLive.FormComponent}
             id={@run.id}
             action={@live_action}
+            rows={@run_rows}
             run={@run}
             return_to={Routes.run_show_path(@socket, :show, @run)}
           />

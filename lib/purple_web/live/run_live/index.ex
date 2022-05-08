@@ -94,11 +94,12 @@ defmodule PurpleWeb.RunLive.Index do
     <%= if @action in [:new, :edit] do %>
       <.modal return_to={index_path(@params)} title={@page_title}>
         <.live_component
-          module={PurpleWeb.RunLive.FormComponent}
-          id={@run.id || :new}
           action={@action}
-          run={@run}
+          id={@run.id || :new}
+          module={PurpleWeb.RunLive.FormComponent}
           return_to={index_path(@params)}
+          rows={3}
+          run={@run}
         />
       </.modal>
     <% end %>

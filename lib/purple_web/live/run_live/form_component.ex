@@ -89,7 +89,7 @@ defmodule PurpleWeb.RunLive.FormComponent do
             <%= number_input(f, :minute_seconds, class: "w-1/3") %>
           </div>
           <%= label(f, :description) %>
-          <%= textarea(f, :description) %>
+          <%= textarea(f, :description, rows: @rows) %>
           <p class="mt-2">
             <%= if @changeset.valid? do %>
               Pace:
