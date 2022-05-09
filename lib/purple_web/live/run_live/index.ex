@@ -37,9 +37,12 @@ defmodule PurpleWeb.RunLive.Index do
   end
 
   defp assign_runs(socket) do
+    runs = Activities.list_runs(socket.assigns.filter.changes)
+
     socket
-    |> assign(:runs, Activities.list_runs(socket.assigns.filter.changes))
+    |> assign(:runs, runs)
     |> assign(:weekly_total, Activities.sum_miles_in_current_week())
+    |> assign(:total, Enum.reduce(runs, 0, fn %{miles: miles}, acc -> miles + acc end) |> Float.round(2))
     |> assign(:tag_options, Purple.Filter.make_tag_select_options(:run))
   end
 
@@ -87,7 +90,7 @@ defmodule PurpleWeb.RunLive.Index do
         <button>➕</button>
       <% end %>
       <i class="self-end">
-        <%= @weekly_total %> this week
+        <%= @weekly_total %> this week, <%= @total %> displayed
       </i>
     </div>
 
