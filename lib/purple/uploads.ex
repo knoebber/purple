@@ -120,11 +120,12 @@ defmodule Purple.Uploads do
 
   defp post_process_file!(%FileRef{} = file_ref) do
     converted = convert_file_type(file_ref)
-    changed = converted.extension != file_ref.extension
+    extension_is_changed = converted.extension != file_ref.extension
 
-    img = Mogrify.open(get_full_upload_path(file_ref))
+    original_path = get_full_upload_path(file_ref)
+    img = Mogrify.open(original_path)
 
-    if changed do
+    if extension_is_changed do
       Mogrify.format(img, String.trim(converted.extension, "."))
     else
       img
@@ -132,8 +133,10 @@ defmodule Purple.Uploads do
     |> Mogrify.auto_orient()
     |> Mogrify.save(in_place: true)
 
-    if changed do
-      Repo.update!(FileRef.changeset(file_ref, Map.from_struct(converted)))
+    if extension_is_changed do
+      file_ref = Repo.update!(FileRef.changeset(file_ref, Map.from_struct(converted)))
+      File.rm!(original_path)
+      file_ref
     else
       file_ref
     end
