@@ -1,8 +1,6 @@
 defmodule Purple.Tags do
   alias Purple.Repo
-  alias Purple.Tags.ItemTag
-  alias Purple.Tags.RunTag
-  alias Purple.Tags.Tag
+  alias Purple.Tags.{ItemTag, RunTag, Tag, MerchantTag, TransactionTag}
 
   import Ecto.Query
 
@@ -171,6 +169,14 @@ defmodule Purple.Tags do
 
   def filter_by_tag(query, %{tag: tagname}, :run) do
     apply_tag_filter(query, RunTag, tagname, :run_id)
+  end
+
+  def filter_by_tag(query, %{tag: tagname}, :tx) do
+    apply_tag_filter(query, TransactionTag, tagname, :transaction_id)
+  end
+
+  def filter_by_tag(query, %{tag: tagname}, :merchant) do
+    apply_tag_filter(query, MerchantTag, tagname, :merchant_id)
   end
 
   def filter_by_tag(query, _, _), do: query
