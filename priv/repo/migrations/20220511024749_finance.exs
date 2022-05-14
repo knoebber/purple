@@ -32,7 +32,7 @@ defmodule Purple.Repo.Migrations.Finance do
     end
 
     create table(:transaction_tags) do
-      add :transaction_id, references(:transactions), null: false
+      add :transaction_id, references(:transactions, on_delete: :delete_all), null: false
       add :tag_id, references(:tags), null: false
       timestamps(updated_at: false)
     end
@@ -40,7 +40,7 @@ defmodule Purple.Repo.Migrations.Finance do
     create unique_index(:transaction_tags, [:transaction_id, :tag_id])
 
     create table(:merchant_tags) do
-      add :merchant_id, references(:merchants), null: false
+      add :merchant_id, references(:merchants, on_delete: :delete_all), null: false
       add :tag_id, references(:tags), null: false
       timestamps(updated_at: false)
     end
