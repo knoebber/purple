@@ -1,30 +1,10 @@
 defmodule PurpleWeb.FinanceLive.Index do
   use PurpleWeb, :live_view
 
+  import PurpleWeb.FinanceLive.Helpers
+
   alias Purple.Finance
-  alias Purple.Finance.Transaction
-
-  defp index_path(params, new_params = %{}) do
-    Routes.finance_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
-  end
-
-  defp index_path(params, :new_transaction) do
-    index_path(params, %{action: "new_transaction"})
-  end
-
-  defp index_path(params, :edit_transaction, transaction_id) do
-    index_path(params, %{action: "edit_transaction", id: transaction_id})
-  end
-
-  defp index_path(params) do
-    index_path(
-      Map.reject(
-        params,
-        fn {key, val} -> key in ["action", "id"] or val == "" end
-      ),
-      %{}
-    )
-  end
+  alias Purple.Finance.{Transaction, Merchant, PaymentMethod}
 
   defp apply_action(socket, :edit_transaction, %{"id" => id}) do
     socket
@@ -36,6 +16,18 @@ defmodule PurpleWeb.FinanceLive.Index do
     socket
     |> assign(:page_title, "New Transaction")
     |> assign(:transaction, %Transaction{})
+  end
+
+  defp apply_action(socket, :new_merchant, _params) do
+    socket
+    |> assign(:page_title, "New Merchant")
+    |> assign(:merchant, %Merchant{})
+  end
+
+  defp apply_action(socket, :edit_merchant, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Edit Merchant")
+    |> assign(:merchant, Finance.get_merchant!(id))
   end
 
   defp apply_action(socket, :index, _params) do
@@ -54,8 +46,18 @@ defmodule PurpleWeb.FinanceLive.Index do
     |> assign(:tag_options, Purple.Filter.make_tag_select_options(:transaction))
   end
 
-  defp get_action(%{"action" => "edit_transaction", "id" => _}), do: :edit_transaction
-  defp get_action(%{"action" => "new_transaction"}), do: :new_transaction
+  defp get_action(%{"action" => "edit_transaction", "id" => _}) do
+    :edit_transaction
+  end
+
+  defp get_action(%{"action" => "new_transaction"}) do
+    :new_transaction
+  end
+
+  defp get_action(%{"action" => "new_merchant"}) do
+    :new_merchant
+  end
+
   defp get_action(_), do: :index
 
   @impl Phoenix.LiveView
@@ -97,19 +99,32 @@ defmodule PurpleWeb.FinanceLive.Index do
         <button>➕</button>
       <% end %>
     </div>
-    <%= if @action in [:new_transaction, :edit_transaction] do %>
-      <.modal title={@page_title} return_to={index_path(@params)}>
-        <.live_component
-          action={@action}
-          current_user={@current_user}
-          id={@transaction.id || :new}
-          merchant_options={@merchant_options}
-          module={PurpleWeb.FinanceLive.TransactionForm}
-          payment_method_options={@payment_method_options}
-          return_to={index_path(@params)}
-          transaction={@transaction}
-        />
-      </.modal>
+    <%= cond do %>
+      <% @action in [:new_transaction, :edit_transaction] -> %>
+        <.modal title={@page_title} return_to={index_path(@params)}>
+          <.live_component
+            action={@action}
+            current_user={@current_user}
+            id={@transaction.id || :new}
+            merchant_options={@merchant_options}
+            module={PurpleWeb.FinanceLive.TransactionForm}
+            params={@params}
+            payment_method_options={@payment_method_options}
+            return_to={index_path(@params)}
+            transaction={@transaction}
+          />
+        </.modal>
+      <% @action in [:new_merchant, :edit_merchant] -> %>
+        <.modal title={@page_title} return_to={index_path(@params)}>
+          <.live_component
+            action={@action}
+            id={:merchant_form}
+            merchant={@merchant}
+            module={PurpleWeb.FinanceLive.MerchantForm}
+            params={@params}
+          />
+        </.modal>
+      <% true -> %>
     <% end %>
     <.form
       class="flex mb-2 gap-1"

@@ -118,14 +118,14 @@ defmodule Purple.Finance do
   def merchant_mappings do
     Enum.map(
       list_merchants(),
-      fn %{id: id, name: name} -> [key: id, value: name] end
+      fn %{id: id, name: name} -> [value: id, key: name] end
     )
   end
 
   def payment_method_mappings do
     Enum.map(
       list_payment_methods(),
-      fn %{id: id, name: name} -> [key: id, value: name] end
+      fn %{id: id, name: name} -> [value: id, key: name] end
     )
   end
 end

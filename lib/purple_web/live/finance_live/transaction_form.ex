@@ -1,6 +1,8 @@
 defmodule PurpleWeb.FinanceLive.TransactionForm do
   use PurpleWeb, :live_component
 
+  import PurpleWeb.FinanceLive.Helpers
+
   alias Purple.Finance
 
   defp save_transaction(socket, :edit_transaction, params) do
@@ -13,17 +15,12 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
 
   @impl Phoenix.LiveComponent
   def update(%{transaction: transaction} = assigns, socket) do
-    rows =
-      transaction.description
-      |> String.split("\n")
-      |> length()
-
     {
       :ok,
       socket
       |> assign(assigns)
-      |> assign(:rows, rows)
-      |> assign(:changeset, Finance.change_transaction(transaction))
+      |> assign(:rows, text_area_rows(transaction.description))
+      |> assign(:changeset, Finance.change_transaction(transaction, assigns.params))
     }
   end
 
@@ -54,12 +51,28 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           <%= label(f, :cents, "Amount") %>
           <%= number_input(f, :cents) %>
           <%= error_tag(f, :cents) %>
-          <%= label(f, :merchant_id, "Merchant") %>
-          <%= select(f, :merchant_id, @merchant_options) %>
-          <%= error_tag(f, :merchant_id) %>
           <%= label(f, :payment_method_id, "Payment Method") %>
-          <%= select(f, :payment_method_id, @payment_method_options) %>
+          <div class="flex justify-between">
+            <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
+            <%= live_patch(
+              to: index_path(@params, :new_payment_method),
+              class: "text-xl self-center")
+            do %>
+              <button class="window p-1 bg-white">➕</button>
+            <% end %>
+          </div>
           <%= error_tag(f, :payment_method_id) %>
+          <%= label(f, :merchant_id, "Merchant") %>
+          <div class="flex justify-between">
+            <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
+            <%= live_patch(
+              to: index_path(@params, :new_merchant),
+              class: "text-xl self-center")
+            do %>
+              <button class="window p-1 bg-white">➕</button>
+            <% end %>
+          </div>
+          <%= error_tag(f, :merchant_id) %>
           <%= label(f, :description) %>
           <%= textarea(f, :description, rows: @rows) %>
           <%= error_tag(f, :description) %>

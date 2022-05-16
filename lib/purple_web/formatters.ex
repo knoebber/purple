@@ -59,4 +59,12 @@ defmodule PurpleWeb.Formatters do
       fn {_, {reason, _}} -> reason end
     )
   end
+
+  def text_area_rows(""), do: 3
+
+  def text_area_rows(content) do
+    content
+    |> String.split("\n")
+    |> length()
+  end
 end
