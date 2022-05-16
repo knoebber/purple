@@ -48,6 +48,14 @@ defmodule Purple.Tags do
     |> Enum.uniq()
   end
 
+  def extract_tags(%Purple.Finance.Transaction{} = transaction) do
+    extract_tags_from_markdown(transaction.description)
+  end
+
+  def extract_tags(%Purple.Finance.Merchant{} = merchant) do
+    extract_tags_from_markdown(merchant.description)
+  end
+
   def extract_tags(%Purple.Activities.Run{} = run) do
     extract_tags_from_markdown(run.description)
   end
@@ -55,7 +63,7 @@ defmodule Purple.Tags do
   def extract_tags(%Purple.Board.Item{} = item) do
     item.entries
     |> Enum.reduce(
-      extract_tags(item.description),
+      extract_tags_from_markdown(item.description),
       fn entry, acc ->
         acc ++ extract_tags_from_markdown(entry.content)
       end
@@ -140,7 +148,9 @@ defmodule Purple.Tags do
   defp update_tag_refs(_, [add: [], remove: []], _), do: {:ok, [add: {0, nil}, remove: {0, nil}]}
 
   defp update_tag_refs(module, tag_diff, ref_params)
-       when is_atom(module) and is_list(tag_diff) and is_map(ref_params) do
+       when is_atom(module) and
+              is_list(tag_diff) and
+              is_map(ref_params) do
     Repo.transaction(fn ->
       [
         add: insert_tag_refs(module, tag_diff[:add], ref_params),
@@ -149,18 +159,28 @@ defmodule Purple.Tags do
     end)
   end
 
-  def sync_model_tags(module, model, ref_params)
+  def sync_tags(module, model, ref_params)
       when is_atom(module) and is_struct(model) and is_map(ref_params),
       do: update_tag_refs(module, get_or_create_tags(model) |> diff_tags(model.tags), ref_params)
 
-  def sync_item_tags(item_id) do
-    item = Purple.Board.get_item!(item_id, :entries, :tags)
-    sync_model_tags(ItemTag, item, %{item_id: item_id})
+  def sync_tags(id, :item) do
+    item = Purple.Board.get_item!(id, :entries, :tags)
+    sync_tags(ItemTag, item, %{item_id: id})
   end
 
-  def sync_run_tags(run_id) do
-    run = Purple.Activities.get_run!(run_id, :tags)
-    sync_model_tags(RunTag, run, %{run_id: run_id})
+  def sync_tags(id, :run) do
+    run = Purple.Activities.get_run!(id, :tags)
+    sync_tags(RunTag, run, %{run_id: id})
+  end
+
+  def sync_tags(id, :transaction) do
+    transaction = Purple.Finance.get_transaction!(id, :tags)
+    sync_tags(TransactionTag, transaction, %{transaction_id: id})
+  end
+
+  def sync_tags(id, :merchant) do
+    merchant = Purple.Finance.get_merchant!(id, :tags)
+    sync_tags(MerchantTag, merchant, %{merchant_id: id})
   end
 
   def filter_by_tag(query, %{tag: tagname}, :item) do
@@ -171,7 +191,7 @@ defmodule Purple.Tags do
     apply_tag_filter(query, RunTag, tagname, :run_id)
   end
 
-  def filter_by_tag(query, %{tag: tagname}, :tx) do
+  def filter_by_tag(query, %{tag: tagname}, :transaction) do
     apply_tag_filter(query, TransactionTag, tagname, :transaction_id)
   end
 
@@ -209,11 +229,8 @@ defmodule Purple.Tags do
     )
   end
 
-  def list_tags(:item) do
-    list_model_tags(ItemTag)
-  end
-
-  def list_tags(:run) do
-    list_model_tags(RunTag)
-  end
+  def list_tags(:item), do: list_model_tags(ItemTag)
+  def list_tags(:run), do: list_model_tags(RunTag)
+  def list_tags(:transaction), do: list_model_tags(TransactionTag)
+  def list_tags(:merchant), do: list_model_tags(MerchantTag)
 end

@@ -22,7 +22,7 @@ defmodule PurpleWeb.BoardLive.ItemForm do
   def handle_event("save", %{"item" => item_params}, socket) do
     case save_item(socket, socket.assigns.action, item_params) do
       {:ok, item} ->
-        Purple.Tags.sync_item_tags(item.id)
+        Purple.Tags.sync_tags(item.id, :item)
 
         {
           :noreply,
