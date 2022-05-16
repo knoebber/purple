@@ -3,7 +3,7 @@ defmodule Purple.Finance.Transaction do
   import Ecto.Changeset
 
   schema "transactions" do
-    field :amount, :integer, default: 100
+    field :cents, :integer, default: 100
     field :description, :string, default: ""
     field :timestamp, :naive_datetime
 
@@ -30,11 +30,19 @@ defmodule Purple.Finance.Transaction do
   def changeset(tx, attrs) do
     tx
     |> cast(attrs, [
-      :amount,
+      :cents,
       :description,
+      :merchant_id,
+      :payment_method_id,
       :timestamp
     ])
-    |> validate_number(:amount, greater_than: 99)
+    |> validate_required([
+      :cents,
+      :merchant_id,
+      :payment_method_id,
+      :user_id
+    ])
+    |> validate_number(:cents, greater_than: 99)
     |> set_default_timestamp
   end
 end

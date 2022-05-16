@@ -13,8 +13,9 @@
     <nav class="flex py-8 bg-purple-300 border border-purple-400">
       <%= link "Home", to: "/" %>
       <%= if @current_user do %>
-        <%= link "Board", to: "/board" %>
-        <%= link "Runs", to: "/runs" %>
+        <%= link "Board", to: Routes.board_index_path(@conn, :index) %>
+        <%= link "Finance", to: Routes.finance_index_path(@conn, :index) %>
+        <%= link "Runs", to: Routes.run_index_path(@conn, :index) %>
         <%= link @current_user.email, to: Routes.user_settings_path(@conn, :edit) %>
         <%= link "Log out", to: Routes.user_session_path(@conn, :delete), method: :delete %>
       <% else %>

@@ -20,7 +20,7 @@ defmodule Purple.Repo.Migrations.Finance do
     create unique_index(:payment_methods, [:name])
 
     create table(:transactions) do
-      add :amount, :int, null: false
+      add :cents, :int, null: false
       add :timestamp, :naive_datetime, null: false
       add :description, :text, null: false, default: ""
 

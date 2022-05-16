@@ -63,6 +63,8 @@ defmodule PurpleWeb.Router do
     pipe_through [:browser, :redirect_if_user_not_authenticated]
 
     live_session :default, on_mount: PurpleWeb.UserAuthLive do
+      live "/finance", FinanceLive.Index, :index
+
       live "/runs", RunLive.Index, :index
       live "/runs/:id", RunLive.Show, :show
       live "/runs/:id/edit", RunLive.Show, :edit

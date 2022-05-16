@@ -2,7 +2,7 @@ defmodule Purple.Finance.PaymentMethod do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "payment_method" do
+  schema "payment_methods" do
     field :name, :string
 
     timestamps()
@@ -12,5 +12,6 @@ defmodule Purple.Finance.PaymentMethod do
     payment_method
     |> cast(attrs, [:name])
     |> validate_required([:name])
+    |> update_change(:name, &String.downcase/1)
   end
 end
