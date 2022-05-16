@@ -1,4 +1,4 @@
-defmodule PurpleWeb.RunLive.FormComponent do
+defmodule PurpleWeb.RunLive.RunForm do
   use PurpleWeb, :live_component
 
   alias Purple.Activities
@@ -24,7 +24,7 @@ defmodule PurpleWeb.RunLive.FormComponent do
   def handle_event("save", %{"run" => run_params}, socket) do
     case save_run(socket, socket.assigns.action, run_params) do
       {:ok, run} ->
-        Purple.Tags.sync_run_tags(run.id)
+        Purple.Tags.sync_tags(run.id, :run)
 
         {:noreply,
          socket

@@ -99,7 +99,7 @@ defmodule PurpleWeb.RunLive.Index do
         <.live_component
           action={@action}
           id={@run.id || :new}
-          module={PurpleWeb.RunLive.FormComponent}
+          module={PurpleWeb.RunLive.RunForm}
           return_to={index_path(@params)}
           rows={3}
           run={@run}

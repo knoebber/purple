@@ -63,7 +63,7 @@ defmodule PurpleWeb.RunLive.Show do
       <%= if @live_action == :edit do %>
         <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
           <.live_component
-            module={PurpleWeb.RunLive.FormComponent}
+            module={PurpleWeb.RunLive.RunForm}
             id={@run.id}
             action={@live_action}
             rows={@run_rows}
