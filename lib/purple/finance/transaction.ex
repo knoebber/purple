@@ -44,8 +44,7 @@ defmodule Purple.Finance.Transaction do
     |> validate_required([
       :cents,
       :merchant_id,
-      :payment_method_id,
-      :user_id
+      :payment_method_id
     ])
     |> validate_number(:cents, greater_than: 99)
     |> set_timestamp(attrs)

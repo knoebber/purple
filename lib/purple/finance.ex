@@ -38,19 +38,19 @@ defmodule Purple.Finance do
   def update_merchant(%Merchant{} = merchant, params) do
     merchant
     |> Merchant.changeset(params)
-    |> Repo.insert()
+    |> Repo.update()
   end
 
   def update_payment_method(%PaymentMethod{} = payment_method, params) do
     payment_method
     |> PaymentMethod.changeset(params)
-    |> Repo.insert()
+    |> Repo.update()
   end
 
   def update_transaction(%Transaction{} = transaction, params) do
     transaction
     |> Transaction.changeset(params)
-    |> Repo.insert()
+    |> Repo.update()
   end
 
   def get_merchant!(id) do
@@ -71,7 +71,13 @@ defmodule Purple.Finance do
   end
 
   def get_transaction!(id) do
-    Repo.get!(Transaction, id)
+    Repo.one!(
+      from tx in Transaction,
+        join: m in assoc(tx, :merchant),
+        join: pm in assoc(tx, :payment_method),
+        where: tx.id == ^id,
+        preload: [merchant: m, payment_method: pm]
+    )
   end
 
   def get_transaction!(id, :tags) do
@@ -98,7 +104,10 @@ defmodule Purple.Finance do
   def list_transactions(filter) do
     Transaction
     |> Tags.filter_by_tag(filter, :transaction)
+    |> join(:inner, [tx], m in assoc(tx, :merchant))
+    |> join(:inner, [tx], pm in assoc(tx, :payment_method))
     |> order_by(desc: :timestamp)
+    |> preload([_, m, pm], merchant: m, payment_method: pm)
     |> Repo.all()
   end
 

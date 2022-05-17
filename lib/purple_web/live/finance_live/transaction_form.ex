@@ -56,17 +56,6 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           <%= label(f, :timestamp, "Timestamp") %>
           <%= datetime_select_group(f, :timestamp) %>
           <%= error_tag(f, :timestamp) %>
-          <%= label(f, :payment_method_id, "Payment Method") %>
-          <div class="flex justify-between">
-            <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
-            <%= live_patch(
-              to: index_path(@params, :new_payment_method),
-              class: "text-xl self-center")
-            do %>
-              <button type="button" class="window p-1 bg-white">➕</button>
-            <% end %>
-          </div>
-          <%= error_tag(f, :payment_method_id) %>
           <%= label(f, :merchant_id, "Merchant") %>
           <div class="flex justify-between">
             <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
@@ -78,6 +67,17 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
             <% end %>
           </div>
           <%= error_tag(f, :merchant_id) %>
+          <%= label(f, :payment_method_id, "Payment Method") %>
+          <div class="flex justify-between">
+            <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
+            <%= live_patch(
+              to: index_path(@params, :new_payment_method),
+              class: "text-xl self-center")
+            do %>
+              <button type="button" class="window p-1 bg-white">➕</button>
+            <% end %>
+          </div>
+          <%= error_tag(f, :payment_method_id) %>
           <%= label(f, :description) %>
           <%= textarea(f, :description, rows: @rows) %>
           <%= error_tag(f, :description) %>

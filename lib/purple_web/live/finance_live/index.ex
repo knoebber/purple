@@ -169,6 +169,8 @@ defmodule PurpleWeb.FinanceLive.Index do
         <tr>
           <th>Amount</th>
           <th>Timestamp</th>
+          <th>Merchant</th>
+          <th>Payment Method</th>
           <th></th>
           <th></th>
         </tr>
@@ -178,6 +180,8 @@ defmodule PurpleWeb.FinanceLive.Index do
           <tr id={"transaction-#{transaction.id}"}>
             <td><%= transaction.cents %></td>
             <td><%= format_date(transaction.timestamp) %></td>
+            <td><%= transaction.merchant.name %></td>
+            <td><%= transaction.payment_method.name %></td>
             <td>
               <%= live_patch("Edit", to: index_path(@params, :edit_transaction, transaction.id)) %>
             </td>
