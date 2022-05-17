@@ -15,26 +15,31 @@ defmodule Purple.Finance.Transaction do
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.TransactionTag
   end
 
-  defp set_default_timestamp(changeset) do
+  defp set_timestamp(changeset, attrs) do
     if get_field(changeset, :timestamp) do
       changeset
     else
+      timestamp_attrs = Map.get(attrs, "timestamp")
+
       put_change(
         changeset,
         :timestamp,
-        NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        if is_map(timestamp_attrs) do
+          Purple.naive_datetime_from_map(timestamp_attrs)
+        else
+          Purple.utc_now()
+        end
       )
     end
   end
 
-  def changeset(tx, attrs) do
-    tx
+  def changeset(transaction, attrs) do
+    transaction
     |> cast(attrs, [
       :cents,
       :description,
       :merchant_id,
-      :payment_method_id,
-      :timestamp
+      :payment_method_id
     ])
     |> validate_required([
       :cents,
@@ -43,6 +48,6 @@ defmodule Purple.Finance.Transaction do
       :user_id
     ])
     |> validate_number(:cents, greater_than: 99)
-    |> set_default_timestamp
+    |> set_timestamp(attrs)
   end
 end

@@ -1,7 +1,7 @@
 defmodule PurpleWeb.FinanceLive.TransactionForm do
   use PurpleWeb, :live_component
 
-  import PurpleWeb.FinanceLive.Helpers
+  import PurpleWeb.FinanceLive.FinanceHelpers
 
   alias Purple.Finance
 
@@ -26,6 +26,8 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
 
   @impl Phoenix.LiveComponent
   def handle_event("save", %{"transaction" => params}, socket) do
+    IO.inspect(params, label: "params before save")
+
     case save_transaction(socket, socket.assigns.action, params) do
       {:ok, transaction} ->
         Purple.Tags.sync_tags(transaction.id, :transaction)
@@ -34,7 +36,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           :noreply,
           socket
           |> put_flash(:info, "Transaction saved")
-          |> push_patch(to: socket.assigns.return_to)
+          |> push_patch(to: index_path(socket.assigns.params))
         }
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -49,8 +51,11 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :cents, "Amount") %>
-          <%= number_input(f, :cents) %>
+          <%= number_input(f, :cents, phx_hook: "AutoFocus") %>
           <%= error_tag(f, :cents) %>
+          <%= label(f, :timestamp, "Timestamp") %>
+          <%= datetime_select_group(f, :timestamp) %>
+          <%= error_tag(f, :timestamp) %>
           <%= label(f, :payment_method_id, "Payment Method") %>
           <div class="flex justify-between">
             <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
@@ -58,7 +63,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
               to: index_path(@params, :new_payment_method),
               class: "text-xl self-center")
             do %>
-              <button class="window p-1 bg-white">➕</button>
+              <button type="button" class="window p-1 bg-white">➕</button>
             <% end %>
           </div>
           <%= error_tag(f, :payment_method_id) %>
@@ -69,7 +74,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
               to: index_path(@params, :new_merchant),
               class: "text-xl self-center")
             do %>
-              <button class="window p-1 bg-white">➕</button>
+              <button type="button" class="window p-1 bg-white">➕</button>
             <% end %>
           </div>
           <%= error_tag(f, :merchant_id) %>

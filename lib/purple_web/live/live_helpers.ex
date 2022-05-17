@@ -1,4 +1,5 @@
 defmodule PurpleWeb.LiveHelpers do
+  import Phoenix.HTML.Form
   import Phoenix.LiveView
   import Phoenix.LiveView.Helpers
   import PurpleWeb.Formatters
@@ -37,20 +38,20 @@ defmodule PurpleWeb.LiveHelpers do
 
     ~H"""
     <dialog
+      class="p-0 mx-auto w-5/6 md:w-1/2 lg:w-1/3 drop-shadow window fixed z-10"
       id="dialog"
       open
-      phx-remove={hide_modal()}
-      class="p-0 mx-auto w-5/6 md:w-1/2 lg:w-1/3 drop-shadow window fixed z-10"
       phx-click-away={JS.dispatch("click", to: "#close")}
+      phx-remove={hide_modal()}
     >
       <div class="flex justify-between bg-purple-300 p-2">
         <h2><%= @title %></h2>
         <%= if @return_to do %>
           <%= live_patch("❌",
-            to: @return_to,
-            id: "close",
             class: "phx-modal-close no-underline",
-            phx_click: hide_modal()
+            id: "close",
+            phx_click: hide_modal(),
+            to: @return_to
           ) %>
         <% else %>
           <a id="close" href="#" class="phx-modal-close no-underline" phx-click={hide_modal()}>❌</a>
@@ -65,5 +66,49 @@ defmodule PurpleWeb.LiveHelpers do
 
   defp hide_modal(js \\ %JS{}) do
     JS.hide(js, to: "#dialog")
+  end
+
+  def datetime_select_group(form, field, opts \\ []) do
+    hours =
+      Enum.map(
+        0..23,
+        fn
+          0 -> {"12am", 0}
+          hour when hour < 12 -> {"#{hour}am", hour}
+          12 -> {"12pm", 12}
+          hour -> {"#{hour - 12}pm", hour}
+        end
+      )
+
+    builder = fn b ->
+      assigns = %{b: b}
+
+      ~H"""
+      <div class="datetime-select">
+        <%= @b.(:day, []) %>
+        <%= @b.(:month, []) %>
+        <%= @b.(:year, []) %>
+        <%= @b.(:hour, options: hours) %>
+      </div>
+      """
+    end
+
+    datetime = Ecto.Changeset.get_field(form.source, field)
+
+    value =
+      if datetime do
+        Purple.to_local_datetime(datetime)
+      else
+        Purple.local_now()
+      end
+
+    datetime_select(
+      form,
+      field,
+      [
+        builder: builder,
+        value: value
+      ] ++ opts
+    )
   end
 end

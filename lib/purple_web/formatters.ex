@@ -34,14 +34,14 @@ defmodule PurpleWeb.Formatters do
   def format_duration(_, _, _), do: "N/A"
 
   def format_date(%NaiveDateTime{} = ndt) do
-    DateTime.from_naive!(ndt, "Etc/UTC")
-    |> DateTime.shift_zone!(Application.get_env(:purple, :default_tz))
+    ndt
+    |> Purple.to_local_datetime()
     |> Calendar.strftime("%m/%d/%Y %I:%M%P")
   end
 
   def format_date(%NaiveDateTime{} = ndt, :mdy) do
-    DateTime.from_naive!(ndt, "Etc/UTC")
-    |> DateTime.shift_zone!(Application.get_env(:purple, :default_tz))
+    ndt
+    |> Purple.to_local_datetime()
     |> Calendar.strftime("%m/%d/%Y")
   end
 

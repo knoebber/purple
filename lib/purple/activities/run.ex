@@ -49,7 +49,7 @@ defmodule Purple.Activities.Run do
         changeset,
         :date,
         DateTime.utc_now()
-        |> DateTime.shift_zone!(Application.get_env(:purple, :default_tz))
+        |> DateTime.shift_zone!(Purple.default_tz())
         |> DateTime.to_date()
       )
     end

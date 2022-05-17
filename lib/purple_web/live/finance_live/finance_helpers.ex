@@ -1,4 +1,4 @@
-defmodule PurpleWeb.FinanceLive.Helpers do
+defmodule PurpleWeb.FinanceLive.FinanceHelpers do
   @reserved_keys [
     "action",
     "id",

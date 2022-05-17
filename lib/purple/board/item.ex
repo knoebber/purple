@@ -22,7 +22,7 @@ defmodule Purple.Board.Item do
         put_change(
           changeset,
           :completed_at,
-          NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          Purple.utc_now()
         )
 
       _ ->

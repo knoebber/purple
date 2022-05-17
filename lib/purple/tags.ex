@@ -130,7 +130,7 @@ defmodule Purple.Tags do
         Map.merge(
           %{
             tag_id: tag.id,
-            inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+            inserted_at: Purple.utc_now()
           },
           ref_params
         )

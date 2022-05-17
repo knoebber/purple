@@ -168,4 +168,8 @@
     .markdown-content h1, .markdown-content h2, .markdown-content h3 {
         @apply mb-2;
     }
+
+    .datetime-select {
+        @apply flex;
+    }
 }
