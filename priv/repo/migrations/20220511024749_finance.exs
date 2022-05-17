@@ -3,7 +3,7 @@ defmodule Purple.Repo.Migrations.Finance do
 
   def change do
     create table(:merchants) do
-      add :name, :string, null: false, size: 255
+      add :name, :citext, null: false
       add :description, :text, null: false, default: ""
 
       timestamps()
@@ -12,7 +12,7 @@ defmodule Purple.Repo.Migrations.Finance do
     create unique_index(:merchants, [:name])
 
     create table(:payment_methods) do
-      add :name, :string, null: false, size: 32
+      add :name, :citext, null: false
 
       timestamps()
     end

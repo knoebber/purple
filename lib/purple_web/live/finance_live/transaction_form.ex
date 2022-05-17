@@ -13,6 +13,8 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     Finance.create_transaction(socket.assigns.current_user.id, params)
   end
 
+  defp selected_option_id(_, [], _), do: 0
+
   defp selected_option_id(changeset, options, field) do
     case Ecto.Changeset.get_field(changeset, field) do
       nil ->

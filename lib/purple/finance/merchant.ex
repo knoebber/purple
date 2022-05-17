@@ -15,7 +15,6 @@ defmodule Purple.Finance.Merchant do
     merchant
     |> cast(attrs, [:name, :description])
     |> validate_required([:name])
-    |> update_change(:name, &String.downcase/1)
     |> unique_constraint(:name, message: "already exists")
   end
 end
