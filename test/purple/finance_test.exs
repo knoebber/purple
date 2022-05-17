@@ -21,6 +21,7 @@ defmodule Purple.FinanceTest do
       assert Transaction.get_cents("$1.00") == 100
       assert Transaction.get_cents("$1.0001") == 0
       assert Transaction.get_cents("69") == 6900
+      assert Transaction.get_cents("52.52") == 5252
       assert Transaction.get_cents("420.42") == 420 * 100 + 42
     end
   end

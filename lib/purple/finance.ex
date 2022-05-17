@@ -1,9 +1,11 @@
 defmodule Purple.Finance do
+  import Ecto.Query
+
   alias Purple.Finance.{Transaction, Merchant, PaymentMethod}
   alias Purple.Repo
   alias Purple.Tags
 
-  import Ecto.Query
+  @amount_fragment "CONCAT('$', ROUND(cents/100.00,2))"
 
   def change_transaction(%Transaction{} = transaction, attrs \\ %{}) do
     Transaction.changeset(transaction, attrs)
@@ -73,6 +75,7 @@ defmodule Purple.Finance do
   def get_transaction!(id) do
     Repo.one!(
       from tx in Transaction,
+        select_merge: %{amount: fragment(@amount_fragment)},
         join: m in assoc(tx, :merchant),
         join: pm in assoc(tx, :payment_method),
         where: tx.id == ^id,
@@ -83,6 +86,7 @@ defmodule Purple.Finance do
   def get_transaction!(id, :tags) do
     Repo.one!(
       from tx in Transaction,
+        select_merge: %{amount: fragment(@amount_fragment)},
         left_join: t in assoc(tx, :tags),
         where: tx.id == ^id,
         preload: [tags: t]
@@ -103,6 +107,7 @@ defmodule Purple.Finance do
 
   def list_transactions(filter) do
     Transaction
+    |> select_merge(%{amount: fragment(@amount_fragment)})
     |> Tags.filter_by_tag(filter, :transaction)
     |> join(:inner, [tx], m in assoc(tx, :merchant))
     |> join(:inner, [tx], pm in assoc(tx, :payment_method))

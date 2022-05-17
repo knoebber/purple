@@ -178,7 +178,7 @@ defmodule PurpleWeb.FinanceLive.Index do
       <tbody>
         <%= for transaction <- @transactions do %>
           <tr id={"transaction-#{transaction.id}"}>
-            <td><%= transaction.cents %></td>
+            <td><%= transaction.amount %></td>
             <td><%= format_date(transaction.timestamp) %></td>
             <td><%= transaction.merchant.name %></td>
             <td><%= transaction.payment_method.name %></td>
