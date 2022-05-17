@@ -37,7 +37,7 @@ defmodule PurpleWeb.RunLive.RunForm do
   end
 
   @impl true
-  def handle_event("calculate-pace", %{"run" => run_params}, socket) do
+  def handle_event("calculate_pace", %{"run" => run_params}, socket) do
     changeset =
       socket.assigns.run
       |> Activities.change_run(run_params)
@@ -66,7 +66,7 @@ defmodule PurpleWeb.RunLive.RunForm do
         id="run-form"
         let={f}
         phx-submit="save"
-        phx-change="calculate-pace"
+        phx-change="calculate_pace"
         phx-target={@myself}
       >
         <div class="flex flex-col mb-2">
