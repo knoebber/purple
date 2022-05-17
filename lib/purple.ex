@@ -36,14 +36,18 @@ defmodule Purple do
     |> NaiveDateTime.truncate(:second)
   end
 
-  def parse_int(s, default) when is_binary(s) do
+  def parse_int(s, minimum) when is_binary(s) do
     case Integer.parse(s) do
-      {n, ""} -> n
-      _ -> default
+      {n, ""} -> max(n, minimum)
+      _ -> minimum
     end
   end
 
-  def parse_int(_, default), do: default
+  def parse_int(_, min), do: min
+
+  def parse_int(s, minimum, maximum) do
+    min(parse_int(s, minimum), maximum)
+  end
 
   defp date_from_map(m = %{}) do
     with {year, ""} <- Integer.parse(Map.get(m, "year")),
