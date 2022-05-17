@@ -2,20 +2,21 @@ defmodule Purple.Activities do
   @moduledoc """
   The Activities context.
   """
+  import Ecto.Query
 
-  import Ecto.Query, warn: false
   alias Purple.Repo
   alias Purple.Tags
-
   alias Purple.Activities.Run
 
   defp run_select(query) do
-    query
-    |> select_merge(%{
-      hours: fragment("COALESCE(seconds/3600, 0)"),
-      minutes: fragment("COALESCE((seconds/60) % 60, 0)"),
-      minute_seconds: fragment("COALESCE(seconds % 60, 0)")
-    })
+    select_merge(
+      query,
+      %{
+        hours: fragment("COALESCE(seconds/3600, 0)"),
+        minutes: fragment("COALESCE((seconds/60) % 60, 0)"),
+        minute_seconds: fragment("COALESCE(seconds % 60, 0)")
+      }
+    )
   end
 
   defp float_or_0(n) when is_float(n), do: n
