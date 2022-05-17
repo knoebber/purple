@@ -13,6 +13,12 @@ defmodule Purple do
     DateTime.shift_zone!(DateTime.utc_now(), default_tz())
   end
 
+  def local_date do
+    DateTime.utc_now()
+    |> DateTime.shift_zone!(Purple.default_tz())
+    |> DateTime.to_date()
+  end
+
   def to_local_datetime(%NaiveDateTime{} = ndt) do
     ndt
     |> DateTime.from_naive!(@naive_tz)

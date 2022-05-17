@@ -45,13 +45,7 @@ defmodule Purple.Activities.Run do
     if get_field(changeset, :date) do
       changeset
     else
-      put_change(
-        changeset,
-        :date,
-        DateTime.utc_now()
-        |> DateTime.shift_zone!(Purple.default_tz())
-        |> DateTime.to_date()
-      )
+      put_change(changeset, :date, Purple.local_date())
     end
   end
 
