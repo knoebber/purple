@@ -45,11 +45,11 @@ defmodule Purple.Finance.Transaction do
   end
 
   defp set_cents(changeset) do
-    amount = get_field(changeset, :amount) |> IO.inspect(label: "amount")
-    cents = get_cents(amount) |> IO.inspect(label: "cents")
-
-    changeset
-    |> put_change(:cents, cents)
+    put_change(
+      changeset,
+      :cents,
+      get_cents(get_field(changeset, :amount))
+    )
   end
 
   def changeset(transaction, attrs) do

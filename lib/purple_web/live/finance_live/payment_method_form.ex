@@ -30,13 +30,9 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodForm do
         params = socket.assigns.params
 
         return_to =
-          if socket.assigns.action == :new_payment_method do
-            params
-            |> Map.merge(%{payment_method_id: payment_method.id})
-            |> index_path(:new_transaction)
-          else
-            index_path(params)
-          end
+          params
+          |> Map.merge(%{payment_method_id: payment_method.id})
+          |> index_path(:new_transaction)
 
         {
           :noreply,

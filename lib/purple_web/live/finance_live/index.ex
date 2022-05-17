@@ -8,7 +8,7 @@ defmodule PurpleWeb.FinanceLive.Index do
 
   defp apply_action(socket, :edit_transaction, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Transaction #{id}")
+    |> assign(:page_title, "Edit Transaction")
     |> assign(:transaction, Finance.get_transaction!(id))
   end
 
@@ -58,7 +58,7 @@ defmodule PurpleWeb.FinanceLive.Index do
     |> assign(:tag_options, Purple.Filter.make_tag_select_options(:transaction))
   end
 
-  defp get_action(%{"action" => action, "id" => _})
+  defp get_action(%{"action" => action, "id" => id})
        when action in [
               "edit_transaction",
               "edit_merchant",

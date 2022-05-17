@@ -13,21 +13,49 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     Finance.create_transaction(socket.assigns.current_user.id, params)
   end
 
+  defp selected_option_id(changeset, options, field) do
+    case Ecto.Changeset.get_field(changeset, field) do
+      nil ->
+        {:value, id} = hd(hd(options))
+        id
+
+      val ->
+        val
+    end
+  end
+
+  defp assign_changeset(socket, params) do
+    assigns = socket.assigns
+    changeset = Finance.change_transaction(assigns.transaction, params)
+    merchant_id = selected_option_id(changeset, assigns.merchant_options, :merchant_id)
+
+    payment_method_id =
+      selected_option_id(changeset, assigns.payment_method_options, :payment_method_id)
+
+    socket
+    |> assign(:changeset, changeset)
+    |> assign(:merchant_id, merchant_id)
+    |> assign(:payment_method_id, payment_method_id)
+  end
+
   @impl Phoenix.LiveComponent
-  def update(%{transaction: transaction} = assigns, socket) do
+  def update(assigns, socket) do
     {
       :ok,
       socket
       |> assign(assigns)
-      |> assign(:rows, text_area_rows(transaction.description))
-      |> assign(:changeset, Finance.change_transaction(transaction, assigns.params))
+      |> assign(:rows, text_area_rows(assigns.transaction.description))
+      |> assign_changeset(assigns.params)
     }
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("save", %{"transaction" => params}, socket) do
-    IO.inspect(params, label: "params before save")
+  def handle_event("validate", %{"transaction" => params}, socket) do
+    {:noreply, assign_changeset(socket, params)}
+  end
 
+  @impl Phoenix.LiveComponent
+  def handle_event("save", %{"transaction" => params}, socket) do
     case save_transaction(socket, socket.assigns.action, params) do
       {:ok, transaction} ->
         Purple.Tags.sync_tags(transaction.id, :transaction)
@@ -48,7 +76,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
   def render(assigns) do
     ~H"""
     <div>
-      <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
+      <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
           <%= label(f, :amount, "Amount") %>
           <%= text_input(f, :amount, phx_hook: "AutoFocus") %>
@@ -60,6 +88,12 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           <div class="flex justify-between">
             <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
             <%= live_patch(
+              to: index_path(@params, :edit_merchant, @merchant_id),
+              class: "text-xl self-center")
+            do %>
+              <button type="button" class="window p-1 bg-white">✏️</button>
+            <% end %>
+            <%= live_patch(
               to: index_path(@params, :new_merchant),
               class: "text-xl self-center")
             do %>
@@ -70,6 +104,12 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           <%= label(f, :payment_method_id, "Payment Method") %>
           <div class="flex justify-between">
             <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
+            <%= live_patch(
+              to: index_path(@params, :edit_payment_method, @payment_method_id),
+              class: "text-xl self-center")
+            do %>
+              <button type="button" class="window p-1 bg-white">✏️</button>
+            <% end %>
             <%= live_patch(
               to: index_path(@params, :new_payment_method),
               class: "text-xl self-center")

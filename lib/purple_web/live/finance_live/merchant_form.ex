@@ -32,13 +32,9 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
         Purple.Tags.sync_tags(merchant.id, :merchant)
 
         return_to =
-          if socket.assigns.action == :new_merchant do
-            params
-            |> Map.merge(%{merchant_id: merchant.id})
-            |> index_path(:new_transaction)
-          else
-            index_path(params)
-          end
+          params
+          |> Map.merge(%{merchant_id: merchant.id})
+          |> index_path(:new_transaction)
 
         {
           :noreply,
