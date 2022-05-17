@@ -105,12 +105,28 @@ defmodule Purple.Finance do
     Repo.delete!(payment_method)
   end
 
+  defp transaction_text_search(query, %{query: q}) do
+    term = "%#{q}%"
+
+    where(
+      query,
+      [tx, m, pm],
+      ilike(tx.description, ^term) or
+        ilike(m.description, ^term) or
+        ilike(m.name, ^term) or
+        ilike(pm.name, ^term)
+    )
+  end
+
+  defp transaction_text_search(query, _), do: query
+
   def list_transactions(filter) do
     Transaction
     |> select_merge(%{amount: fragment(@amount_fragment)})
     |> Tags.filter_by_tag(filter, :transaction)
     |> join(:inner, [tx], m in assoc(tx, :merchant))
     |> join(:inner, [tx], pm in assoc(tx, :payment_method))
+    |> transaction_text_search(filter)
     |> order_by(desc: :timestamp)
     |> preload([_, m, pm], merchant: m, payment_method: pm)
     |> Repo.all()
