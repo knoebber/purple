@@ -16,20 +16,16 @@ defmodule Purple.Finance.Transaction do
   end
 
   defp set_timestamp(changeset, attrs) do
-    if get_field(changeset, :timestamp) do
-      changeset
-    else
-      timestamp_attrs = Map.get(attrs, "timestamp")
+    timestamp_attrs = Map.get(attrs, "timestamp")
 
+    if is_map(timestamp_attrs) do
       put_change(
         changeset,
         :timestamp,
-        if is_map(timestamp_attrs) do
-          Purple.naive_datetime_from_map(timestamp_attrs)
-        else
-          Purple.utc_now()
-        end
+        Purple.naive_datetime_from_map(timestamp_attrs)
       )
+    else
+      changeset
     end
   end
 
