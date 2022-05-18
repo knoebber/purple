@@ -8,12 +8,12 @@ defmodule PurpleWeb.BoardLive.Index do
     Routes.board_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
   end
 
-  defp index_path(params, :new_item) do
-    index_path(params, %{action: "new_item"})
+  defp index_path(params, action = :new_item) do
+    index_path(params, %{action: action})
   end
 
-  defp index_path(params, :edit_item, item_id) do
-    index_path(params, %{action: "edit_item", id: item_id})
+  defp index_path(params, action = :edit_item, item_id) do
+    index_path(params, %{action: action, id: item_id})
   end
 
   defp index_path(params) do

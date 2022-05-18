@@ -8,8 +8,13 @@ defmodule PurpleWeb.RunLive.Index do
     Routes.run_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
   end
 
-  defp index_path(params, :new), do: index_path(params, %{action: "new"})
-  defp index_path(params, :edit, run_id), do: index_path(params, %{action: "edit", id: run_id})
+  defp index_path(params, action = :new) do
+    index_path(params, %{action: action})
+  end
+
+  defp index_path(params, action = :edit, run_id) do
+    index_path(params, %{action: action, id: run_id})
+  end
 
   defp index_path(params) do
     index_path(
@@ -42,7 +47,10 @@ defmodule PurpleWeb.RunLive.Index do
     socket
     |> assign(:runs, runs)
     |> assign(:weekly_total, Activities.sum_miles_in_current_week())
-    |> assign(:total, Enum.reduce(runs, 0, fn %{miles: miles}, acc -> miles + acc end) |> Float.round(2))
+    |> assign(
+      :total,
+      Enum.reduce(runs, 0, fn %{miles: miles}, acc -> miles + acc end) |> Float.round(2)
+    )
     |> assign(:tag_options, Purple.Filter.make_tag_select_options(:run))
   end
 
