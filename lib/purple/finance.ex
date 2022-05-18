@@ -118,14 +118,21 @@ defmodule Purple.Finance do
     )
   end
 
-  defp transaction_text_search(query, _), do: query
+  defp transaction_text_search(q, _), do: q
+
+  defp merchant_filter(q, %{merchant: id}), do: where(q, [_, m, _], m.id == ^id)
+  defp merchant_filter(q, _), do: q
+  defp payment_method_filter(q, %{payment_method: id}), do: where(q, [_, m, pm], pm.id == ^id)
+  defp payment_method_filter(q, _), do: q
 
   def list_transactions(filter) do
     Transaction
     |> select_merge(%{amount: fragment(@amount_fragment)})
-    |> Tags.filter_by_tag(filter, :transaction)
     |> join(:inner, [tx], m in assoc(tx, :merchant))
     |> join(:inner, [tx], pm in assoc(tx, :payment_method))
+    |> Tags.filter_by_tag(filter, :transaction)
+    |> merchant_filter(filter)
+    |> payment_method_filter(filter)
     |> transaction_text_search(filter)
     |> order_by(desc: :timestamp)
     |> preload([_, m, pm], merchant: m, payment_method: pm)

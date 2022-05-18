@@ -163,6 +163,16 @@ defmodule PurpleWeb.FinanceLive.Index do
     >
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
       <%= select(f, :tag, @tag_options) %>
+      <%= select(
+        f,
+        :merchant,
+        [[value: "", key: "🧟‍♀️ All merchants"]] ++ @merchant_options
+      ) %>
+      <%= select(
+        f,
+        :payment_method,
+        [[value: "", key: "💸 All payment methods"]] ++ @payment_method_options
+      ) %>
     </.form>
     <table class="window">
       <thead class="bg-purple-300">

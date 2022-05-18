@@ -183,6 +183,31 @@ defmodule Purple.Tags do
     sync_tags(MerchantTag, merchant, %{merchant_id: id})
   end
 
+  defp tag_filter_subquery(model, tagname, join_col) do
+    from(m in model,
+      select: ^[join_col],
+      join: t in assoc(m, :tag),
+      where: ilike(t.name, ^tagname)
+    )
+  end
+
+  defp apply_tag_filter(query, model, tagname, join_col) do
+    where(
+      query,
+      [parent],
+      parent.id in subquery(tag_filter_subquery(model, tagname, join_col))
+    )
+  end
+
+  def filter_by_tag(query, %{tag: tagname}, :transaction) do
+    where(
+      query,
+      [tx, m],
+      tx.id in subquery(tag_filter_subquery(TransactionTag, tagname, :transaction_id)) or
+        m.id in subquery(tag_filter_subquery(MerchantTag, tagname, :merchant_id))
+    )
+  end
+
   def filter_by_tag(query, %{tag: tagname}, :item) do
     apply_tag_filter(query, ItemTag, tagname, :item_id)
   end
@@ -191,29 +216,11 @@ defmodule Purple.Tags do
     apply_tag_filter(query, RunTag, tagname, :run_id)
   end
 
-  def filter_by_tag(query, %{tag: tagname}, :transaction) do
-    apply_tag_filter(query, TransactionTag, tagname, :transaction_id)
-  end
-
   def filter_by_tag(query, %{tag: tagname}, :merchant) do
     apply_tag_filter(query, MerchantTag, tagname, :merchant_id)
   end
 
   def filter_by_tag(query, _, _), do: query
-
-  defp apply_tag_filter(query, model, tagname, join_col) do
-    where(
-      query,
-      [parent],
-      parent.id in subquery(
-        from(m in model,
-          select: ^[join_col],
-          join: t in assoc(m, :tag),
-          where: ilike(t.name, ^tagname)
-        )
-      )
-    )
-  end
 
   def list_tags do
     Repo.all(Tag)
@@ -231,6 +238,22 @@ defmodule Purple.Tags do
 
   def list_tags(:item), do: list_model_tags(ItemTag)
   def list_tags(:run), do: list_model_tags(RunTag)
-  def list_tags(:transaction), do: list_model_tags(TransactionTag)
+
+  def list_tags(:transaction) do
+    Repo.all(
+      from t in Tag,
+        select: %{count: count(t.id), id: t.id, name: t.name},
+        left_join: mt in MerchantTag,
+        on: mt.tag_id == t.id,
+        left_join: tx in Purple.Finance.Transaction,
+        on: tx.merchant_id == mt.merchant_id,
+        left_join: tt in TransactionTag,
+        on: tt.tag_id == t.id,
+        where: not is_nil(tx.id) or not is_nil(tt.id),
+        group_by: t.id,
+        order_by: t.name
+    )
+  end
+
   def list_tags(:merchant), do: list_model_tags(MerchantTag)
 end

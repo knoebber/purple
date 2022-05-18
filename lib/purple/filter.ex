@@ -3,14 +3,18 @@ defmodule Purple.Filter do
   import Ecto.Changeset
 
   embedded_schema do
-    field :tag, :string, default: ""
+    field :merchant, :integer
+    field :payment_method, :integer
     field :query, :string, default: ""
+    field :tag, :string, default: ""
   end
 
   def make_filter(attrs) do
     cast(%Purple.Filter{}, attrs, [
-      :tag,
-      :query
+      :merchant,
+      :payment_method,
+      :query,
+      :tag
     ])
   end
 
