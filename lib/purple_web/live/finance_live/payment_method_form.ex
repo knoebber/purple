@@ -24,20 +24,28 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodForm do
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("save", %{"payment_method" => params}, socket) do
-    case save_payment_method(socket, socket.assigns.action, params) do
+  def handle_event("save", %{"payment_method" => payment_method}, socket) do
+    case save_payment_method(socket, socket.assigns.action, payment_method) do
       {:ok, payment_method} ->
-        params = socket.assigns.params
+        params =
+          Map.merge(
+            socket.assigns.params,
+            %{payment_method_id: payment_method.id}
+          )
+
+        transaction_id = Map.get(params, "transaction_id")
 
         return_to =
-          params
-          |> Map.merge(%{payment_method_id: payment_method.id})
-          |> index_path(:new_transaction)
+          if transaction_id do
+            index_path(params, :edit_transaction, transaction_id)
+          else
+            index_path(params, :new_transaction)
+          end
 
         {
           :noreply,
           socket
-          |> put_flash(:info, "Payment_Method saved")
+          |> put_flash(:info, "Payment method saved")
           |> push_patch(to: return_to)
         }
 
@@ -53,7 +61,7 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodForm do
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :name) %>
-          <%= text_input(f, :name) %>
+          <%= text_input(f, :name, phx_hook: "AutoFocus") %>
           <%= error_tag(f, :name) %>
         </div>
         <%= submit("Save", phx_disable_with: "Saving...") %>

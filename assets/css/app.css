@@ -171,6 +171,6 @@
 
     .datetime-select {
         @apply flex;
-        @apply justify-around;
+        @apply justify-between;
     }
 }

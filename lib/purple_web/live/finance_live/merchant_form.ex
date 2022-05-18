@@ -25,16 +25,25 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("save", %{"merchant" => params}, socket) do
-    case save_merchant(socket, socket.assigns.action, params) do
+  def handle_event("save", %{"merchant" => merchant}, socket) do
+    case save_merchant(socket, socket.assigns.action, merchant) do
       {:ok, merchant} ->
-        params = socket.assigns.params
         Purple.Tags.sync_tags(merchant.id, :merchant)
 
+        params =
+          Map.merge(
+            socket.assigns.params,
+            %{merchant_id: merchant.id}
+          )
+
+        transaction_id = Map.get(params, "transaction_id")
+
         return_to =
-          params
-          |> Map.merge(%{merchant_id: merchant.id})
-          |> index_path(:new_transaction)
+          if transaction_id do
+            index_path(params, :edit_transaction, transaction_id)
+          else
+            index_path(params, :new_transaction)
+          end
 
         {
           :noreply,
@@ -55,7 +64,7 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :name) %>
-          <%= text_input(f, :name) %>
+          <%= text_input(f, :name, phx_hook: "AutoFocus") %>
           <%= error_tag(f, :name) %>
           <%= label(f, :description) %>
           <%= textarea(f, :description, rows: @rows) %>

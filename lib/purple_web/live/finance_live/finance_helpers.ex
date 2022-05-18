@@ -3,7 +3,8 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     "action",
     "id",
     "merchant_id",
-    "payment_method_id"
+    "payment_method_id",
+    "transaction_id"
   ]
 
   def index_path(params, new_params = %{}) do
@@ -14,22 +15,27 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     )
   end
 
-  def index_path(params, action)
+  def index_path(params, action = :new_transaction) do
+    index_path(params, %{action: action})
+  end
+
+  def index_path(params, action = :edit_transaction, id) do
+    index_path(params, %{action: action, id: id})
+  end
+
+  def index_path(params, action, transaction_id \\ nil, id \\ nil)
       when action in [
-             :new_transaction,
+             :edit_merchant,
+             :edit_payment_method,
              :new_merchant,
              :new_payment_method
            ] do
-    index_path(params, %{action: Atom.to_string(action)})
-  end
-
-  def index_path(params, action, id)
-      when action in [
-             :edit_transaction,
-             :edit_merchant,
-             :edit_payment_method
-           ] do
-    index_path(params, %{action: Atom.to_string(action), id: id})
+    index_path(
+      params,
+      Map.filter(%{action: action, id: id, transaction_id: transaction_id}, fn {_, val} ->
+        val == action or is_integer(val)
+      end)
+    )
   end
 
   def index_path(params) do

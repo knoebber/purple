@@ -90,13 +90,13 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           <div class="flex justify-between">
             <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
             <%= live_patch(
-              to: index_path(@params, :edit_merchant, @merchant_id),
+              to: index_path(@params, :edit_merchant, @id, @merchant_id),
               class: "text-xl self-center")
             do %>
               <button type="button" class="window p-1 bg-white">✏️</button>
             <% end %>
             <%= live_patch(
-              to: index_path(@params, :new_merchant),
+              to: index_path(@params, :new_merchant, @id),
               class: "text-xl self-center")
             do %>
               <button type="button" class="window p-1 bg-white">➕</button>
@@ -107,13 +107,13 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           <div class="flex justify-between">
             <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
             <%= live_patch(
-              to: index_path(@params, :edit_payment_method, @payment_method_id),
+              to: index_path(@params, :edit_payment_method, @id, @payment_method_id),
               class: "text-xl self-center")
             do %>
               <button type="button" class="window p-1 bg-white">✏️</button>
             <% end %>
             <%= live_patch(
-              to: index_path(@params, :new_payment_method),
+              to: index_path(@params, :new_payment_method, @id),
               class: "text-xl self-center")
             do %>
               <button type="button" class="window p-1 bg-white">➕</button>
