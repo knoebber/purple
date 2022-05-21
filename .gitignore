@@ -40,3 +40,4 @@ npm-debug.log
 /assets/node_modules/
 
 /priv/uploads
+creds.txt
