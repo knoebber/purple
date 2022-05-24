@@ -125,7 +125,7 @@ defmodule Purple.Finance do
   defp payment_method_filter(q, %{payment_method: id}), do: where(q, [_, m, pm], pm.id == ^id)
   defp payment_method_filter(q, _), do: q
 
-  def list_transactions(filter) do
+  def list_transactions(filter \\ %{}) do
     Transaction
     |> select_merge(%{amount: fragment(@amount_fragment)})
     |> join(:inner, [tx], m in assoc(tx, :merchant))

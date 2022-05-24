@@ -106,7 +106,7 @@ defmodule Purple.Board do
 
   defp item_text_search(query, _), do: query
 
-  def list_items(filter) do
+  def list_items(filter \\ %{}) do
     Item
     |> order_by(desc: :is_pinned, desc: :completed_at, asc: :priority)
     |> item_text_search(filter)

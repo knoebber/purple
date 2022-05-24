@@ -39,6 +39,12 @@ defmodule Purple.Activities do
     |> Float.round(2)
   end
 
+  def sum_miles(runs) do
+    Enum.reduce(runs, 0, fn %{miles: miles}, acc -> miles + acc end)
+    |> float_or_0
+    |> Float.round(2)
+  end
+
   defp run_text_search(query, %{query: q}) do
     case Integer.parse(q) do
       {i, extra} when extra in ["", "."] ->
@@ -63,7 +69,7 @@ defmodule Purple.Activities do
       [%Run{}, ...]
 
   """
-  def list_runs(filter) do
+  def list_runs(filter \\ %{}) do
     Run
     |> run_select
     |> run_text_search(filter)
