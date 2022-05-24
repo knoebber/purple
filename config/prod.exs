@@ -14,6 +14,8 @@ config :purple, PurpleWeb.Endpoint, cache_static_manifest: "priv/static/cache_ma
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :purple, :upload_dir, "/data"
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
