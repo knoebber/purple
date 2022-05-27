@@ -122,64 +122,66 @@ defmodule PurpleWeb.BoardLive.Index do
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
       <%= select(f, :tag, @tag_options) %>
     </.form>
-    <table class="window">
-      <thead class="bg-purple-300">
-        <tr>
-          <th>Item</th>
-          <th>Description</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th></th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <%= for item <- @items do %>
-          <tr id={"item-#{item.id}"}>
-            <td>
-              <%= live_redirect(item.id,
-                to: Routes.board_show_item_path(@socket, :show, item)
-              ) %>
-            </td>
-            <td>
-              <%= live_redirect(item.description,
-                to: Routes.board_show_item_path(@socket, :show, item)
-              ) %>
-            </td>
-            <td class="text-center">
-              <%= item.priority %>
-            </td>
-            <td class="text-center">
-              <%= item.status %>
-            </td>
-            <td>
-              <%= format_date(item.inserted_at, :mdy) %>
-            </td>
-            <td>
-              <%= link("📌",
-                class: if(!item.is_pinned, do: "opacity-30"),
-                phx_click: "toggle_pin",
-                phx_value_id: item.id,
-                to: "#"
-              ) %>
-            </td>
-            <td>
-              <%= live_patch("Edit", to: index_path(@params, :edit_item, item.id)) %>
-            </td>
-            <td>
-              <%= link("Delete",
-                phx_click: "delete",
-                phx_value_id: item.id,
-                data: [confirm: "Are you sure?"],
-                to: "#"
-              ) %>
-            </td>
+    <div class="w-full overflow-auto">
+      <table class="window">
+        <thead class="bg-purple-300">
+          <tr>
+            <th>Item</th>
+            <th>Description</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th></th>
+            <th></th>
+            <th></th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <%= for item <- @items do %>
+            <tr id={"item-#{item.id}"}>
+              <td>
+                <%= live_redirect(item.id,
+                  to: Routes.board_show_item_path(@socket, :show, item)
+                ) %>
+              </td>
+              <td>
+                <%= live_redirect(item.description,
+                  to: Routes.board_show_item_path(@socket, :show, item)
+                ) %>
+              </td>
+              <td class="text-center">
+                <%= item.priority %>
+              </td>
+              <td class="text-center">
+                <%= item.status %>
+              </td>
+              <td>
+                <%= format_date(item.inserted_at, :mdy) %>
+              </td>
+              <td>
+                <%= link("📌",
+                  class: if(!item.is_pinned, do: "opacity-30"),
+                  phx_click: "toggle_pin",
+                  phx_value_id: item.id,
+                  to: "#"
+                ) %>
+              </td>
+              <td>
+                <%= live_patch("Edit", to: index_path(@params, :edit_item, item.id)) %>
+              </td>
+              <td>
+                <%= link("Delete",
+                  phx_click: "delete",
+                  phx_value_id: item.id,
+                  data: [confirm: "Are you sure?"],
+                  to: "#"
+                ) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
     """
   end
 end
