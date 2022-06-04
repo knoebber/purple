@@ -68,6 +68,29 @@ defmodule PurpleWeb.LiveHelpers do
     JS.hide(js, to: "#dialog")
   end
 
+  def table(assigns) do
+    ~H"""
+    <div class="w-full overflow-auto">
+      <table class="window">
+        <thead class="bg-purple-300">
+          <tr>
+            <%= for col <- @col do %>
+              <th><%= col.label %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <%= for row <- @rows do %>
+          <tr>
+            <%= for col <- @col do %>
+              <td><%= render_slot(col, row) %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+    """
+  end
+
   def datetime_select_group(form, field, opts \\ []) do
     hours =
       Enum.map(
