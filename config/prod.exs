@@ -1,5 +1,7 @@
 import Config
 
+config :purple, :allow_user_registration, false
+
 # For production, don't forget to configure the url host
 # to something meaningful, Phoenix uses this information
 # when generating URLs.

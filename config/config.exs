@@ -22,7 +22,6 @@ config :purple, PurpleWeb.Endpoint,
 
 config :purple, :upload_dir, Path.expand("../priv/uploads", __DIR__)
 config :purple, :default_tz, "America/Los_Angeles"
-config :purple, :allow_user_registration, false
 
 # Configures the mailer
 #

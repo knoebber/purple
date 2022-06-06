@@ -1,5 +1,7 @@
 import Config
 
+config :purple, :allow_user_registration, true
+
 # Configure your database
 config :purple, Purple.Repo,
   username: System.get_env("USER"),
