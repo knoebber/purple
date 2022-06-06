@@ -1,7 +1,7 @@
 defmodule Purple.Finance do
   import Ecto.Query
 
-  alias Purple.Finance.{Transaction, Merchant, PaymentMethod}
+  alias Purple.Finance.{Transaction, Merchant, PaymentMethod, SharedBudget, SharedTransaction}
   alias Purple.Repo
   alias Purple.Tags
 
@@ -120,6 +120,7 @@ defmodule Purple.Finance do
 
   defp transaction_text_search(q, _), do: q
 
+  defp user_filter(q, %{user_id: user_id}), do: where(q, [tx, _, _], tx.user_id == ^user_id)
   defp merchant_filter(q, %{merchant: id}), do: where(q, [_, m, _], m.id == ^id)
   defp merchant_filter(q, _), do: q
   defp payment_method_filter(q, %{payment_method: id}), do: where(q, [_, m, pm], pm.id == ^id)
@@ -131,6 +132,7 @@ defmodule Purple.Finance do
     |> join(:inner, [tx], m in assoc(tx, :merchant))
     |> join(:inner, [tx], pm in assoc(tx, :payment_method))
     |> Tags.filter_by_tag(filter, :transaction)
+    |> user_filter(filter)
     |> merchant_filter(filter)
     |> payment_method_filter(filter)
     |> transaction_text_search(filter)
@@ -164,5 +166,17 @@ defmodule Purple.Finance do
       list_payment_methods(),
       fn %{id: id, name: name} -> [value: id, key: name] end
     )
+  end
+
+  def create_shared_budget! do
+    Repo.insert!(%SharedBudget{})
+  end
+
+  def create_shared_transaction!(shared_budget_id, transaction_id)
+      when is_integer(shared_budget_id) and is_integer(transaction_id) do
+    Repo.insert!(%SharedTransaction{
+      shared_budget_id: shared_budget_id,
+      transaction_id: transaction_id
+    })
   end
 end

@@ -49,13 +49,13 @@ defmodule PurpleWeb.FinanceLive.Index do
   end
 
   defp assign_finance_data(socket) do
-    filter = socket.assigns.filter.changes
+    filter = Purple.Filter.clean_filter(socket.assigns.filter)
 
     socket
     |> assign(:transactions, Finance.list_transactions(filter))
     |> assign(:merchant_options, Finance.merchant_mappings())
     |> assign(:payment_method_options, Finance.payment_method_mappings())
-    |> assign(:tag_options, Purple.Filter.make_tag_select_options(:transaction))
+    |> assign(:tag_options, Purple.Filter.make_tag_select_options(:transaction, filter))
   end
 
   defp get_action(%{"action" => action, "id" => id})
@@ -82,10 +82,16 @@ defmodule PurpleWeb.FinanceLive.Index do
   def handle_params(params, _url, socket) do
     action = get_action(params)
 
+    filter =
+      Purple.Filter.make_filter(
+        params,
+        %Purple.Filter{user_id: socket.assigns.current_user.id}
+      )
+
     {
       :noreply,
       socket
-      |> assign(:filter, Purple.Filter.make_filter(params))
+      |> assign(:filter, filter)
       |> assign(:params, params)
       |> assign(:action, action)
       |> assign_finance_data()

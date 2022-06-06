@@ -222,10 +222,6 @@ defmodule Purple.Tags do
 
   def filter_by_tag(query, _, _), do: query
 
-  def list_tags do
-    Repo.all(Tag)
-  end
-
   defp list_model_tags(model) when is_atom(model) do
     Repo.all(
       from m in model,
@@ -236,24 +232,32 @@ defmodule Purple.Tags do
     )
   end
 
-  def list_tags(:item), do: list_model_tags(ItemTag)
-  def list_tags(:run), do: list_model_tags(RunTag)
-
-  def list_tags(:transaction) do
-    Repo.all(
-      from t in Tag,
-        select: %{count: count(t.id), id: t.id, name: t.name},
-        left_join: mt in MerchantTag,
-        on: mt.tag_id == t.id,
-        left_join: tx in Purple.Finance.Transaction,
-        on: tx.merchant_id == mt.merchant_id,
-        left_join: tt in TransactionTag,
-        on: tt.tag_id == t.id,
-        where: not is_nil(tx.id) or not is_nil(tt.id),
-        group_by: t.id,
-        order_by: t.name
-    )
+  def list_tags do
+    Repo.all(Tag)
   end
 
-  def list_tags(:merchant), do: list_model_tags(MerchantTag)
+  def list_tags(atom), do: list_tags(atom, %{})
+  def list_tags(:item, _), do: list_model_tags(ItemTag)
+  def list_tags(:run, _), do: list_model_tags(RunTag)
+  def list_tags(:merchant, _), do: list_model_tags(MerchantTag)
+
+  def list_tags(:transaction, %{user_id: user_id}) do
+    Repo.all(
+      from tags in Tag,
+        left_join: mt in MerchantTag,
+        on: mt.tag_id == tags.id,
+        left_join: tt in TransactionTag,
+        on: tt.tag_id == tags.id,
+        join: tx in Purple.Finance.Transaction,
+        on: tx.id == tt.transaction_id or mt.merchant_id == tx.merchant_id,
+        where: tx.user_id == ^user_id,
+        group_by: tags.id,
+        order_by: tags.name,
+        select: %{
+          count: count(tx.id, :distinct),
+          id: tags.id,
+          name: tags.name
+        }
+    )
+  end
 end
