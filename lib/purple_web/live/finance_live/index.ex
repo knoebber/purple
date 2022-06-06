@@ -154,7 +154,7 @@ defmodule PurpleWeb.FinanceLive.Index do
       <% true -> %>
     <% end %>
     <.form
-      class="flex mb-2 gap-1"
+      class="table-filters"
       for={@filter}
       let={f}
       method="get"

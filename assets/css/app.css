@@ -173,4 +173,12 @@
         @apply flex;
         @apply justify-between;
     }
+
+    .table-filters {
+        @apply flex;
+        @apply flex-col;
+        @apply md:flex-row;
+        @apply gap-1;
+        @apply mb-2;
+    }
 }
