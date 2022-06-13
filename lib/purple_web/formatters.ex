@@ -19,15 +19,20 @@ defmodule PurpleWeb.Formatters do
     end
   end
 
+  def format_cents(cents) when is_integer(cents) do
+    "$" <>
+      (div(cents, 100) |> Integer.to_string()) <>
+      "." <>
+      (rem(cents, 100) |> Integer.to_string() |> String.pad_trailing(2, "0"))
+  end
+
   def format_duration(hours, minutes, seconds)
       when is_number(hours) and
              is_number(minutes) and
              is_number(seconds) and
              hours + minutes + seconds > 0 do
-    Enum.map(
-      [hours, minutes, seconds],
-      fn n -> Integer.to_string(n) |> String.pad_leading(2, "0") end
-    )
+    [hours, minutes, seconds]
+    |> Enum.map(fn n -> Integer.to_string(n) |> String.pad_leading(2, "0") end)
     |> Enum.join(":")
   end
 

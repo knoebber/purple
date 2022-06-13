@@ -168,6 +168,49 @@ defmodule Purple.Finance do
     )
   end
 
+  def list_shared_budgets do
+    Repo.all(SharedBudget)
+  end
+
+  def get_shared_budget_user_totals(shared_budget_id) do
+    Repo.all(
+      from shared_budget in SharedBudget,
+        join: shared_transaction in assoc(shared_budget, :shared_transactions),
+        join: transaction in assoc(shared_transaction, :transaction),
+        join: user in assoc(transaction, :user),
+        where: shared_budget.id == ^shared_budget_id,
+        group_by: [user.email, user.id],
+        order_by: [{:desc, fragment("1")}],
+        select: %{
+          email: user.email,
+          total_cents: sum(transaction.cents),
+          total_transactions: count(transaction.id),
+          user_id: user.id
+        }
+    )
+  end
+
+  def process_shared_budget_user_totals([]) do
+    %{max_cents: 0, title: "Empty shared budget", users: []}
+  end
+
+  def process_shared_budget_user_totals(shared_budget_user_totals) do
+    Enum.reduce(
+      shared_budget_user_totals,
+      %{
+        max_cents: hd(shared_budget_user_totals).total_cents,
+        title: shared_budget_user_totals |> Enum.map(& &1.email) |> Enum.join(", "),
+        users: []
+      },
+      fn data, acc ->
+        %{
+          acc
+          | users: acc.users ++ [Map.merge(data, %{behind: acc.max_cents - data.total_cents})]
+        }
+      end
+    )
+  end
+
   def create_shared_budget! do
     Repo.insert!(%SharedBudget{})
   end
