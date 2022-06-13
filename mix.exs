@@ -35,6 +35,7 @@ defmodule Purple.MixProject do
     [
       {:bcrypt_elixir, "~> 2.0"},
       {:earmark, "~> 1.4.20"},
+      {:ecto_dev_logger, "~> 0.2", runtime: Mix.env() == :dev},
       {:ecto_psql_extras, "~> 0.7.4"},
       {:ecto_sql, "~> 3.6"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},

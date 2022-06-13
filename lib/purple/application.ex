@@ -20,6 +20,8 @@ defmodule Purple.Application do
       # {Purple.Worker, arg}
     ]
 
+    Ecto.DevLogger.install(Purple.Repo)
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Purple.Supervisor]
