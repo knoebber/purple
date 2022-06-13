@@ -86,7 +86,7 @@ defmodule PurpleWeb.RunLive.Index do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="flex">
+    <div class="flex mb-2">
       <h1>Runs</h1>
       <%= live_patch(
         to: index_path(@params, :new),
