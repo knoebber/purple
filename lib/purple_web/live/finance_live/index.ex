@@ -58,7 +58,7 @@ defmodule PurpleWeb.FinanceLive.Index do
     |> assign(:tag_options, Purple.Filter.make_tag_select_options(:transaction, filter))
   end
 
-  defp get_action(%{"action" => action, "id" => id})
+  defp get_action(%{"action" => action, "id" => _})
        when action in [
               "edit_transaction",
               "edit_merchant",
@@ -77,6 +77,11 @@ defmodule PurpleWeb.FinanceLive.Index do
   end
 
   defp get_action(_), do: :index
+
+  @impl Phoenix.LiveView
+  def mount(_, _, socket) do
+    {:ok, assign(socket, :side_nav, side_nav())}
+  end
 
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do

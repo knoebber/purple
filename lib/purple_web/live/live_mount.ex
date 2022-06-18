@@ -1,10 +1,12 @@
-defmodule PurpleWeb.UserAuthLive do
+defmodule PurpleWeb.LiveMount do
   import Phoenix.LiveView
   alias Purple.Accounts
 
+  @impl Phoenix.LiveView
   def on_mount(:default, _params, %{"user_token" => user_token} = _session, socket) do
     socket =
       socket
+      |> assign(:side_nav, [])
       |> assign_new(
         :current_user,
         fn -> Accounts.get_user_by_session_token(user_token) end

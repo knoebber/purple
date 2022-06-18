@@ -47,4 +47,29 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
       %{}
     )
   end
+
+  def index_path do
+    index_path(%{}, %{})
+  end
+
+  def shared_path do
+    PurpleWeb.Router.Helpers.finance_shared_path(
+      PurpleWeb.Endpoint,
+      :index,
+      %{}
+    )
+  end
+
+  def side_nav do
+    [
+      %{
+        label: "Transactions",
+        to: index_path()
+      },
+      %{
+        label: "Shared",
+        to: shared_path()
+      }
+    ]
+  end
 end

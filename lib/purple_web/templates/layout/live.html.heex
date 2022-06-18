@@ -1,9 +1,8 @@
 <div class="content-flex">
   <nav>
-    <a href="#">Link1</a>
-    <a href="#">Link2</a>
-    <a href="#">Link3</a>
-    <a href="#">Link4</a>
+    <%= for link <- @side_nav || [] do %>
+      <%= live_patch(link.label, to: link.to) %>
+    <% end %>
   </nav>
   <main>
     <p class="flash flash-info" role="alert"
