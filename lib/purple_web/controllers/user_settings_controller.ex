@@ -4,7 +4,7 @@ defmodule PurpleWeb.UserSettingsController do
   alias Purple.Accounts
   alias PurpleWeb.UserAuth
 
-  plug :assign_email_and_password_changesets
+  plug :assign_data
 
   def edit(conn, _params) do
     render(conn, "edit.html")
@@ -64,11 +64,12 @@ defmodule PurpleWeb.UserSettingsController do
     end
   end
 
-  defp assign_email_and_password_changesets(conn, _opts) do
+  defp assign_data(conn, _opts) do
     user = conn.assigns.current_user
 
     conn
     |> assign(:email_changeset, Accounts.change_user_email(user))
+    |> assign(:page_title, "User Settings")
     |> assign(:password_changeset, Accounts.change_user_password(user))
   end
 end
