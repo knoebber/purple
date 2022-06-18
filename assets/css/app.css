@@ -2,16 +2,72 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* =============================================== */
+/* | Layout structure:                           | */
+/* |                                             | */
+/* | body > nav                                  | */
+/* |     > div.content-flex > nav                | */
+/* |                        > main > app content | */
+/* =============================================== */
+
 @layer base {
     html {
         overflow-y: scroll;
     }
 
-    main {
-        @apply container;
-        @apply mb-4;
-        @apply mt-4;
-        @apply mx-auto;
+    nav {
+        @apply bg-purple-300;
+        @apply border-purple-400;
+        @apply border;
+        @apply flex-col;
+        @apply flex;
+        @apply items-center;
+    }
+
+    nav > a {
+        @apply p-2;
+    }
+
+    .content-flex {
+        @apply flex;
+        @apply flex-col;
+    }
+
+    .content-flex > nav {
+        @apply border-t-0;
+    }
+
+    @media screen(sm) {
+        body > nav {
+            @apply flex-row;
+            @apply h-24;
+            @apply pl-4;
+
+            min-width: 100vw;
+        }
+
+        .content-flex {
+            @apply flex-row;
+        }
+
+        .content-flex > nav {
+            @apply pt-4;
+            @apply w-28;
+
+            min-height: calc(100vh - theme('height.24'));
+        }
+
+        .content-flex > nav > a {
+            /* @apply pl-8; */
+            /* @apply pr-8; */
+        }
+
+        main {
+            @apply pt-4;
+            @apply pl-8;
+
+            width: calc(100vw - theme('width.28'));
+        }
     }
 
     h1, h2, h3, h4 {
@@ -92,13 +148,10 @@
         @apply font-bold;
         @apply text-purple-700;
     }
+
 }
 
 @layer components {
-    nav > a {
-        @apply ml-3
-    }
-
     .window {
         @apply bg-purple-100;
         @apply border-collapse;
