@@ -9,7 +9,7 @@ import Config
 
 # Timezone support
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
-
+config :purple, env: config_env()
 config :purple,
   ecto_repos: [Purple.Repo]
 

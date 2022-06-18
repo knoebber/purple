@@ -20,7 +20,9 @@ defmodule Purple.Application do
       # {Purple.Worker, arg}
     ]
 
-    Ecto.DevLogger.install(Purple.Repo)
+    if Application.get_env(:purple, :env) == :dev do
+      Ecto.DevLogger.install(Purple.Repo)
+    end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
