@@ -1,27 +1,10 @@
 defmodule PurpleWeb.RunLive.Index do
   use PurpleWeb, :live_view
 
+  import PurpleWeb.RunLive.RunHelpers
+
   alias Purple.Activities
   alias Purple.Activities.Run
-
-  defp index_path(params, new_params = %{}) do
-    Routes.run_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
-  end
-
-  defp index_path(params, action = :new) do
-    index_path(params, %{action: action})
-  end
-
-  defp index_path(params, action = :edit, run_id) do
-    index_path(params, %{action: action, id: run_id})
-  end
-
-  defp index_path(params) do
-    index_path(
-      Map.reject(params, fn {key, val} -> key in ["action", "id"] or val == "" end),
-      %{}
-    )
-  end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
@@ -84,17 +67,16 @@ defmodule PurpleWeb.RunLive.Index do
   end
 
   @impl Phoenix.LiveView
+  def mount(_, _, socket) do
+    {:ok, assign(socket, :side_nav, side_nav())}
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="flex mb-2">
+    <div class="mb-2">
       <h1>Runs</h1>
-      <%= live_patch(
-        to: index_path(@params, :new),
-        class: "text-xl self-end ml-1 mr-1")
-    do %>
-        <button>➕</button>
-      <% end %>
-      <i class="self-end">
+      <i class="ml-2">
         <%= @weekly_total %> this week, <%= @total %> displayed
       </i>
     </div>

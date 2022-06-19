@@ -1,6 +1,8 @@
 defmodule PurpleWeb.BoardLive.ShowItem do
   use PurpleWeb, :live_view
 
+  import PurpleWeb.BoardLive.BoardHelpers
+
   alias Purple.Board
   alias Purple.Board.ItemEntry
   alias Purple.Uploads
@@ -165,6 +167,11 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       |> assign_uploads(socket.assigns.item.id)
       |> put_flash(:info, "Uploaded #{result.num_uploaded}/#{result.num_attempted} files")
     }
+  end
+
+  @impl Phoenix.LiveView
+  def mount(_, _, socket) do
+    {:ok, assign(socket, :side_nav, side_nav())}
   end
 
   defp cancel_link(assigns) do

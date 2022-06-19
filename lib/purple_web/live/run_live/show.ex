@@ -1,16 +1,13 @@
 defmodule PurpleWeb.RunLive.Show do
   use PurpleWeb, :live_view
 
+  import PurpleWeb.RunLive.RunHelpers
+
   alias Purple.Activities
   alias PurpleWeb.Markdown
 
   defp page_title(:show), do: "Show Run"
   defp page_title(:edit), do: "Edit Run"
-
-  @impl Phoenix.LiveView
-  def mount(_params, _session, socket) do
-    {:ok, socket}
-  end
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => id}, _, socket) do
@@ -28,6 +25,11 @@ defmodule PurpleWeb.RunLive.Show do
       |> assign(:run, run)
       |> assign(:run_rows, run_rows + 1)
     }
+  end
+
+  @impl Phoenix.LiveView
+  def mount(_, _, socket) do
+    {:ok, assign(socket, :side_nav, side_nav())}
   end
 
   @impl Phoenix.LiveView

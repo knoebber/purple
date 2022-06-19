@@ -1,30 +1,10 @@
 defmodule PurpleWeb.BoardLive.Index do
   use PurpleWeb, :live_view
 
+  import PurpleWeb.BoardLive.BoardHelpers
+
   alias Purple.Board
   alias Purple.Board.Item
-
-  defp index_path(params, new_params = %{}) do
-    Routes.board_index_path(PurpleWeb.Endpoint, :index, Map.merge(params, new_params))
-  end
-
-  defp index_path(params, action = :new_item) do
-    index_path(params, %{action: action})
-  end
-
-  defp index_path(params, action = :edit_item, item_id) do
-    index_path(params, %{action: action, id: item_id})
-  end
-
-  defp index_path(params) do
-    index_path(
-      Map.reject(
-        params,
-        fn {key, val} -> key in ["action", "id"] or val == "" end
-      ),
-      %{}
-    )
-  end
 
   defp apply_action(socket, :edit_item, %{"id" => id}) do
     socket
@@ -89,16 +69,15 @@ defmodule PurpleWeb.BoardLive.Index do
   end
 
   @impl Phoenix.LiveView
+  def mount(_, _, socket) do
+    {:ok, assign(socket, :side_nav, side_nav())}
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="flex mb-2">
+    <div class="flex">
       <h1>Items</h1>
-      <%= live_patch(
-        to: index_path(@params, :new_item),
-        class: "text-xl self-end ml-1")
-      do %>
-        <button>➕</button>
-      <% end %>
     </div>
     <%= if @action in [:new_item, :edit_item] do %>
       <.modal title={@page_title} return_to={index_path(@params)}>
