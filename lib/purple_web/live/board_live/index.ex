@@ -76,9 +76,7 @@ defmodule PurpleWeb.BoardLive.Index do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="flex">
-      <h1>Items</h1>
-    </div>
+    <h1 class="mb-2">Items</h1>
     <%= if @action in [:new_item, :edit_item] do %>
       <.modal title={@page_title} return_to={index_path(@params)}>
         <.live_component

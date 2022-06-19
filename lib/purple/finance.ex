@@ -205,7 +205,8 @@ defmodule Purple.Finance do
       fn data, acc ->
         %{
           acc
-          | users: acc.users ++ [Map.merge(data, %{behind: acc.max_cents - data.total_cents})]
+          | users:
+              acc.users ++ [Map.merge(data, %{cents_behind: acc.max_cents - data.total_cents})]
         }
       end
     )
@@ -213,6 +214,10 @@ defmodule Purple.Finance do
 
   def create_shared_budget! do
     Repo.insert!(%SharedBudget{})
+  end
+
+  def delete_shared_budget!(id) do
+    Repo.delete!(%SharedBudget{id: id})
   end
 
   def create_shared_transaction!(shared_budget_id, transaction_id)

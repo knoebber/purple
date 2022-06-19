@@ -74,9 +74,9 @@ defmodule PurpleWeb.RunLive.Index do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="mb-2">
+    <div class="mb-2 flex">
       <h1>Runs</h1>
-      <i class="ml-2">
+      <i class="ml-2 self-center">
         <%= @weekly_total %> this week, <%= @total %> displayed
       </i>
     </div>

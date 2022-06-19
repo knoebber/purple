@@ -121,12 +121,6 @@ defmodule PurpleWeb.FinanceLive.Index do
     ~H"""
     <div class="flex mb-2">
       <h1>Transactions</h1>
-      <%= live_patch(
-        to: index_path(@params, :new_transaction),
-        class: "text-xl self-end ml-1")
-      do %>
-        <button>➕</button>
-      <% end %>
     </div>
     <%= cond do %>
       <% @action in [:new_transaction, :edit_transaction] -> %>

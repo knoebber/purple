@@ -52,8 +52,8 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     index_path(%{}, %{})
   end
 
-  def shared_path do
-    PurpleWeb.Router.Helpers.finance_shared_path(
+  def shared_budget_index_path do
+    PurpleWeb.Router.Helpers.finance_shared_budget_index_path(
       PurpleWeb.Endpoint,
       :index,
       %{}
@@ -67,8 +67,12 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
         to: index_path()
       },
       %{
-        label: "Shared",
-        to: shared_path()
+        label: "New Transaction",
+        to: index_path(%{}, :new_transaction)
+      },
+      %{
+        label: "Shared Budgets",
+        to: shared_budget_index_path()
       }
     ]
   end

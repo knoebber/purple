@@ -44,7 +44,7 @@
     @media screen(sm) {
         body > nav {
             @apply flex-row;
-            @apply h-24;
+            @apply h-24; /* Must match calc in nav */
             @apply pl-4;
 
             min-width: 100vw;
@@ -56,7 +56,7 @@
 
         .content-flex > nav {
             @apply pt-4;
-            @apply w-32;
+            @apply w-56; /* Must match calc main */
 
             min-height: calc(100vh - theme('height.24'));
         }
@@ -71,7 +71,7 @@
             @apply pr-8;
             @apply pl-8;
 
-            width: calc(100vw - theme('width.32'));
+            width: calc(100vw - theme('width.56'));
         }
     }
 
@@ -135,12 +135,6 @@
         padding: 2px;
     }
 
-    button[type="submit"] {
-        @apply bg-purple-300;
-        @apply p-2;
-        @apply rounded;
-    }
-
     input[type="checkbox"] {
         @apply cursor-pointer;
     }
@@ -157,19 +151,21 @@
 }
 
 @layer components {
+    button[type="submit"], .btn {
+        @apply bg-purple-300;
+        @apply disabled:hover:bg-purple-100;
+        @apply disabled:opacity-75;
+        @apply hover:bg-purple-400;
+        @apply p-2;
+        @apply rounded;
+    }
+
     .window {
         @apply bg-purple-100;
         @apply border-collapse;
         @apply border-purple-400;
         @apply border;
         @apply rounded;
-    }
-
-    .btn {
-        @apply window;
-        @apply hover:bg-purple-200;
-        @apply disabled:opacity-75;
-        @apply disabled:hover:bg-purple-100;
     }
 
     .flash {
