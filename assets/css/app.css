@@ -37,6 +37,10 @@
         @apply border-t-0;
     }
 
+    main {
+        @apply p-4;
+    }
+
     @media screen(sm) {
         body > nav {
             @apply flex-row;
@@ -64,6 +68,7 @@
 
         main {
             @apply pt-4;
+            @apply pr-8;
             @apply pl-8;
 
             width: calc(100vw - theme('width.32'));
