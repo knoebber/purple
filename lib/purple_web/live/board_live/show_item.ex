@@ -8,11 +8,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   alias Purple.Uploads
   alias PurpleWeb.Markdown
 
-  defp page_title(item_id, :show), do: "Item #{item_id}"
-  defp page_title(item_id, :edit_item), do: "Edit Item #{item_id}"
-  defp page_title(_, :create_entry), do: "Create Item Entry"
-  defp page_title(_, :edit_entry), do: "Edit Item Entry"
-
   defp assign_uploads(socket, item_id) do
     files = Uploads.get_files_by_item(item_id)
 
@@ -23,10 +18,12 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   end
 
   defp assign_default_params(socket, item_id) do
+    item = Board.get_item!(item_id)
+
     socket
     |> assign_uploads(item_id)
-    |> assign(:page_title, page_title(item_id, socket.assigns.live_action))
-    |> assign(:item, Board.get_item!(item_id))
+    |> assign(:page_title, item.description)
+    |> assign(:item, item)
     |> assign(:entries, Board.get_item_entries(item_id))
   end
 

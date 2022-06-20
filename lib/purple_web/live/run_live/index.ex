@@ -101,6 +101,9 @@ defmodule PurpleWeb.RunLive.Index do
       phx-change="search"
       phx-submit="search"
     >
+      <%= live_patch(to: index_path(@params, :new)) do %>
+        <button class="btn">Create</button>
+      <% end %>
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
       <%= select(f, :tag, @tag_options) %>
     </.form>

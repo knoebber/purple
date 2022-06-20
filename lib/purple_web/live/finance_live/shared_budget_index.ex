@@ -35,7 +35,7 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetIndex do
     ~H"""
     <h1 class="mb-2">Shared Budgets</h1>
     <button class="btn mb-2" type="button" phx-click="new">
-      New Shared Budget
+      Create
     </button>
     <ul>
       <%= for shared_budget <- @shared_budgets do %>

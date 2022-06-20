@@ -166,6 +166,9 @@ defmodule PurpleWeb.FinanceLive.Index do
       phx-change="search"
       phx-submit="search"
     >
+      <%= live_patch(to: index_path(@params, :new_transaction)) do %>
+        <button class="btn">Create</button>
+      <% end %>
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
       <%= select(f, :tag, @tag_options) %>
       <%= select(
@@ -181,7 +184,7 @@ defmodule PurpleWeb.FinanceLive.Index do
     </.form>
     <.table rows={@transactions}>
       <:col let={transaction} label="Amount">
-        <%= transaction.amount %>
+        <%= transaction.dollars %>
       </:col>
       <:col let={transaction} label="Timestamp">
         <%= format_date(transaction.timestamp) %>

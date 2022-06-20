@@ -80,8 +80,8 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     <div>
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
-          <%= label(f, :amount, "Amount") %>
-          <%= text_input(f, :amount, phx_hook: "AutoFocus") %>
+          <%= label(f, :dollars, "Amount") %>
+          <%= text_input(f, :dollars, phx_hook: "AutoFocus") %>
           <%= error_tag(f, :cents) %>
           <%= label(f, :timestamp, "Timestamp") %>
           <%= datetime_select_group(f, :timestamp) %>
