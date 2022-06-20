@@ -5,7 +5,7 @@ defmodule Purple.Finance do
   alias Purple.Repo
   alias Purple.Tags
 
-  @amount_fragment "CONCAT('$', ROUND(cents/100.00,2))"
+  @dollar_amount_fragment "CONCAT('$', ROUND(cents/100.00,2))"
 
   def change_transaction(%Transaction{} = transaction, attrs \\ %{}) do
     Transaction.changeset(transaction, attrs)
@@ -75,7 +75,7 @@ defmodule Purple.Finance do
   def get_transaction!(id) do
     Repo.one!(
       from tx in Transaction,
-        select_merge: %{amount: fragment(@amount_fragment)},
+        select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         join: m in assoc(tx, :merchant),
         join: pm in assoc(tx, :payment_method),
         where: tx.id == ^id,
@@ -86,7 +86,7 @@ defmodule Purple.Finance do
   def get_transaction!(id, :tags) do
     Repo.one!(
       from tx in Transaction,
-        select_merge: %{amount: fragment(@amount_fragment)},
+        select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         left_join: t in assoc(tx, :tags),
         where: tx.id == ^id,
         preload: [tags: t]
@@ -120,22 +120,34 @@ defmodule Purple.Finance do
 
   defp transaction_text_search(q, _), do: q
 
-  defp user_filter(q, %{user_id: user_id}), do: where(q, [tx, _, _], tx.user_id == ^user_id)
-  defp merchant_filter(q, %{merchant: id}), do: where(q, [_, m, _], m.id == ^id)
+  defp user_filter(q, %{user_id: user_id}), do: where(q, [tx, _], tx.user_id == ^user_id)
+  defp merchant_filter(q, %{merchant: id}), do: where(q, [_, m], m.id == ^id)
   defp merchant_filter(q, _), do: q
-  defp payment_method_filter(q, %{payment_method: id}), do: where(q, [_, m, pm], pm.id == ^id)
+  defp payment_method_filter(q, %{payment_method: id}), do: where(q, [_, _, pm], pm.id == ^id)
   defp payment_method_filter(q, _), do: q
+
+  defp shared_budget_filter(q, %{shared_budget_id: id}) do
+    where(q, [_, _, _, stx], stx.shared_budget_id == ^id)
+  end
+
+  defp shared_budget_filter(q, %{not_shared_budget_id: id}) do
+    where(q, [_, _, _, stx], is_nil(stx.shared_budget_id) or stx.shared_budget_id != ^id)
+  end
+
+  defp shared_budget_filter(q, _), do: q
 
   def list_transactions(filter \\ %{}) do
     Transaction
-    |> select_merge(%{amount: fragment(@amount_fragment)})
+    |> select_merge(%{dollars: fragment(@dollar_amount_fragment)})
     |> join(:inner, [tx], m in assoc(tx, :merchant))
     |> join(:inner, [tx], pm in assoc(tx, :payment_method))
+    |> join(:left, [tx], stx in assoc(tx, :shared_transaction))
     |> Tags.filter_by_tag(filter, :transaction)
-    |> user_filter(filter)
     |> merchant_filter(filter)
     |> payment_method_filter(filter)
+    |> shared_budget_filter(filter)
     |> transaction_text_search(filter)
+    |> user_filter(filter)
     |> order_by(desc: :timestamp)
     |> preload([_, m, pm], merchant: m, payment_method: pm)
     |> Repo.all()
@@ -179,10 +191,11 @@ defmodule Purple.Finance do
         join: transaction in assoc(shared_transaction, :transaction),
         join: user in assoc(transaction, :user),
         where: shared_budget.id == ^shared_budget_id,
-        group_by: [user.email, user.id],
-        order_by: [{:desc, fragment("1")}],
+        group_by: [shared_budget.id, user.email, user.id],
+        order_by: [{:desc, sum(transaction.cents)}],
         select: %{
           email: user.email,
+          shared_budget_id: shared_budget.id,
           total_cents: sum(transaction.cents),
           total_transactions: count(transaction.id),
           user_id: user.id
@@ -206,7 +219,20 @@ defmodule Purple.Finance do
         %{
           acc
           | users:
-              acc.users ++ [Map.merge(data, %{cents_behind: acc.max_cents - data.total_cents})]
+              acc.users ++
+                [
+                  Map.merge(
+                    data,
+                    %{
+                      cents_behind: acc.max_cents - data.total_cents,
+                      transactions:
+                        list_transactions(%{
+                          user_id: data.user_id,
+                          shared_budget_id: data.shared_budget_id
+                        })
+                    }
+                  )
+                ]
         }
       end
     )
@@ -220,11 +246,20 @@ defmodule Purple.Finance do
     Repo.delete!(%SharedBudget{id: id})
   end
 
-  def create_shared_transaction!(shared_budget_id, transaction_id)
-      when is_integer(shared_budget_id) and is_integer(transaction_id) do
+  def create_shared_transaction!(shared_budget_id, transaction_id) do
     Repo.insert!(%SharedTransaction{
       shared_budget_id: shared_budget_id,
       transaction_id: transaction_id
     })
+  end
+
+  def remove_shared_transaction!(shared_budget_id, transaction_id) do
+    Repo.delete!(
+      Repo.one(
+        from stx in SharedTransaction,
+          where:
+            stx.shared_budget_id == ^shared_budget_id and stx.transaction_id == ^transaction_id
+      )
+    )
   end
 end

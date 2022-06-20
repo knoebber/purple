@@ -7,13 +7,14 @@ defmodule Purple.Finance.Transaction do
     field :description, :string, default: ""
     field :timestamp, :naive_datetime
 
-    field :amount, :string, default: "", virtual: true
+    field :dollars, :string, default: "", virtual: true
 
     timestamps()
 
     belongs_to :merchant, Purple.Finance.Merchant
     belongs_to :payment_method, Purple.Finance.PaymentMethod
     belongs_to :user, Purple.Accounts.User
+    has_one :shared_transaction, Purple.Finance.SharedTransaction
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.TransactionTag
   end
 
@@ -36,9 +37,9 @@ defmodule Purple.Finance.Transaction do
   def get_cents([dollars, cents]), do: get_cents([dollars]) + String.to_integer(cents)
   def get_cents(<<?$, rest::binary>>), do: get_cents(rest)
 
-  def get_cents(amount) when is_binary(amount) do
-    if Regex.match?(~r/^\$?[0-9]+(\.[0-9]{1,2})?$/, amount) do
-      get_cents(String.split(amount, "."))
+  def get_cents(dollars) when is_binary(dollars) do
+    if Regex.match?(~r/^\$?[0-9]+(\.[0-9]{1,2})?$/, dollars) do
+      get_cents(String.split(dollars, "."))
     else
       0
     end
@@ -48,20 +49,20 @@ defmodule Purple.Finance.Transaction do
     put_change(
       changeset,
       :cents,
-      get_cents(get_field(changeset, :amount))
+      get_cents(get_field(changeset, :dollars))
     )
   end
 
   def changeset(transaction, attrs) do
     transaction
     |> cast(attrs, [
-      :amount,
+      :dollars,
       :description,
       :merchant_id,
       :payment_method_id
     ])
     |> validate_required([
-      :amount,
+      :dollars,
       :merchant_id,
       :payment_method_id
     ])

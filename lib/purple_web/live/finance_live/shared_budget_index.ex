@@ -40,7 +40,7 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetIndex do
     <ul>
       <%= for shared_budget <- @shared_budgets do %>
         <li>
-          <%= live_redirect(shared_budget.id,
+          <%= live_redirect("Shared budget #{shared_budget.id}",
             to: Routes.finance_show_shared_budget_path(@socket, :show, shared_budget)
           ) %>
         </li>
