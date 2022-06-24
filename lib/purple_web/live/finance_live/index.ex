@@ -195,6 +195,9 @@ defmodule PurpleWeb.FinanceLive.Index do
       <:col let={transaction} label="Payment Method">
         <%= transaction.payment_method.name %>
       </:col>
+      <:col let={transaction} label="Description">
+        <%= transaction.description %>
+      </:col>
       <:col let={transaction} label="">
         <%= live_patch("Edit", to: index_path(@params, :edit_transaction, transaction.id)) %>
       </:col>

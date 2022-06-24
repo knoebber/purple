@@ -80,6 +80,9 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     <div>
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
+          <%= label(f, :description) %>
+          <%= textarea(f, :description, rows: @rows) %>
+          <%= error_tag(f, :description) %>
           <%= label(f, :dollars, "Amount") %>
           <%= text_input(f, :dollars, phx_hook: "AutoFocus") %>
           <%= error_tag(f, :cents) %>
@@ -120,9 +123,6 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
             <% end %>
           </div>
           <%= error_tag(f, :payment_method_id) %>
-          <%= label(f, :description) %>
-          <%= textarea(f, :description, rows: @rows) %>
-          <%= error_tag(f, :description) %>
         </div>
         <%= submit("Save", phx_disable_with: "Saving...") %>
       </.form>
