@@ -106,10 +106,19 @@ defmodule Purple.Board do
 
   defp item_text_search(query, _), do: query
 
+  defp item_done_filter(query, %{show_done: true}) do
+    query
+  end
+
+  defp item_done_filter(query, _) do
+    where(query, [i], i.status != ^"DONE")
+  end
+
   def list_items(filter \\ %{}) do
     Item
     |> order_by(desc: :is_pinned, desc: :completed_at, asc: :priority)
     |> item_text_search(filter)
+    |> item_done_filter(filter)
     |> Tags.filter_by_tag(filter, :item)
     |> Repo.all()
   end

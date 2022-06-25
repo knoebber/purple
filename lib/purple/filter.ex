@@ -6,6 +6,7 @@ defmodule Purple.Filter do
     field :merchant, :integer
     field :payment_method, :integer
     field :query, :string, default: ""
+    field :show_done, :boolean, default: false
     field :tag, :string, default: ""
     field :user_id, :integer
   end
@@ -15,6 +16,7 @@ defmodule Purple.Filter do
       :merchant,
       :payment_method,
       :query,
+      :show_done,
       :tag
     ])
   end
@@ -22,7 +24,7 @@ defmodule Purple.Filter do
   def clean_filter(changeset = %Ecto.Changeset{}) do
     changeset.data
     |> Map.merge(changeset.changes)
-    |> Map.reject(fn {_, val} -> is_nil(val) or val == "" or val == 0 end)
+    |> Map.reject(fn {_, val} -> is_nil(val) or val == "" or val == 0 or val == false end)
   end
 
   def make_tag_select_options(type, filter \\ %{}) when is_atom(type) do

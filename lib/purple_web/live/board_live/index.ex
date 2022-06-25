@@ -25,8 +25,10 @@ defmodule PurpleWeb.BoardLive.Index do
   end
 
   defp assign_items(socket) do
+    filter = Purple.Filter.clean_filter(socket.assigns.filter)
+
     socket
-    |> assign(:items, Board.list_items(socket.assigns.filter.changes))
+    |> assign(:items, Board.list_items(filter))
     |> assign(:tag_options, Purple.Filter.make_tag_select_options(:item))
   end
 
@@ -101,6 +103,8 @@ defmodule PurpleWeb.BoardLive.Index do
       <% end %>
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
       <%= select(f, :tag, @tag_options) %>
+      <%= label(f, :show_done, "Show Done?", class: "self-center ml-2") %>
+      <%= checkbox(f, :show_done, class: "self-center") %>
     </.form>
     <.table rows={@items}>
       <:col let={item} label="Item">
