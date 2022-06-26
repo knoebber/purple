@@ -215,6 +215,24 @@ defmodule Purple.Accounts do
     end
   end
 
+  @doc """
+  Update password for account with email directly.
+  """
+  def admin_password_update(email, new_password) do
+    user = get_user_by_email(email)
+
+    changeset = User.password_changeset(user, %{password: new_password})
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:user, changeset)
+    |> Ecto.Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{user: user}} -> {:ok, user}
+      {:error, :user, changeset, _} -> {:error, changeset}
+    end
+  end
+
   ## Session
 
   @doc """
