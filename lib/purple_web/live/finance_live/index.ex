@@ -88,6 +88,7 @@ defmodule PurpleWeb.FinanceLive.Index do
     end
   end
 
+  @impl true
   def handle_info({:saved_merchant, id}, socket) do
     params =
       Map.merge(

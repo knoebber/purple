@@ -6,6 +6,7 @@ defmodule Purple.Finance.Merchant do
     field :name, :string
     field :description, :string, default: ""
 
+    has_many :transactions, Purple.Finance.Transaction
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.MerchantTag
 
     timestamps()

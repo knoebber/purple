@@ -6,12 +6,13 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
   alias Purple.Finance
   alias Purple.Finance.Merchant
 
-  def handle_info({:saved_merchant, id}, socket) do
+  @impl true
+  def handle_info({:saved_merchant, _id}, socket) do
     {
       :noreply,
       socket
       |> put_flash(:info, "Merchant saved")
-      |> assign(:merchants, Finance.list_merchants())
+      |> assign(:merchants, Finance.list_merchants(:transactions))
     }
   end
 
@@ -21,9 +22,14 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
       :ok,
       socket
       |> assign(:page_title, "Merchants")
-      |> assign(:merchants, Finance.list_merchants())
+      |> assign(:merchants, Finance.list_merchants(:transactions))
       |> assign(:side_nav, side_nav())
     }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(params, _url, socket) do
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -37,7 +43,6 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
         module={PurpleWeb.FinanceLive.MerchantForm}
         merchant={%Merchant{}}
       />
-
     </div>
     <.table rows={@merchants}>
       <:col let={merchant} label="Name">
@@ -45,6 +50,9 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
       </:col>
       <:col let={merchant} label="Description">
         <%= merchant.description %>
+      </:col>
+      <:col let={merchant} label="# Transactions">
+        <%= length(merchant.transactions) %>
       </:col>
     </.table>
     """

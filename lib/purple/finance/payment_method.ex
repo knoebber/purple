@@ -5,6 +5,8 @@ defmodule Purple.Finance.PaymentMethod do
   schema "payment_methods" do
     field :name, :string
 
+    has_many :transactions, Purple.Finance.Transaction
+
     timestamps()
   end
 

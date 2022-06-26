@@ -6,12 +6,13 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
   alias Purple.Finance
   alias Purple.Finance.PaymentMethod
 
-  def handle_info({:saved_payment_method, id}, socket) do
+  @impl true
+  def handle_info({:saved_payment_method, _id}, socket) do
     {
       :noreply,
       socket
       |> put_flash(:info, "Payment method saved")
-      |> assign(:payment_methods, Finance.list_payment_methods())
+      |> assign(:payment_methods, Finance.list_payment_methods(:transactions))
     }
   end
 
@@ -21,9 +22,14 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
       :ok,
       socket
       |> assign(:page_title, "Payment Methods")
-      |> assign(:payment_methods, Finance.list_payment_methods())
+      |> assign(:payment_methods, Finance.list_payment_methods(:transactions))
       |> assign(:side_nav, side_nav())
     }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(params, _url, socket) do
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -41,6 +47,9 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
     <.table rows={@payment_methods}>
       <:col let={payment_method} label="Name">
         <%= payment_method.name %>
+      </:col>
+      <:col let={payment_method} label="# Transactions">
+        <%= length(payment_method.transactions) %>
       </:col>
     </.table>
     """

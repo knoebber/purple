@@ -159,10 +159,25 @@ defmodule Purple.Finance do
     |> Repo.all()
   end
 
-  def list_merchants(filter \\ %{}) do
-    Merchant
-    |> Tags.filter_by_tag(filter, :merchant)
+  def list_payment_methods(:transactions) do
+    PaymentMethod
+    |> join(:left, [pm], tx in assoc(pm, :transactions))
     |> order_by(:name)
+    |> preload([_, tx], transactions: tx)
+    |> Repo.all()
+  end
+
+  def list_merchants() do
+    Merchant
+    |> order_by(:name)
+    |> Repo.all()
+  end
+
+  def list_merchants(:transactions) do
+    Merchant
+    |> join(:left, [m], tx in assoc(m, :transactions))
+    |> order_by(:name)
+    |> preload([_, tx], transactions: tx)
     |> Repo.all()
   end
 
