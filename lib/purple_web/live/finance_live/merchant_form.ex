@@ -29,28 +29,9 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
     case save_merchant(socket, socket.assigns.action, merchant) do
       {:ok, merchant} ->
         Purple.Tags.sync_tags(merchant.id, :merchant)
+        send self(), {:saved_merchant, merchant.id}
+        {:noreply, socket}
 
-        params =
-          Map.merge(
-            socket.assigns.params,
-            %{merchant_id: merchant.id}
-          )
-
-        transaction_id = Map.get(params, "transaction_id")
-
-        return_to =
-          if transaction_id do
-            index_path(params, :edit_transaction, transaction_id)
-          else
-            index_path(params, :new_transaction)
-          end
-
-        {
-          :noreply,
-          socket
-          |> put_flash(:info, "Merchant saved")
-          |> push_patch(to: return_to)
-        }
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}

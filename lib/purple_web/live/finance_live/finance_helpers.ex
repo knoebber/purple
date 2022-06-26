@@ -60,6 +60,23 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     )
   end
 
+  def merchant_index_path do
+    PurpleWeb.Router.Helpers.finance_merchant_index_path(
+      PurpleWeb.Endpoint,
+      :index,
+      %{}
+    )
+  end
+
+  def payment_method_index_path do
+    PurpleWeb.Router.Helpers.finance_payment_method_index_path(
+      PurpleWeb.Endpoint,
+      :index,
+      %{}
+    )
+  end
+
+
   def side_nav do
     [
       %{
@@ -67,8 +84,16 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
         to: index_path()
       },
       %{
-        label: "New Transaction",
+        label: "Add Transactions",
         to: index_path(%{}, :new_transaction)
+      },
+      %{
+        label: "Merchants",
+        to: merchant_index_path(),
+      },
+      %{
+        label: "Payment Methods",
+        to: payment_method_index_path(),
       },
       %{
         label: "Shared Budgets",

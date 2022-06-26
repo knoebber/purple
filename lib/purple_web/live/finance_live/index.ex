@@ -78,6 +78,46 @@ defmodule PurpleWeb.FinanceLive.Index do
 
   defp get_action(_), do: :index
 
+  defp get_return_to(params) do
+    transaction_id = Map.get(params, "transaction_id")
+
+    if transaction_id do
+      index_path(params, :edit_transaction, transaction_id)
+    else
+      index_path(params, :new_transaction)
+    end
+  end
+
+  def handle_info({:saved_merchant, id}, socket) do
+    params =
+      Map.merge(
+        socket.assigns.params,
+        %{merchant_id: id}
+      )
+
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Merchant saved")
+      |> push_patch(to: get_return_to(params))
+    }
+  end
+
+  def handle_info({:saved_payment_method, id}, socket) do
+    params =
+      Map.merge(
+        socket.assigns.params,
+        %{payment_method_id: id}
+      )
+
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Payment Method saved")
+      |> push_patch(to: get_return_to(params))
+    }
+  end
+
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
     {:ok, assign(socket, :side_nav, side_nav())}
@@ -143,7 +183,6 @@ defmodule PurpleWeb.FinanceLive.Index do
             id={@merchant.id || :new}
             merchant={@merchant}
             module={PurpleWeb.FinanceLive.MerchantForm}
-            params={@params}
           />
         </.modal>
       <% @action in [:new_payment_method, :edit_payment_method] -> %>
@@ -152,7 +191,6 @@ defmodule PurpleWeb.FinanceLive.Index do
             action={@action}
             id={@payment_method.id || :new}
             module={PurpleWeb.FinanceLive.PaymentMethodForm}
-            params={@params}
             payment_method={@payment_method}
           />
         </.modal>

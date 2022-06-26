@@ -27,27 +27,8 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodForm do
   def handle_event("save", %{"payment_method" => payment_method}, socket) do
     case save_payment_method(socket, socket.assigns.action, payment_method) do
       {:ok, payment_method} ->
-        params =
-          Map.merge(
-            socket.assigns.params,
-            %{payment_method_id: payment_method.id}
-          )
-
-        transaction_id = Map.get(params, "transaction_id")
-
-        return_to =
-          if transaction_id do
-            index_path(params, :edit_transaction, transaction_id)
-          else
-            index_path(params, :new_transaction)
-          end
-
-        {
-          :noreply,
-          socket
-          |> put_flash(:info, "Payment method saved")
-          |> push_patch(to: return_to)
-        }
+        send self(), {:saved_payment_method, payment_method.id}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
