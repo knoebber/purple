@@ -38,7 +38,7 @@ defmodule PurpleWeb.LiveHelpers do
 
     ~H"""
     <dialog
-      class="p-0 mx-auto w-5/6 md:w-1/2 xl:w-1/3 drop-shadow window fixed z-10"
+      class="p-0 mx-auto w-5/6 md:w-1/2 xl:w-1/3 drop-shadow window z-10 absolute md:fixed"
       id="dialog"
       open
       phx-click-away={JS.dispatch("click", to: "#close")}
