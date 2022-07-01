@@ -6,6 +6,7 @@ defmodule Purple.Finance.Transaction do
     field :cents, :integer
     field :description, :string, default: ""
     field :timestamp, :naive_datetime
+    field :notes, :string, default: ""
 
     field :dollars, :string, default: "", virtual: true
 
@@ -56,9 +57,10 @@ defmodule Purple.Finance.Transaction do
   def changeset(transaction, attrs) do
     transaction
     |> cast(attrs, [
-      :dollars,
       :description,
+      :dollars,
       :merchant_id,
+      :notes,
       :payment_method_id
     ])
     |> validate_required([

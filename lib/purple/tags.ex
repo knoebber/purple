@@ -49,7 +49,10 @@ defmodule Purple.Tags do
   end
 
   def extract_tags(%Purple.Finance.Transaction{} = transaction) do
-    extract_tags_from_markdown(transaction.description)
+    Enum.uniq(
+      extract_tags_from_markdown(transaction.description) ++
+        extract_tags_from_markdown(transaction.notes)
+    )
   end
 
   def extract_tags(%Purple.Finance.Merchant{} = merchant) do

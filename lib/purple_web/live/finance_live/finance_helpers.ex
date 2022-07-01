@@ -76,6 +76,9 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     )
   end
 
+  def shared_budget_title(%Purple.Finance.SharedBudget{name: name}) do
+    name
+  end
 
   def side_nav do
     [
@@ -89,16 +92,27 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
       },
       %{
         label: "Merchants",
-        to: merchant_index_path(),
+        to: merchant_index_path()
       },
       %{
         label: "Payment Methods",
-        to: payment_method_index_path(),
+        to: payment_method_index_path()
       },
       %{
         label: "Shared Budgets",
         to: shared_budget_index_path()
       }
-    ]
+    ] ++
+      for shared_budget <- Purple.Finance.list_shared_budgets() do
+        %{
+          label: shared_budget_title(shared_budget),
+          to:
+            PurpleWeb.Router.Helpers.finance_show_shared_budget_path(
+              PurpleWeb.Endpoint,
+              :show,
+              shared_budget
+            )
+        }
+      end
   end
 end

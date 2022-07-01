@@ -253,8 +253,8 @@ defmodule Purple.Finance do
     )
   end
 
-  def create_shared_budget! do
-    Repo.insert!(%SharedBudget{})
+  def create_shared_budget!(name) do
+    Repo.insert!(%SharedBudget{name: name})
   end
 
   def delete_shared_budget!(id) do

@@ -26,6 +26,10 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     end
   end
 
+  defp should_leave_open?(params) do
+    Map.get(params, "should_leave_open") == "on"
+  end
+
   defp assign_changeset(socket, params) do
     assigns = socket.assigns
     changeset = Finance.change_transaction(assigns.transaction, params)
@@ -46,27 +50,40 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       :ok,
       socket
       |> assign(assigns)
-      |> assign(:rows, text_area_rows(assigns.transaction.description))
+      |> assign(:rows, text_area_rows(assigns.transaction.notes))
       |> assign_changeset(assigns.params)
+      |> assign(:should_leave_open, false)
     }
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("validate", %{"transaction" => params}, socket) do
-    {:noreply, assign_changeset(socket, params)}
+  def handle_event("validate", params = %{"transaction" => tx_params}, socket) do
+    {
+      :noreply,
+      socket
+      |> assign_changeset(tx_params)
+      |> assign(:should_leave_open, should_leave_open?(params))
+    }
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("save", %{"transaction" => params}, socket) do
-    case save_transaction(socket, socket.assigns.action, params) do
+  def handle_event("save", params = %{"transaction" => tx_params}, socket) do
+    case save_transaction(socket, socket.assigns.action, tx_params) do
       {:ok, transaction} ->
         Purple.Tags.sync_tags(transaction.id, :transaction)
+
+        next_path =
+          if should_leave_open?(params) do
+            index_path(socket.assigns.params, :new_transaction)
+          else
+            index_path(socket.assigns.params)
+          end
 
         {
           :noreply,
           socket
           |> put_flash(:info, "Transaction saved")
-          |> push_patch(to: index_path(socket.assigns.params))
+          |> push_patch(to: next_path)
         }
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -81,7 +98,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
           <%= label(f, :description) %>
-          <%= textarea(f, :description, rows: @rows) %>
+          <%= text_input(f, :description, rows: @rows) %>
           <%= error_tag(f, :description) %>
           <%= label(f, :dollars, "Amount") %>
           <%= text_input(f, :dollars, phx_hook: "AutoFocus") %>
@@ -123,8 +140,19 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
             <% end %>
           </div>
           <%= error_tag(f, :payment_method_id) %>
+          <%= label(f, :notes) %>
+          <%= textarea(f, :notes, rows: @rows) %>
+          <%= error_tag(f, :notes) %>
         </div>
-        <%= submit("Save", phx_disable_with: "Saving...") %>
+        <div class="flex justify-between">
+          <%= submit("Save", phx_disable_with: "Saving...") %>
+          <%= if @action == :new_transaction do %>
+            <div class="self-center">
+              <label for="should_leave_open">Create Another?</label>
+              <input type="checkbox" name="should_leave_open" checked={@should_leave_open} />
+            </div>
+          <% end %>
+        </div>
       </.form>
     </div>
     """
