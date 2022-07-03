@@ -1,8 +1,6 @@
 defmodule PurpleWeb.FinanceLive.PaymentMethodForm do
   use PurpleWeb, :live_component
 
-  import PurpleWeb.FinanceLive.FinanceHelpers
-
   alias Purple.Finance
 
   defp save_payment_method(socket, :edit_payment_method, params) do
@@ -27,7 +25,7 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodForm do
   def handle_event("save", %{"payment_method" => payment_method}, socket) do
     case save_payment_method(socket, socket.assigns.action, payment_method) do
       {:ok, payment_method} ->
-        send self(), {:saved_payment_method, payment_method.id}
+        send(self(), {:saved_payment_method, payment_method.id})
         {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->

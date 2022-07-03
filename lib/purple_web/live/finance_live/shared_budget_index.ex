@@ -31,6 +31,7 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetIndex do
     }
   end
 
+  @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
     {:noreply, assign(socket, :name, "")}
   end

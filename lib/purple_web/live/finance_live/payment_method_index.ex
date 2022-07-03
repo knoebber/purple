@@ -28,7 +28,7 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(params, _url, socket) do
+  def handle_params(_, _url, socket) do
     {:noreply, socket}
   end
 

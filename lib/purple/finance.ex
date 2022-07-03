@@ -1,7 +1,15 @@
 defmodule Purple.Finance do
   import Ecto.Query
 
-  alias Purple.Finance.{Transaction, Merchant, PaymentMethod, SharedBudget, SharedTransaction}
+  alias Purple.Finance.{
+    Transaction,
+    Merchant,
+    PaymentMethod,
+    SharedBudget,
+    SharedTransaction,
+    SharedBudgetAdjustment
+  }
+
   alias Purple.Repo
   alias Purple.Tags
 
@@ -17,6 +25,10 @@ defmodule Purple.Finance do
 
   def change_payment_method(%PaymentMethod{} = payment_method, attrs \\ %{}) do
     PaymentMethod.changeset(payment_method, attrs)
+  end
+
+  def change_shared_budget_adjustment(%SharedBudgetAdjustment{} = adjustment, attrs \\ %{}) do
+    SharedBudgetAdjustment.changeset(adjustment, attrs)
   end
 
   def create_merchant(params) do
@@ -37,6 +49,12 @@ defmodule Purple.Finance do
     |> Repo.insert()
   end
 
+  def create_shared_budget_adjustment(user_id, params) do
+    %SharedBudgetAdjustment{user_id: user_id}
+    |> SharedBudgetAdjustment.changeset(params)
+    |> Repo.insert()
+  end
+
   def update_merchant(%Merchant{} = merchant, params) do
     merchant
     |> Merchant.changeset(params)
@@ -52,6 +70,12 @@ defmodule Purple.Finance do
   def update_transaction(%Transaction{} = transaction, params) do
     transaction
     |> Transaction.changeset(params)
+    |> Repo.update()
+  end
+
+  def update_shared_budget_adjustment(%SharedBudgetAdjustment{} = adjustment, params) do
+    adjustment
+    |> SharedBudgetAdjustment.changeset(params)
     |> Repo.update()
   end
 
@@ -93,8 +117,30 @@ defmodule Purple.Finance do
     )
   end
 
+  def get_shared_budget_balance_adjustment!(id) do
+    Repo.one!(
+      from adjustment in SharedBudgetBalanceAdjustment,
+        select_merge: %{dollars: fragment(@dollar_amount_fragment)},
+        where: adjustment.id == ^id
+    )
+  end
+
+  def get_shared_budget_balance_adjustment!(id, :tags) do
+    Repo.one!(
+      from adjustment in SharedBudgetBalanceAdjustment,
+        select_merge: %{dollars: fragment(@dollar_amount_fragment)},
+        left_join: t in assoc(adjustment, :tags),
+        where: adjustment.id == ^id,
+        preload: [tags: t]
+    )
+  end
+
   def delete_transaction!(%Transaction{} = transaction) do
     Repo.delete!(transaction)
+  end
+
+  def delete_shared_budget_adjustment(%SharedBudgetAdjustment{} = adjustment) do
+    Repo.delete!(adjustment)
   end
 
   def delete_merchant!(%Merchant{} = merchant) do

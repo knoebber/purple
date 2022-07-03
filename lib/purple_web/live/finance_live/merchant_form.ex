@@ -1,8 +1,6 @@
 defmodule PurpleWeb.FinanceLive.MerchantForm do
   use PurpleWeb, :live_component
 
-  import PurpleWeb.FinanceLive.FinanceHelpers
-
   alias Purple.Finance
 
   defp save_merchant(socket, :edit_merchant, params) do
@@ -29,9 +27,8 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
     case save_merchant(socket, socket.assigns.action, merchant) do
       {:ok, merchant} ->
         Purple.Tags.sync_tags(merchant.id, :merchant)
-        send self(), {:saved_merchant, merchant.id}
+        send(self(), {:saved_merchant, merchant.id})
         {:noreply, socket}
-
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}

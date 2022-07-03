@@ -24,8 +24,8 @@ defmodule Purple.Finance.SharedBudgetAdjustment do
     )
   end
 
-  def changeset(transaction, attrs) do
-    transaction
+  def changeset(adjustment, attrs) do
+    adjustment
     |> cast(attrs, [
       :description,
       :dollars,

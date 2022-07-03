@@ -52,6 +52,14 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     index_path(%{}, %{})
   end
 
+  def show_shared_budget_path(params, action) do
+    PurpleWeb.Router.Helpers.finance_show_shared_budget_path(
+      PurpleWeb.Endpoint,
+      action,
+      params
+    )
+  end
+
   def shared_budget_index_path do
     PurpleWeb.Router.Helpers.finance_shared_budget_index_path(
       PurpleWeb.Endpoint,
@@ -106,12 +114,7 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
       for shared_budget <- Purple.Finance.list_shared_budgets() do
         %{
           label: shared_budget_title(shared_budget),
-          to:
-            PurpleWeb.Router.Helpers.finance_show_shared_budget_path(
-              PurpleWeb.Endpoint,
-              :show,
-              shared_budget
-            )
+          to: show_shared_budget_path(shared_budget, :show)
         }
       end
   end

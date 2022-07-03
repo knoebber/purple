@@ -18,6 +18,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       })
 
     socket
+    |> assign(:adjustment, %Finance.SharedBudgetAdjustment{})
     |> assign(:max_cents, info.max_cents)
     |> assign(:page_title, "Shared Budget")
     |> assign(:shared_budget_id, shared_budget_id)
@@ -88,6 +89,24 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
+    <%= if @live_action in [:edit_adjustment, :new_adjustment] do %>
+      <.modal
+        title="Shared Budget Adjustment"
+        return_to={show_shared_budget_path(@shared_budget_id, :show)}
+      >
+        <.live_component
+          action={@live_action}
+          current_user={@current_user}
+          id={@adjustment.id || :new}
+          module={PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm}
+          params={%{}}
+          adjustment={@adjustment}
+        />
+      </.modal>
+    <% end %>
+    <%= live_patch(to: show_shared_budget_path(@shared_budget_id, :new_adjustment)) do %>
+      <button class="btn">Add Adjustment</button>
+    <% end %>
     <%= if length(@users) == 0 do %>
       <button type="button" class="btn" phx-click="delete">Delete</button>
     <% end %>
