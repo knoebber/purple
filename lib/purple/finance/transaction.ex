@@ -33,24 +33,11 @@ defmodule Purple.Finance.Transaction do
     end
   end
 
-  def get_cents([]), do: 0
-  def get_cents([dollars]), do: String.to_integer(dollars) * 100
-  def get_cents([dollars, cents]), do: get_cents([dollars]) + String.to_integer(cents)
-  def get_cents(<<?$, rest::binary>>), do: get_cents(rest)
-
-  def get_cents(dollars) when is_binary(dollars) do
-    if Regex.match?(~r/^\$?[0-9]+(\.[0-9]{1,2})?$/, dollars) do
-      get_cents(String.split(dollars, "."))
-    else
-      0
-    end
-  end
-
   defp set_cents(changeset) do
     put_change(
       changeset,
       :cents,
-      get_cents(get_field(changeset, :dollars))
+      Purple.dollars_to_cents(get_field(changeset, :dollars))
     )
   end
 

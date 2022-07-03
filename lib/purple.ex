@@ -82,4 +82,26 @@ defmodule Purple do
     |> local_datetime_from_map()
     |> to_naive_datetime()
   end
+
+  def dollars_to_cents([]) do
+    0
+  end
+
+  def dollars_to_cents([dollars]) do
+    String.to_integer(dollars) * 100
+  end
+
+  def dollars_to_cents([dollars, cents]) do
+    dollars_to_cents([dollars]) + String.to_integer(cents)
+  end
+
+  def dollars_to_cents(<<?$, rest::binary>>), do: dollars_to_cents(rest)
+
+  def dollars_to_cents(dollars) when is_binary(dollars) do
+    if Regex.match?(~r/^\$?[0-9]+(\.[0-9]{1,2})?$/, dollars) do
+      dollars_to_cents(String.split(dollars, "."))
+    else
+      0
+    end
+  end
 end
