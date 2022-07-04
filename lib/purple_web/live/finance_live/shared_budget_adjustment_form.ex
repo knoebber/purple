@@ -10,7 +10,11 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
   end
 
   defp save_adjustment(socket, :new_adjustment, params) do
-    Finance.create_shared_budget_adjustment(socket.assigns.current_user.id, params)
+    Finance.create_shared_budget_adjustment(
+      socket.assigns.current_user.id,
+      socket.assigns.shared_budget_id
+      params
+    )
   end
 
   defp should_leave_open?(params) do

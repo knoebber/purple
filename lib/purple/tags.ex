@@ -1,6 +1,6 @@
 defmodule Purple.Tags do
   alias Purple.Repo
-  alias Purple.Tags.{ItemTag, RunTag, Tag, MerchantTag, TransactionTag}
+  alias Purple.Tags.{ItemTag, RunTag, Tag, MerchantTag, TransactionTag, SharedBudgetAdjustmentTag}
 
   import Ecto.Query
 
@@ -48,19 +48,15 @@ defmodule Purple.Tags do
     |> Enum.uniq()
   end
 
-  def extract_tags(%Purple.Finance.Transaction{} = transaction) do
+  def extract_tags(%{description: description, notes: notes}) do
     Enum.uniq(
-      extract_tags_from_markdown(transaction.description) ++
-        extract_tags_from_markdown(transaction.notes)
+      extract_tags_from_markdown(description) ++
+        extract_tags_from_markdown(notes)
     )
   end
 
-  def extract_tags(%Purple.Finance.Merchant{} = merchant) do
-    extract_tags_from_markdown(merchant.description)
-  end
-
-  def extract_tags(%Purple.Activities.Run{} = run) do
-    extract_tags_from_markdown(run.description)
+  def extract_tags(%{description: description}) do
+    extract_tags_from_markdown(description)
   end
 
   def extract_tags(%Purple.Board.Item{} = item) do
@@ -179,6 +175,11 @@ defmodule Purple.Tags do
   def sync_tags(id, :transaction) do
     transaction = Purple.Finance.get_transaction!(id, :tags)
     sync_tags(TransactionTag, transaction, %{transaction_id: id})
+  end
+
+  def sync_tags(id, :shared_budget_adjustment) do
+    adjustment = Purple.Finance.get_shared_budget_adjustment!(id, :tags)
+    sync_tags(SharedBudgetAdjustmentTag, adjustment, %{shared_budget_adjustment_id: id})
   end
 
   def sync_tags(id, :merchant) do

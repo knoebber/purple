@@ -49,8 +49,8 @@ defmodule Purple.Finance do
     |> Repo.insert()
   end
 
-  def create_shared_budget_adjustment(user_id, params) do
-    %SharedBudgetAdjustment{user_id: user_id}
+  def create_shared_budget_adjustment(user_id, shared_budget_id, params) do
+    %SharedBudgetAdjustment{user_id: user_id, shared_budget_id: shared_budget_id}
     |> SharedBudgetAdjustment.changeset(params)
     |> Repo.insert()
   end
@@ -117,17 +117,17 @@ defmodule Purple.Finance do
     )
   end
 
-  def get_shared_budget_balance_adjustment!(id) do
+  def get_shared_budget_adjustment!(id) do
     Repo.one!(
-      from adjustment in SharedBudgetBalanceAdjustment,
+      from adjustment in SharedBudgetAdjustment,
         select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         where: adjustment.id == ^id
     )
   end
 
-  def get_shared_budget_balance_adjustment!(id, :tags) do
+  def get_shared_budget_adjustment!(id, :tags) do
     Repo.one!(
-      from adjustment in SharedBudgetBalanceAdjustment,
+      from adjustment in SharedBudgetAdjustment,
         select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         left_join: t in assoc(adjustment, :tags),
         where: adjustment.id == ^id,
