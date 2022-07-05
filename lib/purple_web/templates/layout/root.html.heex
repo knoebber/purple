@@ -14,7 +14,7 @@
       <%= link "Home", to: "/" %>
       <%= if @current_user do %>
         <%= link "Board", to: Routes.board_index_path(@conn, :index) %>
-        <%= link "Finance", to: Routes.finance_index_path(@conn, :index) %>
+        <%= link "Bean Counter", to: Routes.finance_index_path(@conn, :index) %>
         <%= link "Runs", to: Routes.run_index_path(@conn, :index) %>
         <%= link @current_user.email, to: Routes.user_settings_path(@conn, :edit) %>
         <%= link "Log out", to: Routes.user_session_path(@conn, :delete), method: :delete %>
