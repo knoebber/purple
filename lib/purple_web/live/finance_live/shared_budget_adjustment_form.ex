@@ -12,7 +12,7 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
   defp save_adjustment(socket, :new_adjustment, params) do
     Finance.create_shared_budget_adjustment(
       socket.assigns.current_user.id,
-      socket.assigns.shared_budget_id
+      socket.assigns.shared_budget_id,
       params
     )
   end
@@ -61,11 +61,13 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
       {:ok, adjustment} ->
         Purple.Tags.sync_tags(adjustment.id, :shared_budget_adjustment)
 
+        shared_budget_id = socket.assigns.shared_budget_id
+
         next_path =
           if should_leave_open?(params) do
-            show_shared_budget_path(socket.assigns.params, :new_adjustment)
+            show_shared_budget_path(shared_budget_id, :new_adjustment)
           else
-            shared_budget_index_path()
+            show_shared_budget_path(shared_budget_id, :show)
           end
 
         {

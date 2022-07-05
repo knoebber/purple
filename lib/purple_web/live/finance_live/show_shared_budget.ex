@@ -120,7 +120,10 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       </select>
       <button class="ml-3" type="submit">Add</button>
     </form>
-    <div class="flex flex-col md:flex-row mb-2">
+    <%= live_patch(to: show_shared_budget_path(@shared_budget_id, :new_adjustment), class: "mb-2") do %>
+      <button class="btn">Add Adjustment</button>
+    <% end %>
+    <div class="flex flex-col md:flex-row">
       <%= for user <- @users do %>
         <div class="flex flex-col p-1">
           <h2>
@@ -153,9 +156,6 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         </div>
       <% end %>
     </div>
-    <%= live_patch(to: show_shared_budget_path(@shared_budget_id, :new_adjustment)) do %>
-      <button class="btn">Add Adjustment</button>
-    <% end %>
     """
   end
 end

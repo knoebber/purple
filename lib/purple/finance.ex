@@ -246,20 +246,46 @@ defmodule Purple.Finance do
   end
 
   def get_shared_budget_user_totals(shared_budget_id) do
-    Repo.all(
+    adjustment_query =
+      from shared_budget in SharedBudget,
+        join: adjustment in assoc(shared_budget, :adjustments),
+        join: user in assoc(adjustment, :user),
+        where: shared_budget.id == ^shared_budget_id,
+        group_by: [shared_budget.id, user.email, user.id],
+        select: %{
+          email: user.email,
+          shared_budget_id: shared_budget.id,
+          total_cents: sum(adjustment.cents),
+          total_transactions: 0,
+          user_id: user.id
+        }
+
+    union_query =
       from shared_budget in SharedBudget,
         join: shared_transaction in assoc(shared_budget, :shared_transactions),
         join: transaction in assoc(shared_transaction, :transaction),
         join: user in assoc(transaction, :user),
         where: shared_budget.id == ^shared_budget_id,
         group_by: [shared_budget.id, user.email, user.id],
-        order_by: [{:desc, sum(transaction.cents)}],
         select: %{
           email: user.email,
           shared_budget_id: shared_budget.id,
           total_cents: sum(transaction.cents),
           total_transactions: count(transaction.id),
           user_id: user.id
+        },
+        union_all: ^adjustment_query
+
+    Repo.all(
+      from r in subquery(union_query),
+        group_by: [r.shared_budget_id, r.email, r.user_id],
+        order_by: [{:desc, sum(r.total_cents)}],
+        select: %{
+          email: r.email,
+          shared_budget_id: r.shared_budget_id,
+          total_cents: type(sum(r.total_cents), :integer),
+          total_transactions: type(sum(r.total_transactions), :integer),
+          user_id: r.user_id
         }
     )
   end

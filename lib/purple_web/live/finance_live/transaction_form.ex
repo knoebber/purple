@@ -1,6 +1,11 @@
 defmodule PurpleWeb.FinanceLive.TransactionForm do
   use PurpleWeb, :live_component
 
+  # TODO: This component could show all shared adjustments in the SB. Then a form at top.
+  # The form should let you choose which user to add an adjustment for.
+  # Table of adjustments like:
+  # |email | amount | description | created
+
   import PurpleWeb.FinanceLive.FinanceHelpers
 
   alias Purple.Finance
