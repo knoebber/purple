@@ -68,8 +68,14 @@ defmodule PurpleWeb.Router do
       live "/finance/payment_methods", FinanceLive.PaymentMethodIndex, :index
       live "/finance/shared_budgets", FinanceLive.SharedBudgetIndex, :index
       live "/finance/shared_budgets/:id", FinanceLive.ShowSharedBudget, :show
-      live "/finance/shared_budgets/:id/adjustments/new", FinanceLive.ShowSharedBudget, :edit_adjustment
-      live "/finance/shared_budgets/:id/adjustments/edit", FinanceLive.ShowSharedBudget, :new_adjustment
+
+      live "/finance/shared_budgets/:id/adjustments/new",
+           FinanceLive.ShowSharedBudget,
+           :new_adjustment
+
+      live "/finance/shared_budgets/:id/adjustments/edit/:adjustment_id",
+           FinanceLive.ShowSharedBudget,
+           :edit_adjustment
 
       live "/runs", RunLive.Index, :index
       live "/runs/:id", RunLive.Show, :show

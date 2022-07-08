@@ -5,7 +5,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
 
   alias Purple.Finance
 
-  defp assign_data(socket, shared_budget_id) do
+  defp assign_data(socket, shared_budget_id, adjustment_id \\ nil) do
     info =
       shared_budget_id
       |> Finance.get_shared_budget_user_totals()
@@ -19,25 +19,31 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
 
     shared_budget = Finance.get_shared_budget(shared_budget_id)
 
+    adjustment =
+      if adjustment_id do
+        Finance.get_shared_budget_adjustment!(adjustment_id)
+      else
+        %Finance.SharedBudgetAdjustment{}
+      end
+
     socket =
       socket
-      |> assign(:adjustment, %Finance.SharedBudgetAdjustment{})
+      |> assign(:adjustment, adjustment)
       |> assign(:max_cents, info.max_cents)
-      |> assign(:page_title, "Shared Budget")
+      |> assign(:page_title, shared_budget.name)
       |> assign(:shared_budget, shared_budget)
-      |> assign(:shared_budget_id, shared_budget_id)
       |> assign(:user_transactions, user_transactions)
       |> assign(:users, info.users)
 
     if shared_budget.show_adjustments do
-      assign(socket, :adjustments, Finance.list_shared_budget_adjustments(shared_budget_id))
+      assign(socket, :adjustments, Finance.list_shared_budget_adjustments(shared_budget.id))
     else
       socket
     end
   end
 
   defp get_map_int(params, key) do
-    case Integer.parse(Map.get(params, key)) do
+    case Integer.parse(Map.get(params, key, "")) do
       {0, _} -> nil
       {id, ""} -> id
       _ -> nil
@@ -50,13 +56,11 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"id" => id}, _url, socket) do
-    shared_budget_id = String.to_integer(id)
-
+  def handle_params(params, _url, socket) do
     {
       :noreply,
       socket
-      |> assign_data(shared_budget_id)
+      |> assign_data(get_map_int(params, "id"), get_map_int(params, "adjustment_id"))
     }
   end
 
@@ -69,7 +73,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
 
   @impl Phoenix.LiveView
   def handle_event("share_transaction", params, socket) do
-    shared_budget_id = socket.assigns.shared_budget_id
+    shared_budget_id = socket.assigns.shared_budget.id
 
     transaction_id = get_map_int(params, "transaction_id")
 
@@ -84,7 +88,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
 
   @impl Phoenix.LiveView
   def handle_event("remove_transaction", params, socket) do
-    shared_budget_id = socket.assigns.shared_budget_id
+    shared_budget_id = socket.assigns.shared_budget.id
 
     Finance.remove_shared_transaction!(shared_budget_id, get_map_int(params, "id"))
 
@@ -112,7 +116,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
 
   @impl Phoenix.LiveView
   def handle_event("delete", _params, socket) do
-    Finance.delete_shared_budget!(socket.assigns.shared_budget_id)
+    Finance.delete_shared_budget!(socket.assigns.shared_budget.id)
 
     {
       :noreply,
@@ -129,7 +133,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
     <%= if @live_action in [:edit_adjustment, :new_adjustment] do %>
       <.modal
         title="Adjust Shared Budget"
-        return_to={show_shared_budget_path(@shared_budget_id, :show)}
+        return_to={show_shared_budget_path(@shared_budget.id, :show)}
       >
         <.live_component
           action={@live_action}
@@ -138,7 +142,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
           id={@adjustment.id || :new}
           module={PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm}
           params={%{}}
-          shared_budget_id={@shared_budget_id}
+          shared_budget_id={@shared_budget.id}
         />
       </.modal>
     <% end %>
@@ -167,7 +171,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         <h2>Adjustments</h2>
       </div>
       <%= if @shared_budget.show_adjustments do %>
-        <%= live_patch(to: show_shared_budget_path(@shared_budget_id, :new_adjustment)) do %>
+        <%= live_patch(to: show_shared_budget_path(@shared_budget.id, :new_adjustment)) do %>
           <button class="btn mb-2">Add</button>
         <% end %>
         <div>
@@ -178,19 +182,30 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
           <% end %>
         </div>
         <.table rows={@adjustments}>
-          <:col let={a} label="User">
-            <%= a.user.email %>
+          <:col let={row} label="User">
+            <%= row.user.email %>
           </:col>
-          <:col let={a} label="Amount">
-            <%= a.dollars %>
+          <:col let={row} label="Amount">
+            <%= row.dollars %>
           </:col>
-          <:col let={a} label="Description">
-            <%= a.description %>
+          <:col let={row} label="Description">
+            <%= row.description %>
           </:col>
-          <:col let={a} label="">
+          <:col let={row} label="">
+            <%= live_patch("Edit",
+              to:
+                Routes.finance_show_shared_budget_path(
+                  @socket,
+                  :edit_adjustment,
+                  @shared_budget.id,
+                  row.id
+                )
+            ) %>
+          </:col>
+          <:col let={row} label="">
             <%= link("Delete",
               phx_click: "delete_adjustment",
-              phx_value_id: a.id,
+              phx_value_id: row.id,
               to: "#"
             ) %>
           </:col>
