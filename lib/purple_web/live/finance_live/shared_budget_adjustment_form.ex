@@ -98,7 +98,7 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
           <%= textarea(f, :notes, rows: @rows) %>
           <%= error_tag(f, :notes) %>
         </div>
-        <div class="flex justify-between">
+        <div class="flex justify-between mb-2_">
           <%= submit("Save", phx_disable_with: "Saving...") %>
           <%= if @action == :new_adjustment do %>
             <div class="self-center">

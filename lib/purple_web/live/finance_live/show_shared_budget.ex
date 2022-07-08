@@ -17,16 +17,26 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         user_id: socket.assigns.current_user.id
       })
 
-    socket
-    |> assign(:adjustment, %Finance.SharedBudgetAdjustment{})
-    |> assign(:max_cents, info.max_cents)
-    |> assign(:page_title, "Shared Budget")
-    |> assign(:shared_budget_id, shared_budget_id)
-    |> assign(:user_transactions, user_transactions)
-    |> assign(:users, info.users)
+    shared_budget = Finance.get_shared_budget(shared_budget_id)
+
+    socket =
+      socket
+      |> assign(:adjustment, %Finance.SharedBudgetAdjustment{})
+      |> assign(:max_cents, info.max_cents)
+      |> assign(:page_title, "Shared Budget")
+      |> assign(:shared_budget, shared_budget)
+      |> assign(:shared_budget_id, shared_budget_id)
+      |> assign(:user_transactions, user_transactions)
+      |> assign(:users, info.users)
+
+    if shared_budget.show_adjustments do
+      assign(socket, :adjustments, Finance.list_shared_budget_adjustments(shared_budget_id))
+    else
+      socket
+    end
   end
 
-  defp get_transaction_id(params, key) do
+  defp get_map_int(params, key) do
     case Integer.parse(Map.get(params, key)) do
       {0, _} -> nil
       {id, ""} -> id
@@ -41,14 +51,27 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => id}, _url, socket) do
-    {:noreply, assign_data(socket, String.to_integer(id))}
+    shared_budget_id = String.to_integer(id)
+
+    {
+      :noreply,
+      socket
+      |> assign_data(shared_budget_id)
+    }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("toggle_show_adjustments", _, socket) do
+    sb = socket.assigns.shared_budget
+    Finance.toggle_show_adjustments(sb.id, !sb.show_adjustments)
+    {:noreply, assign_data(socket, sb.id)}
   end
 
   @impl Phoenix.LiveView
   def handle_event("share_transaction", params, socket) do
     shared_budget_id = socket.assigns.shared_budget_id
 
-    transaction_id = get_transaction_id(params, "transaction_id")
+    transaction_id = get_map_int(params, "transaction_id")
 
     if transaction_id do
       Finance.create_shared_transaction!(shared_budget_id, transaction_id)
@@ -63,13 +86,27 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   def handle_event("remove_transaction", params, socket) do
     shared_budget_id = socket.assigns.shared_budget_id
 
-    Finance.remove_shared_transaction!(shared_budget_id, get_transaction_id(params, "id"))
+    Finance.remove_shared_transaction!(shared_budget_id, get_map_int(params, "id"))
 
     {
       :noreply,
       socket
       |> put_flash(:info, "Removed transaction")
       |> assign_data(shared_budget_id)
+    }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("delete_adjustment", params, socket) do
+    Finance.delete_shared_budget_adjustment(%Finance.SharedBudgetAdjustment{
+      id: get_map_int(params, "id")
+    })
+
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Deleted adjustment")
+      |> assign_data(socket.assigns.shared_budget.id)
     }
   end
 
@@ -91,7 +128,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
     <h1 class="mb-2"><%= @page_title %></h1>
     <%= if @live_action in [:edit_adjustment, :new_adjustment] do %>
       <.modal
-        title="Shared Budget Adjustment"
+        title="Adjust Shared Budget"
         return_to={show_shared_budget_path(@shared_budget_id, :show)}
       >
         <.live_component
@@ -106,7 +143,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       </.modal>
     <% end %>
     <%= if length(@users) == 0 do %>
-      <button type="button" class="btn" phx-click="delete">Delete</button>
+      <button type="button" class="btn mb-2" phx-click="delete">Delete</button>
     <% end %>
     <form class="flex flex-row mb-2" phx-submit="share_transaction">
       <select name="transaction_id">
@@ -120,9 +157,46 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       </select>
       <button class="ml-3" type="submit">Add</button>
     </form>
-    <%= live_patch(to: show_shared_budget_path(@shared_budget_id, :new_adjustment), class: "mb-2") do %>
-      <button class="btn">Add Adjustment</button>
-    <% end %>
+    <div>
+      <div class="flex p-1 mb-2 items-center">
+        <%= link(if(@shared_budget.show_adjustments, do: "[-]", else: "[+]"),
+          phx_click: "toggle_show_adjustments",
+          to: "#",
+          class: "no-underline font-mono"
+        ) %>
+        <h2>Adjustments</h2>
+      </div>
+      <%= if @shared_budget.show_adjustments do %>
+        <%= live_patch(to: show_shared_budget_path(@shared_budget_id, :new_adjustment)) do %>
+          <button class="btn mb-2">Add</button>
+        <% end %>
+        <div>
+          <%= for user <- @users do %>
+            <strong>
+              <%= user.email %>: <%= format_cents(user.adjustment_cents) %>
+            </strong>
+          <% end %>
+        </div>
+        <.table rows={@adjustments}>
+          <:col let={a} label="User">
+            <%= a.user.email %>
+          </:col>
+          <:col let={a} label="Amount">
+            <%= a.dollars %>
+          </:col>
+          <:col let={a} label="Description">
+            <%= a.description %>
+          </:col>
+          <:col let={a} label="">
+            <%= link("Delete",
+              phx_click: "delete_adjustment",
+              phx_value_id: a.id,
+              to: "#"
+            ) %>
+          </:col>
+        </.table>
+      <% end %>
+    </div>
     <div class="flex flex-col md:flex-row">
       <%= for user <- @users do %>
         <div class="flex flex-col p-1">

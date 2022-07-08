@@ -79,6 +79,16 @@ defmodule Purple.Finance do
     |> Repo.update()
   end
 
+  def toggle_show_adjustments(shared_budget_id, should_show) do
+    SharedBudget
+    |> where([sb], sb.id == ^shared_budget_id)
+    |> Repo.update_all(set: [show_adjustments: should_show])
+  end
+
+  def get_shared_budget(id) do
+    Repo.get!(SharedBudget, id)
+  end
+
   def get_merchant!(id) do
     Repo.get!(Merchant, id)
   end
@@ -199,6 +209,16 @@ defmodule Purple.Finance do
     |> Repo.all()
   end
 
+  def list_shared_budget_adjustments(shared_budget_id) do
+    SharedBudgetAdjustment
+    |> select_merge(%{dollars: fragment(@dollar_amount_fragment)})
+    |> join(:inner, [sba], u in assoc(sba, :user))
+    |> where([sba], sba.shared_budget_id == ^shared_budget_id)
+    |> order_by(:inserted_at)
+    |> preload([_, u], user: u)
+    |> Repo.all()
+  end
+
   def list_payment_methods do
     PaymentMethod
     |> order_by(:name)
@@ -253,10 +273,10 @@ defmodule Purple.Finance do
         where: shared_budget.id == ^shared_budget_id,
         group_by: [shared_budget.id, user.email, user.id],
         select: %{
+          adjustment_cents: sum(adjustment.cents),
           email: user.email,
           shared_budget_id: shared_budget.id,
           total_cents: sum(adjustment.cents),
-          total_transactions: 0,
           user_id: user.id
         }
 
@@ -268,10 +288,10 @@ defmodule Purple.Finance do
         where: shared_budget.id == ^shared_budget_id,
         group_by: [shared_budget.id, user.email, user.id],
         select: %{
+          adjustment_cents: 0,
           email: user.email,
           shared_budget_id: shared_budget.id,
           total_cents: sum(transaction.cents),
-          total_transactions: count(transaction.id),
           user_id: user.id
         },
         union_all: ^adjustment_query
@@ -281,10 +301,10 @@ defmodule Purple.Finance do
         group_by: [r.shared_budget_id, r.email, r.user_id],
         order_by: [{:desc, sum(r.total_cents)}],
         select: %{
+          adjustment_cents: type(sum(r.adjustment_cents), :integer),
           email: r.email,
           shared_budget_id: r.shared_budget_id,
           total_cents: type(sum(r.total_cents), :integer),
-          total_transactions: type(sum(r.total_transactions), :integer),
           user_id: r.user_id
         }
     )
