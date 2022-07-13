@@ -49,8 +49,8 @@ defmodule Purple.Finance do
     |> Repo.insert()
   end
 
-  def create_shared_budget_adjustment(user_id, shared_budget_id, params) do
-    %SharedBudgetAdjustment{user_id: user_id, shared_budget_id: shared_budget_id}
+  def create_shared_budget_adjustment(shared_budget_id, params) do
+    %SharedBudgetAdjustment{shared_budget_id: shared_budget_id}
     |> SharedBudgetAdjustment.changeset(params)
     |> Repo.insert()
   end
@@ -176,7 +176,7 @@ defmodule Purple.Finance do
 
   defp transaction_text_search(q, _), do: q
 
-  defp user_filter(q, %{user_id: user_id}), do: where(q, [tx, _], tx.user_id == ^user_id)
+  defp user_filter(q, %{user_id: user_id}), do: where(q, [tx], tx.user_id == ^user_id)
   defp merchant_filter(q, %{merchant: id}), do: where(q, [_, m], m.id == ^id)
   defp merchant_filter(q, _), do: q
   defp payment_method_filter(q, %{payment_method: id}), do: where(q, [_, _, pm], pm.id == ^id)
@@ -209,11 +209,17 @@ defmodule Purple.Finance do
     |> Repo.all()
   end
 
-  def list_shared_budget_adjustments(shared_budget_id) do
+  def list_shared_budget_adjustments(filter \\ %{}) do
+    sb_filter = fn
+      q, %{shared_budget_id: id} -> where(q, [sb], sb.shared_budget_id == ^id)
+      q, _ -> q
+    end
+
     SharedBudgetAdjustment
     |> select_merge(%{dollars: fragment(@dollar_amount_fragment)})
     |> join(:inner, [sba], u in assoc(sba, :user))
-    |> where([sba], sba.shared_budget_id == ^shared_budget_id)
+    |> user_filter(filter)
+    |> sb_filter.(filter)
     |> order_by(:inserted_at)
     |> preload([_, u], user: u)
     |> Repo.all()
@@ -273,10 +279,10 @@ defmodule Purple.Finance do
         where: shared_budget.id == ^shared_budget_id,
         group_by: [shared_budget.id, user.email, user.id],
         select: %{
-          adjustment_cents: sum(adjustment.cents),
+          credit_cents: fragment("SUM(CASE WHEN type = 'CREDIT' THEN cents ELSE 0 END)"),
+          shared_cents: fragment("SUM(CASE WHEN type = 'SHARE' THEN cents ELSE 0 END)"),
           email: user.email,
           shared_budget_id: shared_budget.id,
-          total_cents: sum(adjustment.cents),
           user_id: user.id
         }
 
@@ -288,10 +294,10 @@ defmodule Purple.Finance do
         where: shared_budget.id == ^shared_budget_id,
         group_by: [shared_budget.id, user.email, user.id],
         select: %{
-          adjustment_cents: 0,
+          credit_cents: 0,
+          shared_cents: sum(transaction.cents),
           email: user.email,
           shared_budget_id: shared_budget.id,
-          total_cents: sum(transaction.cents),
           user_id: user.id
         },
         union_all: ^adjustment_query
@@ -299,50 +305,51 @@ defmodule Purple.Finance do
     Repo.all(
       from r in subquery(union_query),
         group_by: [r.shared_budget_id, r.email, r.user_id],
-        order_by: [{:desc, sum(r.total_cents)}],
         select: %{
-          adjustment_cents: type(sum(r.adjustment_cents), :integer),
+          credit_cents: type(sum(r.credit_cents), :integer),
+          shared_cents: type(sum(r.shared_cents), :integer),
           email: r.email,
           shared_budget_id: r.shared_budget_id,
-          total_cents: type(sum(r.total_cents), :integer),
           user_id: r.user_id
         }
     )
   end
 
-  def process_shared_budget_user_totals([]) do
-    %{max_cents: 0, title: "Empty shared budget", users: []}
+  def make_shared_budget_user_data([]) do
+    %{max_balance_cents: 0, users: [], user_mappings: []}
   end
 
-  def process_shared_budget_user_totals(shared_budget_user_totals) do
-    Enum.reduce(
-      shared_budget_user_totals,
-      %{
-        max_cents: hd(shared_budget_user_totals).total_cents,
-        title: shared_budget_user_totals |> Enum.map(& &1.email) |> Enum.join(", "),
-        users: []
-      },
-      fn data, acc ->
-        %{
-          acc
-          | users:
-              acc.users ++
-                [
-                  Map.merge(
-                    data,
-                    %{
-                      cents_behind: acc.max_cents - data.total_cents,
-                      transactions:
-                        list_transactions(%{
-                          user_id: data.user_id,
-                          shared_budget_id: data.shared_budget_id
-                        })
-                    }
-                  )
-                ]
-        }
-      end
-    )
+  def make_shared_budget_user_data(shared_budget_user_totals) do
+    user_totals =
+      Enum.map(
+        shared_budget_user_totals,
+        fn data ->
+          Map.merge(
+            data,
+            %{
+              balance_cents:
+                trunc(data.credit_cents + data.shared_cents / length(shared_budget_user_totals)),
+              transactions:
+                list_transactions(%{
+                  user_id: data.user_id,
+                  shared_budget_id: data.shared_budget_id
+                }),
+              adjustments:
+                list_shared_budget_adjustments(%{
+                  user_id: data.user_id,
+                  shared_budget_id: data.shared_budget_id
+                })
+            }
+          )
+        end
+      )
+      |> Enum.sort(&(&1.balance_cents >= &2.balance_cents))
+
+    %{
+      max_balance_cents: hd(user_totals).balance_cents,
+      users: user_totals,
+      user_mappings: Enum.map(user_totals, fn data -> [value: data.user_id, key: data.email] end)
+    }
   end
 
   def create_shared_budget!(name) do
@@ -368,5 +375,9 @@ defmodule Purple.Finance do
             stx.shared_budget_id == ^shared_budget_id and stx.transaction_id == ^transaction_id
       )
     )
+  end
+
+  def adjustment_type_mappings do
+    Ecto.Enum.mappings(SharedBudgetAdjustment, :type)
   end
 end

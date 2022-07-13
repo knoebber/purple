@@ -41,6 +41,12 @@ defmodule PurpleWeb.Formatters do
   def format_date(%NaiveDateTime{} = ndt) do
     ndt
     |> Purple.to_local_datetime()
+    |> Calendar.strftime("%m/%d/%Y")
+  end
+
+  def format_date(%NaiveDateTime{} = ndt, :time) do
+    ndt
+    |> Purple.to_local_datetime()
     |> Calendar.strftime("%m/%d/%Y %I:%M%P")
   end
 

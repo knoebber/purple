@@ -6,6 +6,7 @@ defmodule Purple.Finance.SharedBudgetAdjustment do
     field :cents, :integer
     field :description, :string, default: ""
     field :notes, :string, default: ""
+    field :type, Ecto.Enum, values: [:SHARE, :CREDIT], default: :SHARE
 
     field :dollars, :string, default: "", virtual: true
 
@@ -27,11 +28,13 @@ defmodule Purple.Finance.SharedBudgetAdjustment do
   def changeset(adjustment, attrs) do
     adjustment
     |> cast(attrs, [
+      :user_id,
       :description,
       :dollars,
-      :notes
+      :notes,
+      :type
     ])
-    |> validate_required([:dollars])
+    |> validate_required([:dollars, :user_id])
     |> set_cents
     |> validate_number(:cents, greater_than: 99, message: "Must be at least 1 dollar")
   end

@@ -107,31 +107,34 @@ defmodule PurpleWeb.RunLive.Index do
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
       <%= select(f, :tag, @tag_options) %>
     </.form>
-    <.table rows={@runs}>
-      <:col let={run} label="Miles">
-        <%= live_redirect(run.miles, to: Routes.run_show_path(@socket, :show, run)) %>
-      </:col>
-      <:col let={run} label="Duration">
-        <%= format_duration(run.hours, run.minutes, run.minute_seconds) %>
-      </:col>
-      <:col let={run} label="Pace">
-        <%= format_pace(run.miles, run.seconds) %>
-      </:col>
-      <:col let={run} label="Date">
-        <%= format_date(run.date, :dayname) %>
-      </:col>
-      <:col let={run} label="">
-        <%= live_patch("Edit", to: index_path(@params, :edit, run.id)) %>
-      </:col>
-      <:col let={run} label="">
-        <%= link("Delete",
-          phx_click: "delete",
-          phx_value_id: run.id,
-          data: [confirm: "Are you sure?"],
-          to: "#"
-        ) %>
-      </:col>
-    </.table>
+
+    <div class="w-full overflow-auto">
+      <.table rows={@runs}>
+        <:col let={run} label="Miles">
+          <%= live_redirect(run.miles, to: Routes.run_show_path(@socket, :show, run)) %>
+        </:col>
+        <:col let={run} label="Duration">
+          <%= format_duration(run.hours, run.minutes, run.minute_seconds) %>
+        </:col>
+        <:col let={run} label="Pace">
+          <%= format_pace(run.miles, run.seconds) %>
+        </:col>
+        <:col let={run} label="Date">
+          <%= format_date(run.date, :dayname) %>
+        </:col>
+        <:col let={run} label="">
+          <%= live_patch("Edit", to: index_path(@params, :edit, run.id)) %>
+        </:col>
+        <:col let={run} label="">
+          <%= link("Delete",
+            phx_click: "delete",
+            phx_value_id: run.id,
+            data: [confirm: "Are you sure?"],
+            to: "#"
+          ) %>
+        </:col>
+      </.table>
+    </div>
     """
   end
 end

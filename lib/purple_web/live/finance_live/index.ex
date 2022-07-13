@@ -221,34 +221,36 @@ defmodule PurpleWeb.FinanceLive.Index do
         [[value: "", key: "💸 All payment methods"]] ++ @payment_method_options
       ) %>
     </.form>
-    <.table rows={@transactions}>
-      <:col let={transaction} label="Amount">
-        <%= transaction.dollars %>
-      </:col>
-      <:col let={transaction} label="Timestamp">
-        <%= format_date(transaction.timestamp) %>
-      </:col>
-      <:col let={transaction} label="Merchant">
-        <%= transaction.merchant.name %>
-      </:col>
-      <:col let={transaction} label="Payment Method">
-        <%= transaction.payment_method.name %>
-      </:col>
-      <:col let={transaction} label="Description">
-        <%= transaction.description %>
-      </:col>
-      <:col let={transaction} label="">
-        <%= live_patch("Edit", to: index_path(@params, :edit_transaction, transaction.id)) %>
-      </:col>
-      <:col let={transaction} label="">
-        <%= link("Delete",
-          phx_click: "delete",
-          phx_value_id: transaction.id,
-          data: [confirm: "Are you sure?"],
-          to: "#"
-        ) %>
-      </:col>
-    </.table>
+    <div class="w-full overflow-auto">
+      <.table rows={@transactions}>
+        <:col let={transaction} label="Amount">
+          <%= transaction.dollars %>
+        </:col>
+        <:col let={transaction} label="Timestamp">
+          <%= format_date(transaction.timestamp, :time) %>
+        </:col>
+        <:col let={transaction} label="Merchant">
+          <%= transaction.merchant.name %>
+        </:col>
+        <:col let={transaction} label="Payment Method">
+          <%= transaction.payment_method.name %>
+        </:col>
+        <:col let={transaction} label="Description">
+          <%= transaction.description %>
+        </:col>
+        <:col let={transaction} label="">
+          <%= live_patch("Edit", to: index_path(@params, :edit_transaction, transaction.id)) %>
+        </:col>
+        <:col let={transaction} label="">
+          <%= link("Delete",
+            phx_click: "delete",
+            phx_value_id: transaction.id,
+            data: [confirm: "Are you sure?"],
+            to: "#"
+          ) %>
+        </:col>
+      </.table>
+    </div>
     """
   end
 end

@@ -106,46 +106,48 @@ defmodule PurpleWeb.BoardLive.Index do
       <%= label(f, :show_done, "Show Done?", class: "self-center ml-2") %>
       <%= checkbox(f, :show_done, class: "self-center") %>
     </.form>
-    <.table rows={@items}>
-      <:col let={item} label="Item">
-        <%= live_redirect(item.id,
-          to: Routes.board_show_item_path(@socket, :show, item)
-        ) %>
-      </:col>
-      <:col let={item} label="Description">
-        <%= live_redirect(item.description,
-          to: Routes.board_show_item_path(@socket, :show, item)
-        ) %>
-      </:col>
-      <:col let={item} label="Priority">
-        <%= item.priority %>
-      </:col>
-      <:col let={item} label="Status">
-        <%= item.status %>
-      </:col>
-      <:col let={item} label="Created">
-        <%= format_date(item.inserted_at, :mdy) %>
-      </:col>
-      <:col let={item} label="">
-        <%= link("📌",
-          class: if(!item.is_pinned, do: "opacity-30"),
-          phx_click: "toggle_pin",
-          phx_value_id: item.id,
-          to: "#"
-        ) %>
-      </:col>
-      <:col let={item} label="">
-        <%= live_patch("Edit", to: index_path(@params, :edit_item, item.id)) %>
-      </:col>
-      <:col let={item} label="">
-        <%= link("Delete",
-          phx_click: "delete",
-          phx_value_id: item.id,
-          data: [confirm: "Are you sure?"],
-          to: "#"
-        ) %>
-      </:col>
-    </.table>
+    <div class="w-full overflow-auto">
+      <.table rows={@items}>
+        <:col let={item} label="Item">
+          <%= live_redirect(item.id,
+            to: Routes.board_show_item_path(@socket, :show, item)
+          ) %>
+        </:col>
+        <:col let={item} label="Description">
+          <%= live_redirect(item.description,
+            to: Routes.board_show_item_path(@socket, :show, item)
+          ) %>
+        </:col>
+        <:col let={item} label="Priority">
+          <%= item.priority %>
+        </:col>
+        <:col let={item} label="Status">
+          <%= item.status %>
+        </:col>
+        <:col let={item} label="Created">
+          <%= format_date(item.inserted_at, :mdy) %>
+        </:col>
+        <:col let={item} label="">
+          <%= link("📌",
+            class: if(!item.is_pinned, do: "opacity-30"),
+            phx_click: "toggle_pin",
+            phx_value_id: item.id,
+            to: "#"
+          ) %>
+        </:col>
+        <:col let={item} label="">
+          <%= live_patch("Edit", to: index_path(@params, :edit_item, item.id)) %>
+        </:col>
+        <:col let={item} label="">
+          <%= link("Delete",
+            phx_click: "delete",
+            phx_value_id: item.id,
+            data: [confirm: "Are you sure?"],
+            to: "#"
+          ) %>
+        </:col>
+      </.table>
+    </div>
     """
   end
 end

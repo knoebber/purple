@@ -11,7 +11,6 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
 
   defp save_adjustment(socket, :new_adjustment, params) do
     Finance.create_shared_budget_adjustment(
-      socket.assigns.current_user.id,
       socket.assigns.shared_budget_id,
       params
     )
@@ -94,6 +93,12 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
           <%= label(f, :dollars, "Amount") %>
           <%= text_input(f, :dollars) %>
           <%= error_tag(f, :cents) %>
+          <%= label(f, :type) %>
+          <%= select(f, :type, Finance.adjustment_type_mappings()) %>
+          <%= error_tag(f, :type) %>
+          <%= label(f, :user_id, "User") %>
+          <%= select(f, :user_id, @user_mappings) %>
+          <%= error_tag(f, :user_id) %>
           <%= label(f, :notes) %>
           <%= textarea(f, :notes, rows: @rows) %>
           <%= error_tag(f, :notes) %>
