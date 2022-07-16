@@ -10,28 +10,25 @@ defmodule PurpleWeb.UserSettingsController do
     render(conn, "edit.html")
   end
 
-  def update(conn, %{"action" => "update_email"} = params) do
-    %{"current_password" => password, "user" => user_params} = params
-    user = conn.assigns.current_user
+  def update(conn, %{"action" => "oauth"} = params) do
+    IO.inspect(conn, label: "conn")
+    host = Application.fetch_env!(:purple, PurpleWeb.Endpoint)[:url][:host]
+    redirect_uri = "#{conn.scheme}://#{host}:#{conn.port}#{conn.request_path}"
 
-    case Accounts.apply_user_email(user, password, user_params) do
-      {:ok, applied_user} ->
-        Accounts.deliver_update_email_instructions(
-          applied_user,
-          user.email,
-          &Routes.user_settings_url(conn, :confirm_email, &1)
-        )
+    client =
+      OAuth2.Client.new(
+        authorize_url: "/o/oauth2/v2/auth",
+        client_id: Application.fetch_env!(:purple, :oauth_client_id),
+        client_secret: Application.fetch_env!(:purple, :oauth_client_secret),
+        params: %{"scope" => "https://www.googleapis.com/auth/gmail.readonly"},
+        redirect_uri: redirect_uri,
+        site: "https://accounts.google.com",
+        strategy: OAuth2.Strategy.AuthCode
+      )
 
-        conn
-        |> put_flash(
-          :info,
-          "A link to confirm your email change has been sent to the new address."
-        )
-        |> redirect(to: Routes.user_settings_path(conn, :edit))
-
-      {:error, changeset} ->
-        render(conn, "edit.html", email_changeset: changeset)
-    end
+    IO.inspect(client, label: "client")
+    IO.inspect(OAuth2.Client.authorize_url!(client), label: "url")
+    redirect(conn, external: OAuth2.Client.authorize_url!(client))
   end
 
   def update(conn, %{"action" => "update_password"} = params) do

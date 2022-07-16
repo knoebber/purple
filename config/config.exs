@@ -66,4 +66,5 @@ config :tailwind,
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
+import_config "secrets.exs"
 import_config "#{config_env()}.exs"

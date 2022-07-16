@@ -20,7 +20,7 @@ defmodule Purple.MixProject do
   def application do
     [
       mod: {Purple.Application, []},
-      extra_applications: [:logger, :runtime_tools, :os_mon],
+      extra_applications: [:logger, :runtime_tools, :os_mon]
     ]
   end
 
@@ -56,7 +56,8 @@ defmodule Purple.MixProject do
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
-      {:tzdata, "~> 1.1"}
+      {:tzdata, "~> 1.1"},
+      {:oauth2, "~> 2.0"}
     ]
   end
 
@@ -73,9 +74,9 @@ defmodule Purple.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.deploy": [
-	"tailwind default --minify",
-	"esbuild default --minify",
-	"phx.digest"
+        "tailwind default --minify",
+        "esbuild default --minify",
+        "phx.digest"
       ]
     ]
   end
