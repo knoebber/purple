@@ -6,7 +6,7 @@ defmodule Purple.Accounts do
   import Ecto.Query, warn: false
   alias Purple.Repo
 
-  alias Purple.Accounts.{User, UserToken, UserNotifier}
+  alias Purple.Accounts.{User, UserToken, UserNotifier, UserOAuthToken}
 
   ## Database getters
 
@@ -367,5 +367,32 @@ defmodule Purple.Accounts do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
+  end
+
+  def get_user_oauth_token(user_id) do
+    UserOAuthToken
+    |> where([ut], ut.user_id == ^user_id)
+    |> Repo.one()
+  end
+
+  def save_oauth_token!(token = %OAuth2.AccessToken{}, user_id) do
+    Repo.insert!(
+      UserOAuthToken.new(
+        user_id,
+        token.access_token,
+        token.refresh_token,
+        token.expires_at
+      )
+    )
+  end
+
+  def update_oauth_token!(current = %UserOAuthToken{}, token = %OAuth2.AccessToken{}) do
+    Repo.update!(
+      UserOAuthToken.change_access_token(
+        current,
+        token.access_token,
+        token.expires_at
+      )
+    )
   end
 end

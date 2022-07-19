@@ -1,6 +1,8 @@
 defmodule PurpleWeb.UserSettingsController do
   use PurpleWeb, :controller
 
+  require Logger
+
   alias Purple.Accounts
   alias Purple.Google
   alias PurpleWeb.UserAuth
@@ -21,15 +23,24 @@ defmodule PurpleWeb.UserSettingsController do
     oauth_redirect_uri(conn) |> IO.inspect()
 
     if google_code && not conn.assigns.has_google_token do
-      IO.inspect(google_code, label: "code")
-      # Google.make_token!(oauth_redirect_uri(conn), google_code)
-      # |> Google.save_token!(conn.assigns.current_user.id)
-    end
+      case Google.make_token(oauth_redirect_uri(conn), google_code) do
+        {:ok, %{token: token}} ->
+          Accounts.save_oauth_token!(token, conn.assigns.current_user.id)
+          redirect(conn, to: Routes.user_settings_path(conn, :edit))
 
-    render(conn, "edit.html")
+        {:error, response} ->
+          Logger.error("failed to make google oauth token: " <> inspect(response))
+
+          conn
+          |> put_flash(:error, "Failed to make OAuth token")
+          |> render("edit.html")
+      end
+    else
+      render(conn, "edit.html")
+    end
   end
 
-  def update(conn, %{"action" => "oauth"} = params) do
+  def update(conn, %{"action" => "oauth"}) do
     redirect(
       conn,
       external: Google.get_authorize_url!(oauth_redirect_uri(conn))
@@ -68,7 +79,7 @@ defmodule PurpleWeb.UserSettingsController do
 
   defp assign_data(conn, _opts) do
     user = conn.assigns.current_user
-    google_token = Google.get_user_token(user.id)
+    google_token = Accounts.get_user_oauth_token(user.id)
 
     conn
     |> assign(:email_changeset, Accounts.change_user_email(user))
