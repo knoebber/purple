@@ -2,9 +2,13 @@
 
 <section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
   <h2>Gmail API</h2>
-  <%= form_for @conn, Routes.user_settings_path(@conn, :update), [method: "put"], fn f -> %>
-    <%= hidden_input(f, :action, name: "action", value: "oauth") %>
-    <%= submit("OAuth") %>
+  <%= if @has_google_token do %>
+    <strong class="text-purple-400">Authorized</strong>
+  <% else %>
+    <%= form_for @conn, Routes.user_settings_path(@conn, :update), [method: "put"], fn f -> %>
+      <%= hidden_input(f, :action, name: "action", value: "oauth") %>
+      <%= submit("OAuth") %>
+    <% end %>
   <% end %>
 </section>
 

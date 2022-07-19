@@ -19,6 +19,12 @@ defmodule Purple do
     |> DateTime.to_date()
   end
 
+  def unix_to_naive(unix) do
+    unix
+    |> DateTime.from_unix!()
+    |> DateTime.to_naive()
+  end
+
   def to_local_datetime(%NaiveDateTime{} = ndt) do
     ndt
     |> DateTime.from_naive!(@naive_tz)
