@@ -386,13 +386,17 @@ defmodule Purple.Accounts do
     )
   end
 
-  def update_oauth_token!(current = %UserOAuthToken{}, token = %OAuth2.AccessToken{}) do
+  def update_oauth_token!(user_token = %UserOAuthToken{}, token = %OAuth2.AccessToken{}) do
     Repo.update!(
       UserOAuthToken.change_access_token(
-        current,
+        user_token,
         token.access_token,
         token.expires_at
       )
     )
+  end
+
+  def delete_user_oauth_token!(user_id) do
+    Repo.delete!(get_user_oauth_token(user_id))
   end
 end
