@@ -4,7 +4,7 @@ defmodule PurpleWeb.UserSettingsController do
   require Logger
 
   alias Purple.Accounts
-  alias Purple.Google
+  alias Purple.Gmail
   alias PurpleWeb.UserAuth
 
   plug :assign_data
@@ -23,7 +23,7 @@ defmodule PurpleWeb.UserSettingsController do
     oauth_redirect_uri(conn) |> IO.inspect()
 
     if google_code && not conn.assigns.has_google_token do
-      case Google.make_token(oauth_redirect_uri(conn), google_code) do
+      case Gmail.make_token(oauth_redirect_uri(conn), google_code) do
         {:ok, %{token: token}} ->
           Accounts.save_oauth_token!(token, conn.assigns.current_user.id)
           redirect(conn, to: Routes.user_settings_path(conn, :edit))
@@ -43,7 +43,7 @@ defmodule PurpleWeb.UserSettingsController do
   def update(conn, %{"action" => "oauth"}) do
     redirect(
       conn,
-      external: Google.get_authorize_url!(oauth_redirect_uri(conn))
+      external: Gmail.get_authorize_url!(oauth_redirect_uri(conn))
     )
   end
 

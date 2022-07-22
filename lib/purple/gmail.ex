@@ -180,10 +180,19 @@ defmodule Purple.Gmail do
     |> get(user.id)
   end
 
-  def get_message(user = %User{}, message_id) do
-    # TODO: diff between raw and full?
+  def get_message(user = %User{}, message_id, format \\ "raw") do
     user
-    |> build_user_path("/messages/" <> message_id <> "?format=raw")
+    |> build_user_path("/messages/" <> message_id <> "?format=#{format}")
     |> get(user.id)
+  end
+
+  def decode_message_body(message) when is_binary(message) do
+    message
+    |> Base.url_decode64!()
+    |> Mail.Encoders.QuotedPrintable.decode
+  end
+
+  def decode_message_body(message) when is_map(message) do
+    decode_message_body(message["raw"])
   end
 end
