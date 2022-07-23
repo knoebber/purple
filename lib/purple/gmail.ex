@@ -1,9 +1,6 @@
 defmodule Purple.Gmail do
-  import Ecto.Query
-
   require Logger
 
-  alias HTTPoison.Response
   alias Purple.Repo
   alias Purple.Accounts
   alias Purple.Accounts.User

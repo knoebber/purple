@@ -42,6 +42,11 @@ defmodule Purple do
     |> NaiveDateTime.truncate(:second)
   end
 
+  def parse_int(s) do
+    {int, _} = Integer.parse(s)
+    int
+  end
+
   def parse_int(s, minimum) when is_binary(s) do
     case Integer.parse(s) do
       {n, ""} -> max(n, minimum)
@@ -110,4 +115,34 @@ defmodule Purple do
       0
     end
   end
+
+  def month_name_to_number(month_name) do
+    Enum.find_index(
+      [
+        "JAN",
+        "FEB",
+        "MAR",
+        "APR",
+        "MAY",
+        "JUN",
+        "JUL",
+        "AUG",
+        "SEP",
+        "OCT",
+        "NOV",
+        "DEC"
+      ],
+      fn m ->
+        month_name
+        |> String.slice(0, 3)
+        |> String.upcase() == m
+      end
+    ) + 1
+  end
+
+  def hour_to_number(hour_string, "AM"), do: parse_int(hour_string)
+  def hour_to_number(hour_string, "PM"), do: parse_int(hour_string) + 12
+
+  def get_tzname("ET"), do: "America/New_York"
+  def get_tzname(tz), do: tz
 end

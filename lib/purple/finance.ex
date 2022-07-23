@@ -55,6 +55,20 @@ defmodule Purple.Finance do
     |> Repo.insert()
   end
 
+  def get_or_create_payment_method!(name) when is_binary(name) do
+    case get_payment_method(name) do
+      nil -> Repo.insert!(%PaymentMethod{name: name})
+      pm -> pm
+    end
+  end
+
+  def get_or_create_merchant!(name) when is_binary(name) do
+    case get_merchant(name) do
+      nil -> Repo.insert!(%Merchant{name: name})
+      merchant -> merchant
+    end
+  end
+
   def update_merchant(%Merchant{} = merchant, params) do
     merchant
     |> Merchant.changeset(params)
@@ -89,6 +103,10 @@ defmodule Purple.Finance do
     Repo.get!(SharedBudget, id)
   end
 
+  def get_merchant(name) when is_binary(name) do
+    Repo.one(from m in Merchant, where: m.name == ^name)
+  end
+
   def get_merchant!(id) do
     Repo.get!(Merchant, id)
   end
@@ -100,6 +118,10 @@ defmodule Purple.Finance do
         where: m.id == ^id,
         preload: [tags: t]
     )
+  end
+
+  def get_payment_method(name) when is_binary(name) do
+    Repo.one(from pm in PaymentMethod, where: pm.name == ^name)
   end
 
   def get_payment_method!(id) do
