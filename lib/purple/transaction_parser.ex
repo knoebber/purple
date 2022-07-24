@@ -3,41 +3,37 @@ defmodule Purple.TransactionParser do
   alias Purple.Finance
   alias Purple.Finance.Transaction
 
-  @callback parse_cents([Map.t()]) :: number
+  @callback label() :: String.t()
+  @callback parse_dollars([Map.t()]) :: String.t()
   @callback parse_merchant([Map.t()]) :: String.t()
-  @callback parse_payment_method([Map.t()]) :: String.t()
-  @callback parse_timestamp([Map.t()]) :: NaiveDateTime.t()
+  @callback parse_last_4([Map.t()]) :: String.t()
+  @callback parse_datetime([Map.t()]) :: DateTime.t()
 
-  def save(tx_map, impl, user_id) do
-    %Transaction{
-      cents: tx_map.cents,
-      description: "",
-      timestamp: tx_map.timestamp,
-      notes: "\n------\nParsed with #{impl}"
-    }
-
+  def save(tx_map, user_id) do
     Repo.transaction(fn ->
       merchant = Finance.get_or_create_merchant!(tx_map.merchant)
       payment_method = Finance.get_or_create_payment_method!(tx_map.payment_method)
 
       Repo.insert!(%Transaction{
-        user_id: user_id,
         cents: tx_map.cents,
-        description: "",
+        description: tx_map.description,
         merchant_id: merchant.id,
-        notes: "\n------\nParsed with\n```\n#{impl}\n```",
+        notes: tx_map.notes,
         payment_method_id: payment_method.id,
-        timestamp: tx_map.timestamp
+        timestamp: tx_map.timestamp,
+        user_id: user_id
       })
     end)
   end
 
   def get_params(doc, impl) do
     %{
-      cents: impl.parse_cents(doc),
-      merchant: impl.parse_merchant(doc),
-      payment_method: impl.parse_payment_method(doc),
-      timestamp: impl.parse_timestamp(doc)
+      cents: doc |> impl.parse_dollars() |> Purple.dollars_to_cents(),
+      description: "",
+      merchant: doc |> impl.parse_merchant() |> Purple.titleize(),
+      notes: "\n------\nParsed with\n```\n#{impl}\n```",
+      payment_method: "CC " <> impl.parse_last_4(doc),
+      timestamp: doc |> impl.parse_datetime() |> Purple.to_naive_datetime()
     }
   end
 
@@ -53,7 +49,7 @@ defmodule Purple.TransactionParser do
       {:ok, doc} ->
         doc
         |> get_params(impl)
-        |> save(impl, user_id)
+        |> save(user_id)
 
       err ->
         err

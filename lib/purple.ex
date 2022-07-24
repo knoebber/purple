@@ -145,4 +145,18 @@ defmodule Purple do
 
   def get_tzname("ET"), do: "America/New_York"
   def get_tzname(tz), do: tz
+
+  def scan_4_digits(string) do
+    case Regex.run(~r/\d{4}/, string) do
+      [four] -> four
+      _ -> nil
+    end
+  end
+
+  def titleize(string) do
+    string
+    |> String.split
+    |> Enum.map(&String.capitalize/1)
+    |> Enum.join(" ")
+  end
 end

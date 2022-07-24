@@ -1,8 +1,8 @@
-defmodule Purple.TransactionParser.ChaseEmail do
+defmodule Purple.TransactionParser.BOAEmail do
   @behaviour Purple.TransactionParser
 
   @impl true
-  def label(), do: "Chase Email"
+  def label(), do: "Bank of America Email"
 
   @impl true
   def parse_dollars(doc) when is_list(doc) do
@@ -14,34 +14,25 @@ defmodule Purple.TransactionParser.ChaseEmail do
   @impl true
   def parse_merchant(doc) when is_list(doc) do
     doc
-    |> Floki.find("td:fl-icontains('merchant') + td")
+    |> Floki.find("td:fl-icontains('where') + td")
     |> Floki.text()
   end
 
   @impl true
   def parse_last_4(doc) when is_list(doc) do
     doc
-    |> Floki.find("td:fl-icontains('account') + td")
+    |> Floki.find("td > b:fl-icontains('ending in')")
     |> Floki.text()
     |> Purple.scan_4_digits()
   end
 
   def parse_datetime(date_string) when is_binary(date_string) do
-    # "Jul 11, 2022 at 7:32 PM ET"
+    # "July 23, 2022"
     [
       month_string,
       day_string,
       year_string,
-      _,
-      time_string,
-      pm_string,
-      tz_string
     ] = String.split(date_string, " ")
-
-    [
-      hour_string,
-      minute_string
-    ] = String.split(time_string, ":")
 
     DateTime.new!(
       Date.new!(
@@ -50,11 +41,11 @@ defmodule Purple.TransactionParser.ChaseEmail do
         Purple.parse_int(day_string)
       ),
       Time.new!(
-        Purple.hour_to_number(hour_string, pm_string),
-        Purple.parse_int(minute_string),
+	12,
+	0,
         0
       ),
-      Purple.get_tzname(tz_string)
+      Purple.default_tz()
     )
   end
 
