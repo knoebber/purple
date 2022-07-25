@@ -171,9 +171,19 @@ defmodule Purple.Gmail do
     |> get(user.id)
   end
 
+  def get_label_id(user = %User{}, label_name) do
+    label_name = String.downcase(label_name)
+
+    user
+    |> list_labels
+    |> Map.get("labels")
+    |> Enum.find(fn label -> String.downcase(Map.get(label, "name")) == label_name end)
+    |> Map.get("id")
+  end
+
   def list_messages_in_label(user = %User{}, label_id) do
     user
-    |> build_user_path("/messages" <> "?label_ids=#{label_id}")
+    |> build_user_path("/messages" <> "?label_ids=#{label_id}&maxResults=500")
     |> get(user.id)
   end
 
@@ -186,7 +196,7 @@ defmodule Purple.Gmail do
   def decode_message_body(message) when is_binary(message) do
     message
     |> Base.url_decode64!()
-    |> Mail.Encoders.QuotedPrintable.decode
+    |> Mail.Encoders.QuotedPrintable.decode()
   end
 
   def decode_message_body(message) when is_map(message) do

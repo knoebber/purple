@@ -1,15 +1,20 @@
 defmodule Purple.Finance do
   import Ecto.Query
 
+  alias Purple.Accounts.User
+
   alias Purple.Finance.{
-    Transaction,
+    ImportedTransaction,
     Merchant,
     PaymentMethod,
     SharedBudget,
+    SharedBudgetAdjustment,
     SharedTransaction,
-    SharedBudgetAdjustment
+    Transaction,
+    TransactionImportTask
   }
 
+  alias Purple.Gmail
   alias Purple.Repo
   alias Purple.Tags
 
@@ -97,6 +102,10 @@ defmodule Purple.Finance do
     SharedBudget
     |> where([sb], sb.id == ^shared_budget_id)
     |> Repo.update_all(set: [show_adjustments: should_show])
+  end
+
+  def get_user_import_task(user_id) do
+    Repo.one(from it in ImportedTransaction, where: it.user_id == ^user_id)
   end
 
   def get_shared_budget(id) do
@@ -275,6 +284,17 @@ defmodule Purple.Finance do
     |> Repo.all()
   end
 
+  def list_shared_budgets do
+    Repo.all(SharedBudget)
+  end
+
+  def list_transaction_import_tasks do
+    TransactionImportTask
+    |> join(:inner, [ti], u in assoc(ti, :user))
+    |> preload([_, u], user: u)
+    |> Repo.all()
+  end
+
   def merchant_mappings do
     Enum.map(
       list_merchants(),
@@ -287,10 +307,6 @@ defmodule Purple.Finance do
       list_payment_methods(),
       fn %{id: id, name: name} -> [value: id, key: name] end
     )
-  end
-
-  def list_shared_budgets do
-    Repo.all(SharedBudget)
   end
 
   def get_shared_budget_user_totals(shared_budget_id) do
@@ -401,5 +417,14 @@ defmodule Purple.Finance do
 
   def adjustment_type_mappings do
     Ecto.Enum.mappings(SharedBudgetAdjustment, :type)
+  end
+
+  def get_messages_for_import(task = %TransactionImportTask{user: user}) do
+    label_id = Gmail.get_label_id(user, task.email_label)
+    Gmail.list_messages_in_label(user, label_id)
+  end
+
+  def import_transactions(task = %TransactionImportTask{user: user}) do
+    get_messages_for_import(user)
   end
 end
