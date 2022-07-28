@@ -289,8 +289,9 @@ defmodule Purple.Finance do
     Repo.all(SharedBudget)
   end
 
-  def list_transaction_import_tasks do
+  def list_transaction_import_tasks(filter) do
     TransactionImportTask
+    |> user_filter(filter)
     |> join(:inner, [ti], u in assoc(ti, :user))
     |> preload([_, u], user: u)
     |> Repo.all()
@@ -519,5 +520,33 @@ defmodule Purple.Finance do
         Logger.error(reason)
         {:error, reason}
     end
+  end
+
+  def import_transactions(user_id) when is_integer(user_id) do
+    Enum.reduce(
+      list_transaction_import_tasks(%{user_id: user_id}),
+      %{failed: 0, success: 0, errors: []},
+      fn tit, acc ->
+        case import_transactions(tit) do
+          results when is_list(results) ->
+            Enum.reduce(
+              results,
+              acc,
+              fn
+                {:ok, _}, acc ->
+                  Map.put(acc, :success, acc.success + 1)
+
+                {:error, reason}, acc ->
+                  acc
+                  |> Map.put(:failed, acc.failed + 1)
+                  |> Map.put(:errors, acc.errors ++ [reason])
+              end
+            )
+
+          {:error, reason} ->
+            %{failed: 0, success: 0, error: [reason]}
+        end
+      end
+    )
   end
 end

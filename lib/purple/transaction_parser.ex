@@ -62,13 +62,12 @@ defmodule Purple.TransactionParser do
       timestamp: get_timestamp(doc, impl)
     }
 
-    if Enum.all?(params, fn
-         {_, cents} when is_integer(cents) -> cents > 0
-         {_, val} -> !!val
-       end) do
-      {:ok, params}
-    else
-      {:error, impl.label() <> " failed to parse all fields: " <> inspect(params)}
+    case Enum.find(params, fn
+           {_, cents} when is_integer(cents) -> cents > 10000
+           {_, val} -> is_nil(val)
+         end) do
+      nil -> {:ok, params}
+      {key, val} -> {:error, "failed to parse #{key} in #{impl.label()}: #{val}"}
     end
   end
 
