@@ -63,7 +63,7 @@ defmodule Purple.TransactionParser do
     }
 
     case Enum.find(params, fn
-           {_, cents} when is_integer(cents) -> cents > 10000
+           {_, cents} when is_integer(cents) -> cents < 1
            {_, val} -> is_nil(val)
          end) do
       nil -> {:ok, params}
