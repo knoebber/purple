@@ -1,7 +1,7 @@
 defmodule Purple.Finance do
-  import Ecto.Query
+  require Logger
 
-  alias Purple.Accounts.User
+  import Ecto.Query
 
   alias Purple.Finance.{
     ImportedTransaction,
@@ -17,6 +17,7 @@ defmodule Purple.Finance do
   alias Purple.Gmail
   alias Purple.Repo
   alias Purple.Tags
+  alias Purple.TransactionParser
 
   @dollar_amount_fragment "CONCAT('$', ROUND(cents/100.00,2))"
 
@@ -105,7 +106,7 @@ defmodule Purple.Finance do
   end
 
   def get_user_import_task(user_id) do
-    Repo.one(from it in ImportedTransaction, where: it.user_id == ^user_id)
+    Repo.one(from it in TransactionImportTask, where: it.user_id == ^user_id)
   end
 
   def get_shared_budget(id) do
@@ -295,6 +296,18 @@ defmodule Purple.Finance do
     |> Repo.all()
   end
 
+  defp import_task_filter(q, %{import_task_id: import_task_id}) do
+    where(q, [tit], tit.transaction_import_task_id == ^import_task_id)
+  end
+
+  defp import_task_filter(q, _), do: q
+
+  def list_imported_transactions(filter) do
+    ImportedTransaction
+    |> import_task_filter(filter)
+    |> Repo.all()
+  end
+
   def merchant_mappings do
     Enum.map(
       list_merchants(),
@@ -419,12 +432,92 @@ defmodule Purple.Finance do
     Ecto.Enum.mappings(SharedBudgetAdjustment, :type)
   end
 
-  def get_messages_for_import(task = %TransactionImportTask{user: user}) do
-    label_id = Gmail.get_label_id(user, task.email_label)
-    Gmail.list_messages_in_label(user, label_id)
+  def get_messages_for_import(tit = %TransactionImportTask{user: user}) do
+    imported_transactions = list_imported_transactions(%{import_task_id: tit.id})
+
+    case Gmail.list_messages_in_label(user, tit.email_label) do
+      {:ok, messages} when is_list(messages) ->
+        {:ok,
+         Enum.reject(
+           messages,
+           fn message ->
+             Enum.find(imported_transactions, &(&1.data_id == message["id"]))
+           end
+         )}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
-  def import_transactions(task = %TransactionImportTask{user: user}) do
-    get_messages_for_import(user)
+  def get_transaction_from_gmail(tit = %TransactionImportTask{user: user}, message_id) do
+    with {:ok, message} <- Gmail.get_message(user, message_id),
+         {:ok, html} <- TransactionParser.parse_html(Gmail.decode_message_body(message)),
+         {:ok, transaction_params} <- TransactionParser.get_params(html, tit.parser) do
+      {:ok,
+       %{
+         transaction_params: Map.put(transaction_params, :user_id, user.id),
+         imported_transaction: %ImportedTransaction{
+           data_id: message_id,
+           data_summary: message["snippet"],
+           transaction_import_task_id: tit.id
+         }
+       }}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def save_imported_transaction(params) when is_map(params) do
+    %{
+      transaction_params: transaction_params,
+      imported_transaction: imported_transaction
+    } = params
+
+    Repo.transaction(fn ->
+      transaction =
+        Repo.insert!(%Transaction{
+          cents: transaction_params.cents,
+          description: "",
+          merchant: get_or_create_merchant!(transaction_params.merchant),
+          notes: transaction_params.notes,
+          payment_method: get_or_create_payment_method!(transaction_params.payment_method),
+          timestamp: transaction_params.timestamp,
+          user_id: transaction_params.user_id
+        })
+
+      imported_transaction =
+        Repo.insert!(Map.put(imported_transaction, :transaction_id, transaction.id))
+
+      Logger.info(
+        "saved imported transaction: " <>
+          "[#{imported_transaction.id}] transaction: [#{transaction.id}]"
+      )
+
+      {transaction, imported_transaction}
+    end)
+  end
+
+  def save_imported_transaction(tit = %TransactionImportTask{}, message_id) do
+    case get_transaction_from_gmail(tit, message_id) do
+      {:ok, params} -> save_imported_transaction(params)
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def import_transactions(tit = %TransactionImportTask{user: user}) do
+    case get_messages_for_import(tit) do
+      {:ok, messages} ->
+        Logger.info(
+          "attempting to import #{length(messages)} transactions for [" <>
+            user.email <> "] label [" <> tit.email_label <> "] parser [#{tit.parser}]"
+        )
+
+        Enum.map(messages, &save_imported_transaction(tit, &1["id"]))
+
+      {:error, reason} ->
+        Logger.error(reason)
+        {:error, reason}
+    end
   end
 end

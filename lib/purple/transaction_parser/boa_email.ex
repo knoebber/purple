@@ -28,25 +28,25 @@ defmodule Purple.TransactionParser.BOAEmail do
 
   def parse_datetime(date_string) when is_binary(date_string) do
     # "July 23, 2022"
-    [
-      month_string,
-      day_string,
-      year_string,
-    ] = String.split(date_string, " ")
+    case String.split(date_string, " ") do
+      [month_string, day_string, year_string] ->
+        DateTime.new!(
+          Date.new!(
+            Purple.parse_int(year_string),
+            Purple.month_name_to_number(month_string),
+            Purple.parse_int(day_string)
+          ),
+          Time.new!(
+            12,
+            0,
+            0
+          ),
+          Purple.default_tz()
+        )
 
-    DateTime.new!(
-      Date.new!(
-        Purple.parse_int(year_string),
-        Purple.month_name_to_number(month_string),
-        Purple.parse_int(day_string)
-      ),
-      Time.new!(
-	12,
-	0,
-        0
-      ),
-      Purple.default_tz()
-    )
+      _ ->
+        nil
+    end
   end
 
   @impl true

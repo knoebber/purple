@@ -130,7 +130,7 @@ defmodule Purple.Gmail do
          |> Map.get("Content-Type"),
          "application/json"
        ) do
-      Jason.decode!(body)
+      Jason.decode(body)
     else
       Logger.error(body)
       {:error, "no json content"}
@@ -171,20 +171,39 @@ defmodule Purple.Gmail do
     |> get(user.id)
   end
 
+  def get_label_id(labels, label_name) when is_list(labels) do
+    case Enum.find(labels, &(String.downcase(&1["name"]) == label_name)) do
+      label when is_map(label) -> {:ok, label["id"]}
+      nil -> {:error, "label [#{label_name}] not found"}
+    end
+  end
+
   def get_label_id(user = %User{}, label_name) do
     label_name = String.downcase(label_name)
 
-    user
-    |> list_labels
-    |> Map.get("labels")
-    |> Enum.find(fn label -> String.downcase(Map.get(label, "name")) == label_name end)
-    |> Map.get("id")
+    case list_labels(user) do
+      {:ok, %{"labels" => labels}} ->
+        get_label_id(labels, label_name)
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
-  def list_messages_in_label(user = %User{}, label_id) do
-    user
-    |> build_user_path("/messages" <> "?label_ids=#{label_id}&maxResults=500")
-    |> get(user.id)
+  def list_messages_in_label_id(user = %User{}, label_id) do
+    case user
+         |> build_user_path("/messages" <> "?label_ids=#{label_id}&maxResults=500")
+         |> get(user.id) do
+      {:ok, messages} -> {:ok, messages["messages"]}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def list_messages_in_label(user = %User{}, label_name) do
+    case get_label_id(user, label_name) do
+      {:ok, label_id} when is_binary(label_id) -> list_messages_in_label_id(user, label_id)
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   def get_message(user = %User{}, message_id, format \\ "raw") do

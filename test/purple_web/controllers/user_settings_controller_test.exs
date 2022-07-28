@@ -59,36 +59,6 @@ defmodule PurpleWeb.UserSettingsControllerTest do
     end
   end
 
-  describe "PUT /users/settings (change email form)" do
-    @tag :capture_log
-    test "updates the user email", %{conn: conn, user: user} do
-      conn =
-        put(conn, Routes.user_settings_path(conn, :update), %{
-          "action" => "update_email",
-          "current_password" => valid_user_password(),
-          "user" => %{"email" => unique_user_email()}
-        })
-
-      assert redirected_to(conn) == Routes.user_settings_path(conn, :edit)
-      assert get_flash(conn, :info) =~ "A link to confirm your email"
-      assert Accounts.get_user_by_email(user.email)
-    end
-
-    test "does not update email on invalid data", %{conn: conn} do
-      conn =
-        put(conn, Routes.user_settings_path(conn, :update), %{
-          "action" => "update_email",
-          "current_password" => "invalid",
-          "user" => %{"email" => "with spaces"}
-        })
-
-      response = html_response(conn, 200)
-      assert response =~ "<h1>Settings</h1>"
-      assert response =~ "must have the @ sign and no spaces"
-      assert response =~ "is not valid"
-    end
-  end
-
   describe "GET /users/settings/confirm_email/:token" do
     setup %{user: user} do
       email = unique_user_email()

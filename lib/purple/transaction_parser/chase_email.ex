@@ -28,34 +28,33 @@ defmodule Purple.TransactionParser.ChaseEmail do
 
   def parse_datetime(date_string) when is_binary(date_string) do
     # "Jul 11, 2022 at 7:32 PM ET"
-    [
-      month_string,
-      day_string,
-      year_string,
-      _,
-      time_string,
-      pm_string,
-      tz_string
-    ] = String.split(date_string, " ")
-
-    [
-      hour_string,
-      minute_string
-    ] = String.split(time_string, ":")
-
-    DateTime.new!(
-      Date.new!(
-        Purple.parse_int(year_string),
-        Purple.month_name_to_number(month_string),
-        Purple.parse_int(day_string)
-      ),
-      Time.new!(
-        Purple.hour_to_number(hour_string, pm_string),
-        Purple.parse_int(minute_string),
-        0
-      ),
-      Purple.get_tzname(tz_string)
-    )
+    with [
+           month_string,
+           day_string,
+           year_string,
+           _,
+           time_string,
+           pm_string,
+           tz_string
+         ] <- String.split(date_string, " "),
+         [
+           hour_string,
+           minute_string
+         ] <- String.split(time_string, ":") do
+      DateTime.new!(
+        Date.new!(
+          Purple.parse_int(year_string),
+          Purple.month_name_to_number(month_string),
+          Purple.parse_int(day_string)
+        ),
+        Time.new!(
+          Purple.hour_to_number(hour_string, pm_string),
+          Purple.parse_int(minute_string),
+          0
+        ),
+        Purple.get_tzname(tz_string)
+      )
+    end
   end
 
   @impl true

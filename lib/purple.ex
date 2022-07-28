@@ -109,6 +109,8 @@ defmodule Purple do
   def dollars_to_cents(<<?$, rest::binary>>), do: dollars_to_cents(rest)
 
   def dollars_to_cents(dollars) when is_binary(dollars) do
+    dollars = String.replace(dollars, ",", "")
+
     if Regex.match?(~r/^\$?[0-9]+(\.[0-9]{1,2})?$/, dollars) do
       dollars_to_cents(String.split(dollars, "."))
     else
@@ -155,7 +157,7 @@ defmodule Purple do
 
   def titleize(string) do
     string
-    |> String.split
+    |> String.split()
     |> Enum.map(&String.capitalize/1)
     |> Enum.join(" ")
   end

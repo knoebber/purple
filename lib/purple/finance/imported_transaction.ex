@@ -3,6 +3,7 @@ defmodule Purple.Finance.ImportedTransaction do
 
   schema "imported_transactions" do
     field :data_id, :string
+    field :data_summary, :string
     belongs_to :transaction, Purple.Finance.Transaction
     belongs_to :transaction_import_task, Purple.Finance.TransactionImportTask
 

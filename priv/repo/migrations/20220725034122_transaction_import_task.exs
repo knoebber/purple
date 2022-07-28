@@ -17,6 +17,7 @@ defmodule Purple.Repo.Migrations.TransactionImportTask do
       add :transaction_id, references(:transactions, on_delete: :nilify_all), null: true
       add :transaction_import_task_id, references(:transaction_import_tasks), null: false
       add :data_id, :string, null: false
+      add :data_summary, :text, null: false
 
       timestamps()
     end
