@@ -10,11 +10,25 @@ defmodule PurpleWeb.UserSettingsController do
   plug :assign_data
 
   defp oauth_redirect_uri(conn) do
-    Atom.to_string(conn.scheme) <>
-      "://" <>
+    port = conn.port
+
+    port =
+      if port == 80 do
+        ""
+      else
+        ":#{port}"
+      end
+
+    scheme =
+      if Application.get_env(:purple, :env) == :dev do
+        "http://"
+      else
+        "https://"
+      end
+
+    scheme <>
       Application.fetch_env!(:purple, PurpleWeb.Endpoint)[:url][:host] <>
-      ":" <>
-      Integer.to_string(conn.port) <>
+      port <>
       Routes.user_settings_path(conn, :edit)
   end
 
