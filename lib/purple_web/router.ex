@@ -64,6 +64,7 @@ defmodule PurpleWeb.Router do
 
     live_session :default, on_mount: PurpleWeb.LiveMount do
       live "/finance", FinanceLive.Index, :index
+      live "/finance/transactions/:id", FinanceLive.ShowTransaction, :show
       live "/finance/merchants", FinanceLive.MerchantIndex, :index
       live "/finance/payment_methods", FinanceLive.PaymentMethodIndex, :index
       live "/finance/shared_budgets", FinanceLive.SharedBudgetIndex, :index

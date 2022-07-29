@@ -235,7 +235,7 @@ defmodule PurpleWeb.FinanceLive.Index do
     <div class="w-full overflow-auto">
       <.table rows={@transactions}>
         <:col let={transaction} label="Amount">
-          <%= transaction.dollars %>
+          <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
         </:col>
         <:col let={transaction} label="Timestamp">
           <%= format_date(transaction.timestamp, :time) %>

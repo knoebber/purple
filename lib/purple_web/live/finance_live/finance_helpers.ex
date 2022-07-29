@@ -52,6 +52,14 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     index_path(%{}, %{})
   end
 
+  def show_transaction_path(params) do
+    PurpleWeb.Router.Helpers.finance_show_transaction_path(
+      PurpleWeb.Endpoint,
+      :show,
+      params
+    )
+  end
+
   def show_shared_budget_path(params, action) do
     PurpleWeb.Router.Helpers.finance_show_shared_budget_path(
       PurpleWeb.Endpoint,

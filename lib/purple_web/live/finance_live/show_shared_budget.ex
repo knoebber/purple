@@ -218,7 +218,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         <div class="p-1">
           <.table rows={user.transactions}>
             <:col let={transaction} label="Amount">
-              <%= transaction.dollars %>
+              <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
             </:col>
             <:col let={transaction} label="Date">
               <%= format_date(transaction.timestamp) %>

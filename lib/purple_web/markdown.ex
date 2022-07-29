@@ -5,6 +5,7 @@ defmodule PurpleWeb.Markdown do
 
   def get_link(tag, :board), do: Routes.board_index_path(Endpoint, :index, tag: tag)
   def get_link(tag, :run), do: Routes.run_index_path(Endpoint, :index, tag: tag)
+  def get_link(tag, :finance), do: Routes.finance_index_path(Endpoint, :index, tag: tag)
   def get_link(tag, _), do: "?tag=#{tag}"
 
   def strip_markdown(markdown) do
