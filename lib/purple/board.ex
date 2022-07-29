@@ -1,7 +1,9 @@
 defmodule Purple.Board do
-  alias Purple.Board.{ItemEntry, Item}
+  alias Purple.Board.{ItemEntry, Item, UserBoard}
   alias Purple.Repo
   alias Purple.Tags
+  alias Purple.Tags.{Tag, BoardTag}
+  alias Purple.Tags.Tag
 
   import Ecto.Query
 
@@ -121,6 +123,54 @@ defmodule Purple.Board do
     |> item_done_filter(filter)
     |> Tags.filter_by_tag(filter, :item)
     |> Repo.all()
+  end
+
+  def list_user_board_items(user_board = %UserBoard{tags: tags} = user_board)
+      when is_list(tags) do
+    list_items(%{tag: tags, show_done: user_board.show_done})
+  end
+
+  def list_user_boards(user_id) do
+    Repo.all(
+      from ub in UserBoard,
+        left_join: t in assoc(ub, :tags),
+        where: ub.user_id == ^user_id,
+        preload: [tags: t]
+    )
+  end
+
+  def get_user_board(id) do
+    Repo.one(
+      from ub in UserBoard,
+        left_join: t in assoc(ub, :tags),
+        where: ub.id == ^id,
+        preload: [tags: t]
+    )
+  end
+
+  def add_user_board_tag(user_board_id, tagname) do
+    case Repo.one(from t in Tag, where: t.name == ^tagname) do
+      nil -> {:error, "tag \"#{tagname}\" not found"}
+      tag -> Repo.insert(%BoardTag{tag_id: tag.id, board_id: user_board_id})
+    end
+  end
+
+  def delete_user_board_tag!(board_tag = %BoardTag{}) do
+    Repo.delete!(board_tag)
+  end
+
+  def change_user_board(%UserBoard{} = user_board, attrs \\ %{}) do
+    UserBoard.changeset(user_board, attrs)
+  end
+
+  def create_user_board!(%UserBoard{} = user_board) do
+    Repo.insert!(user_board)
+  end
+
+  def update_user_board!(%UserBoard{} = user_board, params) do
+    user_board
+    |> UserBoard.changeset(params)
+    |> Repo.update()
   end
 
   def item_status_mappings do

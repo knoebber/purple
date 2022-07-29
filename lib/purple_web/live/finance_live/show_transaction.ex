@@ -40,8 +40,6 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
         <br />
         <%= @transaction.dollars %>
         <br />
-        <%= @transaction.description %>
-        <br />
         <.timestamp model={@transaction} />
       </div>
       <div class="markdown-content">

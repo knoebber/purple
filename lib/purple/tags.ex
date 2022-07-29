@@ -187,11 +187,19 @@ defmodule Purple.Tags do
     sync_tags(MerchantTag, merchant, %{merchant_id: id})
   end
 
+  defp tag_filter_subquery(model, tagnames, join_col) when is_list(tagnames) do
+    from(m in model,
+      select: ^[join_col],
+      join: t in assoc(m, :tag),
+      where: t.name in ^Enum.map(tagnames, &String.downcase(&1))
+    )
+  end
+
   defp tag_filter_subquery(model, tagname, join_col) do
     from(m in model,
       select: ^[join_col],
       join: t in assoc(m, :tag),
-      where: ilike(t.name, ^tagname)
+      where: t.name == ^String.downcase(tagname)
     )
   end
 
