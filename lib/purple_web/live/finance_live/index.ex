@@ -151,6 +151,16 @@ defmodule PurpleWeb.FinanceLive.Index do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("import", _, socket) do
+    Finance.import_transactions(socket.assigns.current_user.id)
+
+    {
+      :noreply,
+      assign_finance_data(socket)
+    }
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     Finance.get_transaction!(id) |> Finance.delete_transaction!()
 
@@ -208,6 +218,7 @@ defmodule PurpleWeb.FinanceLive.Index do
       <%= live_patch(to: index_path(@params, :new_transaction)) do %>
         <button class="btn">Create</button>
       <% end %>
+      <button class="btn" phx-click="import" phx-disable-with="Import">Import</button>
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
       <%= select(f, :tag, @tag_options) %>
       <%= select(

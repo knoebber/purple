@@ -153,7 +153,7 @@
 @layer components {
     button[type="submit"], .btn {
         @apply bg-purple-300;
-        @apply disabled:hover:bg-purple-100;
+        @apply disabled:bg-purple-100;
         @apply disabled:opacity-75;
         @apply hover:bg-purple-400;
         @apply p-2;
