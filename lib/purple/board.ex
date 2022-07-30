@@ -1,8 +1,12 @@
 defmodule Purple.Board do
+  @moduledoc """
+  Context for managing boards, items, and entries.
+  """
+
   alias Purple.Board.{ItemEntry, Item, UserBoard}
   alias Purple.Repo
   alias Purple.Tags
-  alias Purple.Tags.{Tag, BoardTag}
+  alias Purple.Tags.{Tag, UserBoardTag}
   alias Purple.Tags.Tag
 
   import Ecto.Query
@@ -135,6 +139,7 @@ defmodule Purple.Board do
       from ub in UserBoard,
         left_join: t in assoc(ub, :tags),
         where: ub.user_id == ^user_id,
+        order_by: [ub.inserted_at],
         preload: [tags: t]
     )
   end
@@ -151,11 +156,11 @@ defmodule Purple.Board do
   def add_user_board_tag(user_board_id, tagname) do
     case Repo.one(from t in Tag, where: t.name == ^tagname) do
       nil -> {:error, "tag \"#{tagname}\" not found"}
-      tag -> Repo.insert(%BoardTag{tag_id: tag.id, board_id: user_board_id})
+      tag -> Repo.insert(%UserBoardTag{tag_id: tag.id, user_board_id: user_board_id})
     end
   end
 
-  def delete_user_board_tag!(board_tag = %BoardTag{}) do
+  def delete_user_board_tag!(%UserBoardTag{} = board_tag) do
     Repo.delete!(board_tag)
   end
 
@@ -171,6 +176,10 @@ defmodule Purple.Board do
     user_board
     |> UserBoard.changeset(params)
     |> Repo.update()
+  end
+
+  def delete_user_board!(id) do
+    Repo.delete!(%UserBoard{id: Purple.parse_int(id)})
   end
 
   def item_status_mappings do

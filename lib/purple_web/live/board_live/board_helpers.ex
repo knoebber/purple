@@ -1,11 +1,17 @@
 defmodule PurpleWeb.BoardLive.BoardHelpers do
+  alias PurpleWeb.Router.Helpers, as: Routes
+
+  @moduledoc """
+  Helpers for board live views
+  """
+
   @reserved_keys [
     "action",
     "id"
   ]
 
   def index_path(params, new_params = %{}) do
-    PurpleWeb.Router.Helpers.board_index_path(
+    Routes.board_index_path(
       PurpleWeb.Endpoint,
       :index,
       Map.merge(params, new_params)
@@ -34,7 +40,11 @@ defmodule PurpleWeb.BoardLive.BoardHelpers do
     index_path(%{}, %{})
   end
 
-  def side_nav do
+  def board_settings_path do
+    Routes.board_board_settings_path(PurpleWeb.Endpoint, :index)
+  end
+
+  def side_nav(user_id) when is_integer(user_id) do
     [
       %{
         label: "Board",
@@ -43,6 +53,10 @@ defmodule PurpleWeb.BoardLive.BoardHelpers do
       %{
         label: "New Item",
         to: index_path(%{}, :new_item)
+      },
+      %{
+        label: "Board settings",
+        to: board_settings_path()
       }
     ]
   end

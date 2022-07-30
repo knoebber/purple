@@ -15,7 +15,12 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
   def handle_params(%{"id" => id}, _url, socket) do
     transaction = Finance.get_transaction!(id)
 
-    page_title = "Transaction #{transaction.id}"
+    page_title =
+      if transaction.description == "" do
+        "Transaction #{transaction.id}"
+      else
+        transaction.description
+      end
 
     {
       :noreply,
@@ -30,9 +35,6 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
     ~H"""
     <h1><%= @page_title %></h1>
     <section class="mt-2 mb-2 window">
-      <h2>
-        <%= Markdown.markdown_to_html("# #{@transaction.description}", :finance) %>
-      </h2>
       <div class="p-4">
         <%= @transaction.merchant.name %>
         <br />

@@ -168,7 +168,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
-    {:ok, assign(socket, :side_nav, side_nav())}
+    {:ok, assign(socket, :side_nav, side_nav(socket.assigns.current_user.id))}
   end
 
   defp cancel_link(assigns) do
