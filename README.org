@@ -8,7 +8,3 @@ Running ~make~ will install dependencies, create the database, and run
 pending migrations.
 
 To start the server, run ~mix phx.server~
-
-* IEX shell
-
-~IEx.configure(inspect: [limit: :infinity])~
