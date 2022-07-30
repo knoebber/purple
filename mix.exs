@@ -34,6 +34,7 @@ defmodule Purple.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 2.0"},
+      {:credo, "~> 1.6.5", only: [:dev, :test], runtime: false},
       {:earmark, "~> 1.4.20"},
       {:ecto_dev_logger, "~> 0.2", runtime: Mix.env() == :dev},
       {:ecto_psql_extras, "~> 0.7.4"},
