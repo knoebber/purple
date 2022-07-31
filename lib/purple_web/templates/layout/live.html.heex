@@ -1,7 +1,7 @@
 <div class="content-flex">
   <nav>
     <%= for link <- @side_nav || [] do %>
-      <%= live_patch(link.label, to: link.to) %>
+      <%= live_redirect(link.label, to: link.to) %>
     <% end %>
   </nav>
   <main>

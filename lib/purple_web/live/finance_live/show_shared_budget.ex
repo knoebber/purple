@@ -36,14 +36,6 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
     |> assign(:user_mappings, user_data.user_mappings)
   end
 
-  defp get_map_int(params, key) do
-    case Integer.parse(Map.get(params, key, "")) do
-      {0, _} -> nil
-      {id, ""} -> id
-      _ -> nil
-    end
-  end
-
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
     {:ok, assign(socket, :side_nav, side_nav())}
@@ -54,7 +46,10 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
     {
       :noreply,
       socket
-      |> assign_data(get_map_int(params, "id"), get_map_int(params, "adjustment_id"))
+      |> assign_data(
+        Purple.int_from_map(params, "id"),
+        Purple.int_from_map(params, "adjustment_id")
+      )
     }
   end
 
@@ -69,7 +64,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   def handle_event("share_transaction", params, socket) do
     shared_budget_id = socket.assigns.shared_budget.id
 
-    transaction_id = get_map_int(params, "transaction_id")
+    transaction_id = Purple.int_from_map(params, "transaction_id")
 
     if transaction_id do
       Finance.create_shared_transaction!(shared_budget_id, transaction_id)
@@ -84,7 +79,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   def handle_event("remove_transaction", params, socket) do
     shared_budget_id = socket.assigns.shared_budget.id
 
-    Finance.remove_shared_transaction!(shared_budget_id, get_map_int(params, "id"))
+    Finance.remove_shared_transaction!(shared_budget_id, Purple.int_from_map(params, "id"))
 
     {
       :noreply,
@@ -97,7 +92,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   @impl Phoenix.LiveView
   def handle_event("delete_adjustment", params, socket) do
     Finance.delete_shared_budget_adjustment(%Finance.SharedBudgetAdjustment{
-      id: get_map_int(params, "id")
+      id: Purple.int_from_map(params, "id")
     })
 
     {

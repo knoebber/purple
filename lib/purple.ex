@@ -70,6 +70,14 @@ defmodule Purple do
     end
   end
 
+  def int_from_map(params, key) do
+    case Integer.parse(Map.get(params, key, "")) do
+      {0, _} -> nil
+      {id, ""} -> id
+      _ -> nil
+    end
+  end
+
   defp time_from_map(m = %{}) do
     Time.new(
       Map.get(m, "hour") |> parse_int(0),

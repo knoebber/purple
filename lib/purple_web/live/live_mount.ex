@@ -1,8 +1,12 @@
 defmodule PurpleWeb.LiveMount do
+  @moduledoc """
+  Global mount function for live views in purple.
+  """
+
   import Phoenix.LiveView
   alias Purple.Accounts
 
-  def on_mount(:default, _params, %{"user_token" => user_token} = _session, socket) do
+  def on_mount(:default, _, %{"user_token" => user_token} = _session, socket) do
     socket =
       socket
       |> assign(:side_nav, [])

@@ -1,4 +1,8 @@
 defmodule PurpleWeb.Formatters do
+  @moduledoc """
+  Formatters that are available to all purple web views
+  """
+
   defp is_positive_number(i) do
     is_number(i) and i > 0
   end

@@ -153,29 +153,53 @@ defmodule Purple.Board do
     )
   end
 
-  def add_user_board_tag(user_board_id, tagname) do
-    case Repo.one(from t in Tag, where: t.name == ^tagname) do
-      nil -> {:error, "tag \"#{tagname}\" not found"}
-      tag -> Repo.insert(%UserBoardTag{tag_id: tag.id, user_board_id: user_board_id})
-    end
+  def add_user_board_tag(user_board_id, tag_id) do
+    Repo.insert(%UserBoardTag{
+      tag_id: tag_id,
+      user_board_id: user_board_id
+    })
   end
 
-  def delete_user_board_tag!(%UserBoardTag{} = board_tag) do
-    Repo.delete!(board_tag)
+  def delete_user_board_tag!(user_board_id, tag_id) do
+    Repo.one!(
+      from ubt in UserBoardTag,
+        where: ubt.user_board_id == ^user_board_id and ubt.tag_id == ^tag_id
+    )
+    |> Repo.delete!()
   end
 
   def change_user_board(%UserBoard{} = user_board, attrs \\ %{}) do
     UserBoard.changeset(user_board, attrs)
   end
 
-  def create_user_board!(%UserBoard{} = user_board) do
-    Repo.insert!(user_board)
+  def create_user_board(%UserBoard{} = user_board) do
+    result = Repo.insert(user_board)
+    set_user_board_is_default(result)
+    result
   end
 
-  def update_user_board!(%UserBoard{} = user_board, params) do
-    user_board
-    |> UserBoard.changeset(params)
-    |> Repo.update()
+  def update_user_board(%UserBoard{} = user_board, params) do
+    result =
+      user_board
+      |> UserBoard.changeset(params)
+      |> Repo.update()
+
+    set_user_board_is_default(result)
+    result
+  end
+
+  defp set_user_board_is_default(%UserBoard{is_default: true} = user_board) do
+    UserBoard
+    |> where([ub], ub.user_id == ^user_board.user_id and ub.id != ^user_board.id)
+    |> Repo.update_all(set: [is_default: false])
+  end
+
+  defp set_user_board_is_default({:ok, %UserBoard{} = user_board}) do
+    set_user_board_is_default(user_board)
+  end
+
+  defp set_user_board_is_default(_) do
+    nil
   end
 
   def delete_user_board!(id) do

@@ -1,4 +1,8 @@
 defmodule PurpleWeb.BoardLive.ItemForm do
+  @moduledoc """
+  Form for updating rows in the user_boards database table.
+  """
+
   use PurpleWeb, :live_component
 
   alias Purple.Board
