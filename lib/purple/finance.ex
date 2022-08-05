@@ -433,7 +433,7 @@ defmodule Purple.Finance do
     Ecto.Enum.mappings(SharedBudgetAdjustment, :type)
   end
 
-  def get_messages_for_import(tit = %TransactionImportTask{user: user}) do
+  def get_messages_for_import(%TransactionImportTask{user: user} = tit) do
     imported_transactions = list_imported_transactions(%{import_task_id: tit.id})
 
     case Gmail.list_messages_in_label(user, tit.email_label) do
@@ -451,7 +451,7 @@ defmodule Purple.Finance do
     end
   end
 
-  def get_transaction_from_gmail(tit = %TransactionImportTask{user: user}, message_id) do
+  def get_transaction_from_gmail(%TransactionImportTask{user: user} = tit, message_id) do
     with {:ok, message} <- Gmail.get_message(user, message_id),
          {:ok, html} <- TransactionParser.parse_html(Gmail.decode_message_body(message)),
          {:ok, transaction_params} <- TransactionParser.get_params(html, tit.parser) do
@@ -499,14 +499,14 @@ defmodule Purple.Finance do
     end)
   end
 
-  def save_imported_transaction(tit = %TransactionImportTask{}, message_id) do
+  def save_imported_transaction(%TransactionImportTask{} = tit, message_id) do
     case get_transaction_from_gmail(tit, message_id) do
       {:ok, params} -> save_imported_transaction(params)
       {:error, reason} -> {:error, reason}
     end
   end
 
-  def import_transactions(tit = %TransactionImportTask{user: user}) do
+  def import_transactions(%TransactionImportTask{user: user} = tit) do
     case get_messages_for_import(tit) do
       {:ok, messages} ->
         Logger.info(

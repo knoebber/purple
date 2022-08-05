@@ -1,4 +1,5 @@
 defmodule PurpleWeb.BoardLive.BoardHelpers do
+  alias Purple.Board
   alias PurpleWeb.Router.Helpers, as: Routes
 
   @moduledoc """
@@ -40,24 +41,25 @@ defmodule PurpleWeb.BoardLive.BoardHelpers do
     index_path(%{}, %{})
   end
 
+  def user_board_path(id) do
+    Routes.board_index_path(PurpleWeb.Endpoint, :index, id)
+  end
+
   def board_settings_path do
     Routes.board_board_settings_path(PurpleWeb.Endpoint, :index)
   end
 
   def side_nav(user_id) when is_integer(user_id) do
-    [
-      %{
-        label: "Board",
-        to: index_path()
-      },
-      %{
-        label: "New Item",
-        to: index_path(%{}, :new_item)
-      },
-      %{
-        label: "Board settings",
-        to: board_settings_path()
-      }
-    ]
+    user_boards =
+      Enum.map(
+        Board.list_user_boards(user_id),
+        fn ub -> %{label: ub.name, to: user_board_path(ub.id)} end
+      ) ++
+        [
+          %{
+            label: "Board settings",
+            to: board_settings_path()
+          }
+        ]
   end
 end

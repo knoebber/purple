@@ -1,4 +1,8 @@
 defmodule Purple do
+  @moduledoc """
+  Misc functions for purple
+  """
+
   @naive_tz "Etc/UTC"
 
   def default_tz do
@@ -60,7 +64,7 @@ defmodule Purple do
     min(parse_int(s, minimum), maximum)
   end
 
-  defp date_from_map(m = %{}) do
+  defp date_from_map(%{} = m) do
     with {year, ""} <- Integer.parse(Map.get(m, "year")),
          {month, ""} <- Integer.parse(Map.get(m, "month")),
          {day, ""} <- Integer.parse(Map.get(m, "day")) do
@@ -78,7 +82,7 @@ defmodule Purple do
     end
   end
 
-  defp time_from_map(m = %{}) do
+  defp time_from_map(%{} = m) do
     Time.new(
       Map.get(m, "hour") |> parse_int(0),
       Map.get(m, "minute") |> parse_int(0),
@@ -87,7 +91,7 @@ defmodule Purple do
     )
   end
 
-  def local_datetime_from_map(m = %{}) do
+  def local_datetime_from_map(%{} = m) do
     with {:ok, date} <- date_from_map(m),
          {:ok, time} <- time_from_map(m) do
       DateTime.new!(date, time, default_tz())
@@ -96,7 +100,7 @@ defmodule Purple do
     end
   end
 
-  def naive_datetime_from_map(m = %{}) do
+  def naive_datetime_from_map(%{} = m) do
     m
     |> local_datetime_from_map()
     |> to_naive_datetime()
@@ -168,5 +172,19 @@ defmodule Purple do
     |> String.split()
     |> Enum.map(&String.capitalize/1)
     |> Enum.join(" ")
+  end
+
+  def maybe_list(list) do
+    if is_list(list) do
+      list
+    else
+      []
+    end
+  end
+
+  def drop_falsey_values(map) when is_map(map) do
+    Map.reject(map, fn {_, val} ->
+      is_nil(val) or val == "" or val == 0 or val == false or val == []
+    end)
   end
 end

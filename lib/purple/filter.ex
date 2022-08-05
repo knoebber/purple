@@ -24,7 +24,7 @@ defmodule Purple.Filter do
   def clean_filter(changeset = %Ecto.Changeset{}) do
     changeset.data
     |> Map.merge(changeset.changes)
-    |> Map.reject(fn {_, val} -> is_nil(val) or val == "" or val == 0 or val == false end)
+    |> Purple.drop_falsey_values
   end
 
   def make_tag_select_options(type, filter \\ %{}) when is_atom(type) do

@@ -8,32 +8,49 @@ defmodule PurpleWeb.BoardLive.Index do
   import PurpleWeb.BoardLive.BoardHelpers
 
   alias Purple.Board
-  alias Purple.Board.Item
+  alias Purple.Board.{UserBoard, Item}
 
   defp apply_action(socket, :edit_item, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Item #{id}")
-    |> assign(:item, Board.get_item!(id))
+    assign(socket, :item, Board.get_item!(id))
   end
 
   defp apply_action(socket, :new_item, _params) do
-    socket
-    |> assign(:page_title, "New Item")
-    |> assign(:item, %Item{})
+    assign(socket, :item, %Item{})
   end
 
   defp apply_action(socket, :index, _params) do
+    board_name = socket.assigns.user_board.name
+
     socket
-    |> assign(:page_title, "Board")
+    |> assign(:page_title, if(board_name == "", do: "Default Board", else: board_name))
     |> assign(:item, nil)
   end
 
-  defp assign_items(socket) do
-    filter = Purple.Filter.clean_filter(socket.assigns.filter)
+  defp assign_data(socket) do
+    assigns = socket.assigns
+    user_board = assigns.user_board
+    saved_tags = Purple.maybe_list(user_board.tags)
+
+    filter =
+      Map.merge(
+        %{
+          show_done: user_board.show_done,
+          tag: Enum.map(saved_tags, & &1.name)
+        },
+        Purple.Filter.clean_filter(assigns.filter)
+      )
+      |> Purple.drop_falsey_values()
+
+    tag_options =
+      if saved_tags do
+        []
+      else
+        Purple.Filter.make_tag_select_options(:item)
+      end
 
     socket
     |> assign(:items, Board.list_items(filter))
-    |> assign(:tag_options, Purple.Filter.make_tag_select_options(:item))
+    |> assign(:tag_options, tag_options)
   end
 
   defp get_action(%{"action" => "edit_item", "id" => _}), do: :edit_item
@@ -43,6 +60,14 @@ defmodule PurpleWeb.BoardLive.Index do
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
     action = get_action(params)
+    board_id = Purple.int_from_map(params, "user_board_id")
+
+    user_board =
+      if board_id do
+        Board.get_user_board!(params["user_board_id"])
+      else
+        %UserBoard{}
+      end
 
     {
       :noreply,
@@ -50,7 +75,8 @@ defmodule PurpleWeb.BoardLive.Index do
       |> assign(:filter, Purple.Filter.make_filter(params))
       |> assign(:params, params)
       |> assign(:action, action)
-      |> assign_items()
+      |> assign(:user_board, user_board)
+      |> assign_data()
       |> apply_action(action, params)
     }
   end
@@ -64,14 +90,14 @@ defmodule PurpleWeb.BoardLive.Index do
   def handle_event("toggle_pin", %{"id" => id}, socket) do
     item = Board.get_item!(id)
     Board.pin_item(item, !item.is_pinned)
-    {:noreply, assign_items(socket)}
+    {:noreply, assign_data(socket)}
   end
 
   @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
-    Board.get_item!(id) |> Board.delete_item!()
+    Board.delete_item!(Board.get_item!(id))
 
-    {:noreply, assign_items(socket)}
+    {:noreply, assign_data(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -82,7 +108,7 @@ defmodule PurpleWeb.BoardLive.Index do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1 class="mb-2">Items</h1>
+    <h1 class="mb-2"><%= @page_title %></h1>
     <%= if @action in [:new_item, :edit_item] do %>
       <.modal title={@page_title} return_to={index_path(@params)}>
         <.live_component
@@ -106,9 +132,9 @@ defmodule PurpleWeb.BoardLive.Index do
         <button class="btn">Create</button>
       <% end %>
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
-      <%= select(f, :tag, @tag_options) %>
-      <%= label(f, :show_done, "Show Done?", class: "self-center ml-2") %>
-      <%= checkbox(f, :show_done, class: "self-center") %>
+      <%= if length(@tag_options) > 0 do %>
+        <%= select(f, :tag, @tag_options) %>
+      <% end %>
     </.form>
     <div class="w-full overflow-auto">
       <.table rows={@items}>
