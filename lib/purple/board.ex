@@ -120,6 +120,13 @@ defmodule Purple.Board do
   end
 
   def list_items(filter \\ %{}) do
+    filter =
+      if Map.has_key?(filter, :query) do
+        %{query: filter.query}
+      else
+        filter
+      end
+
     Item
     |> order_by(desc: :is_pinned, desc: :completed_at, asc: :priority)
     |> item_text_search(filter)
