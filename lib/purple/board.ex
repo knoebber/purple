@@ -122,7 +122,7 @@ defmodule Purple.Board do
   def list_items(filter \\ %{}) do
     filter =
       if Map.has_key?(filter, :query) do
-        %{query: filter.query}
+        %{query: filter.query, show_done: true}
       else
         filter
       end
