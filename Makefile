@@ -5,6 +5,9 @@ endif
 
 all: deps create_db js compile assets migrate
 
+test:
+	mix test
+
 hex:
 	mix local.hex --force
 
@@ -29,4 +32,4 @@ assets:
 migrate:
 	mix ecto.migrate
 
-.PHONY: all hex rebar deps create_db js compile assets migrate
+.PHONY: all test hex rebar deps create_db js compile assets migrate
