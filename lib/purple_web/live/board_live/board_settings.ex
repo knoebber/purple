@@ -78,6 +78,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
       socket
       |> assign_boards()
       |> put_flash(:info, "Deleted board")
+      |> assign(:side_nav, side_nav(socket.assigns.current_user.id))
     }
   end
 
@@ -89,6 +90,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
       |> put_flash(:info, "Board saved")
       |> assign(:editable_board, nil)
       |> assign_boards()
+      |> assign(:side_nav, side_nav(socket.assigns.current_user.id))
     }
   end
 

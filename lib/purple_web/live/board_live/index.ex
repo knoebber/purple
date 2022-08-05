@@ -42,10 +42,9 @@ defmodule PurpleWeb.BoardLive.Index do
       |> Purple.drop_falsey_values()
 
     tag_options =
-      if saved_tags do
-        []
-      else
-        Purple.Filter.make_tag_select_options(:item)
+      case saved_tags do
+        [] -> Purple.Filter.make_tag_select_options(:item)
+        _ -> []
       end
 
     socket
@@ -66,7 +65,7 @@ defmodule PurpleWeb.BoardLive.Index do
       if board_id do
         Board.get_user_board!(params["user_board_id"])
       else
-        %UserBoard{}
+        Board.get_default_user_board(socket.assigns.current_user.id)
       end
 
     {

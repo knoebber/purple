@@ -139,7 +139,7 @@ defmodule Purple.Board do
       from ub in UserBoard,
         left_join: t in assoc(ub, :tags),
         where: ub.user_id == ^user_id,
-        order_by: [ub.inserted_at],
+        order_by: [ub.name],
         preload: [tags: t]
     )
   end
@@ -151,6 +151,19 @@ defmodule Purple.Board do
         where: ub.id == ^id,
         preload: [tags: t]
     )
+  end
+
+  def get_default_user_board(user_id) do
+    case Repo.one(
+           from ub in UserBoard,
+             left_join: t in assoc(ub, :tags),
+             where: ub.user_id == ^user_id,
+             where: ub.is_default == true,
+             preload: [tags: t]
+         ) do
+      nil -> %UserBoard{}
+      board -> board
+    end
   end
 
   def add_user_board_tag(user_board_id, tag_id) do
