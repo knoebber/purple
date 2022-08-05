@@ -3,6 +3,8 @@ defmodule Purple.TagsTest do
 
   alias Purple.Tags
   alias Purple.Tags.Tag
+  alias Purple.Board.Item
+  alias Purple.Board.ItemEntry
 
   describe "tags" do
     test "extract_tags_from_markdown\1" do
@@ -51,6 +53,17 @@ defmodule Purple.TagsTest do
       assert Tags.extract_tags("\n#purple\n") == ["purple"]
       assert Tags.extract_tags("\n#puRple\n#YELLOW2015#purple") == ["purple", "yellow2015"]
       assert Tags.extract_tags("#one#two#three\n#four#one") == ["one", "two", "three", "four"]
+
+      assert Tags.extract_tags(%Item{entries: [], description: ""}) == []
+      assert Tags.extract_tags(%Item{description: "#Purple", entries: []}) == ["purple"]
+
+      assert Tags.extract_tags(%Item{
+               description: "#Purple",
+               entries: [
+                 %ItemEntry{content: "#wee\n#TAG \n #COOL `#code`"},
+                 %ItemEntry{content: "#tag2\n\n```\nok#whatever\n```\n #tag3\n#purple\n#tag4"}
+               ]
+             }) == ["purple", "wee", "tag", "cool", "tag3", "tag4", "tag2"]
     end
 
     test "diff_tags/2" do

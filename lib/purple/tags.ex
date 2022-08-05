@@ -48,17 +48,6 @@ defmodule Purple.Tags do
     |> Enum.uniq()
   end
 
-  def extract_tags(%{description: description, notes: notes}) do
-    Enum.uniq(
-      extract_tags_from_markdown(description) ++
-        extract_tags_from_markdown(notes)
-    )
-  end
-
-  def extract_tags(%{description: description}) do
-    extract_tags_from_markdown(description)
-  end
-
   def extract_tags(%Purple.Board.Item{} = item) do
     item.entries
     |> Enum.reduce(
@@ -68,6 +57,17 @@ defmodule Purple.Tags do
       end
     )
     |> Enum.uniq()
+  end
+
+  def extract_tags(%{description: description, notes: notes}) do
+    Enum.uniq(
+      extract_tags_from_markdown(description) ++
+        extract_tags_from_markdown(notes)
+    )
+  end
+
+  def extract_tags(%{description: description}) do
+    extract_tags_from_markdown(description)
   end
 
   defp diff_tags_kernel([], %{} = old_tag_map, add_list),
