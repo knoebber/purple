@@ -101,7 +101,7 @@ defmodule PurpleWeb.BoardLive.Index do
 
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
-    {:ok, assign(socket, :side_nav, side_nav(socket.assigns.current_user.id))}
+    {:ok, assign_side_nav(socket)}
   end
 
   @impl Phoenix.LiveView

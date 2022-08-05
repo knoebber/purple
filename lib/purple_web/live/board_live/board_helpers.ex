@@ -49,6 +49,10 @@ defmodule PurpleWeb.BoardLive.BoardHelpers do
     Routes.board_board_settings_path(PurpleWeb.Endpoint, :index)
   end
 
+  def assign_side_nav(socket) do
+    Phoenix.LiveView.assign(socket, :side_nav, side_nav(socket.assigns.current_user.id))
+  end
+
   def side_nav(user_id) when is_integer(user_id) do
     user_boards =
       Enum.map(

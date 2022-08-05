@@ -22,7 +22,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
 
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
-    {:ok, assign(socket, :side_nav, side_nav(socket.assigns.current_user.id))}
+    {:ok, assign_side_nav(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -57,7 +57,12 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
         user_id: socket.assigns.current_user.id
       })
 
-      {:noreply, assign_boards(socket)}
+      {
+        :noreply,
+        socket
+        |> assign_boards()
+        |> assign_side_nav()
+      }
     else
       {:noreply, socket}
     end
@@ -77,7 +82,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
       socket
       |> assign_boards()
       |> put_flash(:info, "Deleted board")
-      |> assign(:side_nav, side_nav(socket.assigns.current_user.id))
+      |> assign_side_nav()
     }
   end
 
@@ -89,7 +94,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
       |> put_flash(:info, "Board saved")
       |> assign(:editable_board, nil)
       |> assign_boards()
-      |> assign(:side_nav, side_nav(socket.assigns.current_user.id))
+      |> assign_side_nav()
     }
   end
 
