@@ -6,8 +6,7 @@ defmodule Purple.Board do
   alias Purple.Board.{ItemEntry, Item, UserBoard}
   alias Purple.Repo
   alias Purple.Tags
-  alias Purple.Tags.{Tag, UserBoardTag}
-  alias Purple.Tags.Tag
+  alias Purple.Tags.{UserBoardTag}
 
   import Ecto.Query
 

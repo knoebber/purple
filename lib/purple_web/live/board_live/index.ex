@@ -8,7 +8,7 @@ defmodule PurpleWeb.BoardLive.Index do
   import PurpleWeb.BoardLive.BoardHelpers
 
   alias Purple.Board
-  alias Purple.Board.{UserBoard, Item}
+  alias Purple.Board.Item
 
   defp apply_action(socket, :edit_item, %{"id" => id}) do
     assign(socket, :item, Board.get_item!(id))

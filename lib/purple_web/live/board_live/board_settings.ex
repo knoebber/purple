@@ -9,7 +9,6 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
 
   alias Purple.Board
   alias Purple.Board.UserBoard
-  alias PurpleWeb.Markdown
 
   defp get_board(socket, board_id) do
     Enum.find(socket.assigns.user_boards, %UserBoard{}, fn ub ->
