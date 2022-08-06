@@ -16,6 +16,8 @@ defmodule PurpleWeb.BoardLive.CreateItem do
     entries =
       if default_entry != "" do
         [%ItemEntry{content: ""}] ++ entries
+      else
+        entries
       end
 
     assign(socket, :changeset, Board.change_item(%Item{entries: entries}))
