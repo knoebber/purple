@@ -10,7 +10,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   alias Purple.Board
   alias Purple.Board.{Item, ItemEntry, UserBoard}
 
-  defp assign_changeset(socket, default_entry \\ "") do
+  defp assign_changeset(socket, default_entry) do
     entries = [%ItemEntry{content: default_entry}]
 
     entries =
@@ -56,8 +56,6 @@ defmodule PurpleWeb.BoardLive.CreateItem do
 
   @impl Phoenix.LiveView
   def handle_event("save", %{"item" => params}, socket) do
-    IO.inspect(params, label: "params")
-
     params =
       Map.put(
         params,
@@ -65,9 +63,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
         Map.reject(params["entries"], fn {_, entry} -> entry["content"] == "" end)
       )
 
-    IO.inspect(params, label: "rejected params")
-
-    case Board.create_item(params) |> IO.inspect() do
+    case Board.create_item(params) do
       {:ok, item} ->
         Purple.Tags.sync_tags(item.id, :item)
 
