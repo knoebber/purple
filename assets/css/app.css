@@ -143,11 +143,10 @@
         image-orientation: from-image;
     }
 
-    a.tag {
+    .internal-link {
         @apply font-bold;
         @apply text-purple-700;
     }
-
 }
 
 @layer components {

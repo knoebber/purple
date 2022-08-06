@@ -14,8 +14,8 @@ defmodule Purple.Board.ItemEntry do
 
   def changeset(item_entry, attrs) do
     item_entry
-    |> cast(attrs, [:content, :item_id, :is_collapsed, :sort_order])
-    |> validate_required([:content, :item_id])
+    |> cast(attrs, [:content, :is_collapsed, :sort_order, :item_id])
+    |> validate_required([:content])
     |> assoc_constraint(:item)
   end
 end

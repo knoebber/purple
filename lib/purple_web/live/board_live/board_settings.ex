@@ -149,6 +149,11 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
               data: [confirm: "Are you sure?"],
               to: "#"
             ) %>
+            <span>|</span>
+            <%= live_redirect(
+              "Create Item",
+              to: item_create_path(user_board.id)
+            ) %>
           </div>
           <%= if @editable_board && @editable_board.id == user_board.id do %>
             <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">

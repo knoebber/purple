@@ -63,7 +63,7 @@ defmodule PurpleWeb.BoardLive.Index do
 
     user_board =
       if board_id do
-        Board.get_user_board!(params["user_board_id"])
+        Board.get_user_board!(board_id)
       else
         Board.get_default_user_board(socket.assigns.current_user.id)
       end
@@ -127,7 +127,7 @@ defmodule PurpleWeb.BoardLive.Index do
       phx-change="search"
       phx-submit="search"
     >
-      <%= live_patch(to: index_path(@params, :new_item)) do %>
+      <%= live_redirect(to: item_create_path(@user_board.id)) do %>
         <button class="btn">Create</button>
       <% end %>
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>

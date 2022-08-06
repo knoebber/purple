@@ -22,7 +22,7 @@ defmodule PurpleWeb.Markdown do
       <<?#, tagname::binary>> ->
         {"a",
          [
-           {"class", "tag"},
+           {"class", "tag internal-link"},
            {"href", get_link(tagname, link_type)}
          ], [tagname], %{}}
 
@@ -31,10 +31,20 @@ defmodule PurpleWeb.Markdown do
     end)
   end
 
+  def make_link(node) do
+    case Earmark.AstTools.find_att_in_node(node, "href") do
+      <<?/, rest::binary>> ->
+        Earmark.AstTools.merge_atts_in_node(node, class: "internal-link")
+
+      _ ->
+        Earmark.AstTools.merge_atts_in_node(node, class: "external-link", target: "_blank")
+    end
+  end
+
   def map_ast(ast, link_type, text_is_eligible_for_hashtag \\ false) do
     Enum.map(ast, fn
       {"a", _, _, _} = node ->
-        Earmark.AstTools.merge_atts_in_node(node, target: "_blank")
+        make_link(node)
 
       {"h1" = tag, atts, children, m} ->
         {"h2", atts, map_ast(children, link_type, tag in Tags.valid_tag_parents()), m}

@@ -40,6 +40,7 @@ defmodule Purple.Board.Item do
       :show_files,
       :status
     ])
+    |> cast_assoc(:entries, with: &Purple.Board.ItemEntry.changeset/2)
     |> validate_required([
       :description,
       :priority,
