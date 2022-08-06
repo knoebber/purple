@@ -53,7 +53,6 @@ defmodule PurpleWeb.BoardLive.Index do
   end
 
   defp get_action(%{"action" => "edit_item", "id" => _}), do: :edit_item
-  defp get_action(%{"action" => "new_item"}), do: :new_item
   defp get_action(_), do: :index
 
   @impl Phoenix.LiveView
@@ -82,7 +81,10 @@ defmodule PurpleWeb.BoardLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("search", %{"filter" => params}, socket) do
-    {:noreply, push_patch(socket, to: index_path(params), replace: true)}
+    {
+      :noreply,
+      push_patch(socket, to: index_path(socket.assigns.user_board.id, params), replace: true)
+    }
   end
 
   @impl Phoenix.LiveView
@@ -108,14 +110,14 @@ defmodule PurpleWeb.BoardLive.Index do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
-    <%= if @action in [:new_item, :edit_item] do %>
-      <.modal title={@page_title} return_to={index_path(@params)}>
+    <%= if @action == :edit_item do %>
+      <.modal title={@page_title} return_to={index_path(@user_board.id, @params)}>
         <.live_component
           module={PurpleWeb.BoardLive.ItemForm}
           id={@item.id || :new}
           action={@action}
           item={@item}
-          return_to={index_path(@params)}
+          return_to={index_path(@user_board.id, @params)}
         />
       </.modal>
     <% end %>
@@ -165,7 +167,7 @@ defmodule PurpleWeb.BoardLive.Index do
           ) %>
         </:col>
         <:col let={item} label="">
-          <%= live_patch("Edit", to: index_path(@params, :edit_item, item.id)) %>
+          <%= live_patch("Edit", to: index_path(@user_board.id, @params, :edit_item, item.id)) %>
         </:col>
         <:col let={item} label="">
           <%= link("Delete",

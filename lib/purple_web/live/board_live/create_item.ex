@@ -26,7 +26,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   end
 
   defp user_board_entry(ub = %UserBoard{}) do
-    "Created for [#{ub.name}](#{user_board_path(ub.id)})\n---\n" <>
+    "Created for [#{ub.name}](#{index_path(ub.id)})\n---\n" <>
       Enum.map_join(ub.tags, " ", &("#" <> &1.name))
   end
 

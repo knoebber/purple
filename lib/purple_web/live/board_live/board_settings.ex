@@ -133,7 +133,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
             <h2 class="ml-2 mb-2 inline"><%= user_board.name %></h2>
             <%= live_redirect(
               "View",
-              to: user_board_path(user_board.id)
+              to: index_path(user_board.id)
             ) %>
             <span>|</span>
             <%= link(
