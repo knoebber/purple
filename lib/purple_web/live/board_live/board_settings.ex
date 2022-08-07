@@ -126,7 +126,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
         Save
       </button>
     </form>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <%= for user_board <- @user_boards do %>
         <section class="mb-2 window">
           <div class="bg-purple-300 inline-links">
@@ -148,11 +148,6 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
               phx_value_id: user_board.id,
               data: [confirm: "Are you sure?"],
               to: "#"
-            ) %>
-            <span>|</span>
-            <%= live_redirect(
-              "Create Item",
-              to: item_create_path(user_board.id)
             ) %>
           </div>
           <%= if @editable_board && @editable_board.id == user_board.id do %>
