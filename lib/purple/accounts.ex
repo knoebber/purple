@@ -369,6 +369,10 @@ defmodule Purple.Accounts do
     end
   end
 
+  def list_user_oauth_tokens do
+    Repo.all(UserOAuthToken)
+  end
+
   def get_user_oauth_token(user_id) do
     UserOAuthToken
     |> where([ut], ut.user_id == ^user_id)

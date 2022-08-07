@@ -8,16 +8,11 @@ defmodule Purple.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Start the Ecto repository
       Purple.Repo,
-      # Start the Telemetry supervisor
       PurpleWeb.Telemetry,
-      # Start the PubSub system
       {Phoenix.PubSub, name: Purple.PubSub},
-      # Start the Endpoint (http/https)
-      PurpleWeb.Endpoint
-      # Start a worker by calling: Purple.Worker.start_link(arg)
-      # {Purple.Worker, arg}
+      PurpleWeb.Endpoint,
+      Purple.TaskServer
     ]
 
     if Application.get_env(:purple, :env) == :dev do
@@ -26,8 +21,7 @@ defmodule Purple.Application do
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Purple.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(children, strategy: :one_for_one, name: Purple.Supervisor)
   end
 
   # Tell Phoenix to update the endpoint configuration

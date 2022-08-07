@@ -1,15 +1,4 @@
 defmodule Purple.Gmail do
-  require Logger
-
-  alias Purple.Repo
-  alias Purple.Accounts
-  alias Purple.Accounts.User
-  alias Purple.Accounts.UserOAuthToken
-
-  @google_oauth "https://oauth2.googleapis.com"
-  @google_accounts "https://accounts.google.com"
-  @google_api "https://www.googleapis.com"
-
   @moduledoc """
   Context for interacting with Gmail.
 
@@ -20,6 +9,16 @@ defmodule Purple.Gmail do
 
   See: https://developers.google.com/identity/protocols/oauth2/web-server#httprest
   """
+  require Logger
+
+  alias Purple.Repo
+  alias Purple.Accounts
+  alias Purple.Accounts.User
+  alias Purple.Accounts.UserOAuthToken
+
+  @google_oauth "https://oauth2.googleapis.com"
+  @google_accounts "https://accounts.google.com"
+  @google_api "https://www.googleapis.com"
 
   defp gmail_api do
     @google_api <> "/gmail/v1"
@@ -135,6 +134,12 @@ defmodule Purple.Gmail do
       Logger.error(body)
       {:error, "no json content"}
     end
+  end
+
+  defp parse_response({:ok, response = %HTTPoison.Response{status_code: status_code}})
+       when status_code != 200 do
+    Logger.error("unexpected status code #{status_code}\n\n#{response.body}")
+    {:error, "unexpected status code #{status_code}"}
   end
 
   defp parse_response({:ok, _}) do

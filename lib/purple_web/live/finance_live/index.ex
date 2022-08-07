@@ -218,7 +218,7 @@ defmodule PurpleWeb.FinanceLive.Index do
       <%= live_patch(to: index_path(@params, :new_transaction)) do %>
         <button class="btn">Create</button>
       <% end %>
-      <button class="btn" phx-click="import" phx-disable-with="Import">Import</button>
+      <button class="btn hidden" phx-click="import" phx-disable-with="Import">Import</button>
       <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
       <%= select(f, :tag, @tag_options) %>
       <%= select(

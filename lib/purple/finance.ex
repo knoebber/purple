@@ -1,4 +1,8 @@
 defmodule Purple.Finance do
+  @moduledoc """
+  Context for managing finance data.
+  """
+
   require Logger
 
   import Ecto.Query
