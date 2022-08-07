@@ -43,8 +43,12 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
   def handle_event("add_tag", params, socket) do
     user_board_id = socket.assigns.user_board.id
     tag_id = Purple.int_from_map(params, "tag_id")
-    Board.add_user_board_tag(user_board_id, tag_id)
-    send(self(), {:tag_change, user_board_id})
+
+    if is_integer(tag_id) do
+      Board.add_user_board_tag(user_board_id, tag_id)
+      send(self(), {:tag_change, user_board_id})
+    end
+
     {:noreply, socket}
   end
 
@@ -76,13 +80,14 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
       <%= if length(@available_tags) > 0 do %>
         <form class="flex flex-row mb-2" phx-submit="add_tag" phx-target={@myself}>
           <select name="tag_id">
+            <option value="">🏷 Select a tag</option>
             <%= for tag <- @available_tags do %>
               <option value={tag.id}>
                 #<%= tag.name %>
               </option>
             <% end %>
           </select>
-          <button class="ml-3" type="submit">Add tag</button>
+          <button class="ml-3" type="submit">Add</button>
         </form>
       <% end %>
       <%= if length(@user_board.tags) > 0 do %>
