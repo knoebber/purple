@@ -19,11 +19,8 @@ defmodule PurpleWeb.BoardLive.Index do
   end
 
   defp apply_action(socket, :index, _params) do
-    board_name = socket.assigns.user_board.name
 
-    socket
-    |> assign(:page_title, if(board_name == "", do: "Default Board", else: board_name))
-    |> assign(:item, nil)
+    assign(socket, :item, nil)
   end
 
   defp assign_data(socket) do
@@ -50,6 +47,7 @@ defmodule PurpleWeb.BoardLive.Index do
     socket
     |> assign(:items, Board.list_items(filter))
     |> assign(:tag_options, tag_options)
+    |> assign(:page_title, if(user_board.name == "", do: "Default Board", else: user_board.name))
   end
 
   defp get_action(%{"action" => "edit_item", "id" => _}), do: :edit_item
