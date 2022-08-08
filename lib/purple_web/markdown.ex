@@ -24,7 +24,7 @@ defmodule PurpleWeb.Markdown do
          [
            {"class", "tag internal-link"},
            {"href", get_link(tagname, link_type)}
-         ], [tagname], %{}}
+         ], ["#" <> tagname], %{}}
 
       text ->
         text
