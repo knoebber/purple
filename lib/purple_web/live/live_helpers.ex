@@ -8,9 +8,9 @@ defmodule PurpleWeb.LiveHelpers do
 
   def timestamp(assigns) do
     ~H"""
-    <i title={"updated: #{format_date(@model.updated_at)}"}>
+    <span title={"updated: #{format_date(@model.updated_at)}"}>
       <%= format_date(@model.inserted_at) %>
-    </i>
+    </span>
     """
   end
 

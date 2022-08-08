@@ -19,7 +19,6 @@ defmodule PurpleWeb.BoardLive.Index do
   end
 
   defp apply_action(socket, :index, _params) do
-
     assign(socket, :item, nil)
   end
 
@@ -93,6 +92,13 @@ defmodule PurpleWeb.BoardLive.Index do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("toggle_complete", %{"id" => id}, socket) do
+    item = Board.get_item!(id)
+    Board.set_item_complete!(item, item.completed_at == nil)
+    {:noreply, assign_data(socket)}
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     Board.delete_item!(Board.get_item!(id))
 
@@ -151,10 +157,19 @@ defmodule PurpleWeb.BoardLive.Index do
           <%= item.priority %>
         </:col>
         <:col let={item} label="Status">
-          <%= item.status %>
+          <%= if item.status == :INFO  do %>
+            INFO
+          <% else %>
+            <input
+              type="checkbox"
+              checked={item.status == :DONE}
+              phx-click="toggle_complete"
+              phx-value-id={item.id}
+            />
+          <% end %>
         </:col>
         <:col let={item} label="Created">
-          <%= format_date(item.inserted_at, :mdy) %>
+          <.timestamp model={item} . />
         </:col>
         <:col let={item} label="">
           <%= link("📌",

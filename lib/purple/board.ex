@@ -66,14 +66,18 @@ defmodule Purple.Board do
   def set_item_complete!(%Item{} = item, true) do
     item
     |> Item.changeset(%{
-      completed_at: NaiveDateTime.utc_now()
+      completed_at: NaiveDateTime.utc_now(),
+      status: :DONE
     })
     |> Repo.update!()
   end
 
   def set_item_complete!(%Item{} = item, false) do
     item
-    |> Item.changeset(%{completed_at: nil})
+    |> Item.changeset(%{
+      completed_at: nil,
+      status: :TODO
+    })
     |> Repo.update!()
   end
 

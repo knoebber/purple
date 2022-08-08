@@ -30,10 +30,11 @@ defmodule Purple.TaskServer do
         %{success: num_success, failed: num_failed, errors: errors} =
           Finance.import_transactions(user_id)
 
-        # TODO: suppress message when all 0
-        Logger.info(
-          "user id: #{user_id}, success: #{num_success}, failed: #{num_failed}, errors: #{errors}"
-        )
+        if num_success > 0 or num_failed > 0 do
+          Logger.info(
+            "user id: #{user_id}, success: #{num_success}, failed: #{num_failed}, errors: #{errors}"
+          )
+        end
       end
     )
 
