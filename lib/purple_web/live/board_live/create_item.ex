@@ -88,6 +88,9 @@ defmodule PurpleWeb.BoardLive.CreateItem do
         <%= label(f, :priority) %>
         <%= select(f, :priority, 1..5) %>
         <%= error_tag(f, :priority) %>
+        <%= label(f, :status) %>
+        <%= select(f, :status, Board.item_status_mappings()) %>
+        <%= error_tag(f, :status) %>
         <%= inputs_for f, :entries, fn entry -> %>
           <%= label(entry, :entry) %>
           <%= textarea(entry, :content, rows: 3) %>
