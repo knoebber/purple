@@ -46,7 +46,7 @@ defmodule Purple.Markdown do
         <<?#, tagname::binary>> ->
           {"a",
            [
-             {"class", "tag internal-link"},
+             {"class", "tag"},
              {"href", get_link.(tagname)}
            ], ["#" <> tagname], %{}}
 
@@ -80,10 +80,10 @@ defmodule Purple.Markdown do
   def make_link(node) do
     case Earmark.AstTools.find_att_in_node(node, "href") do
       <<?/, _::binary>> ->
-        Earmark.AstTools.merge_atts_in_node(node, class: "internal-link")
+        Earmark.AstTools.merge_atts_in_node(node, class: "internal")
 
       _ ->
-        Earmark.AstTools.merge_atts_in_node(node, class: "external-link", target: "_blank")
+        Earmark.AstTools.merge_atts_in_node(node, class: "external", target: "_blank")
     end
   end
 
