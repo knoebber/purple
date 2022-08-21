@@ -103,13 +103,28 @@ defmodule Purple.Markdown do
         make_link(node)
 
       {"h1", atts, children, m} ->
-        {"h2", atts, map_purple_ast(children, get_tag_link, get_valid_extensions("h2")), m}
+        {
+          "h2",
+          atts,
+          map_purple_ast(children, get_tag_link, get_valid_extensions("h2")),
+          m
+        }
 
       {"h2", atts, children, m} ->
-        {"h3", atts, map_purple_ast(children, get_tag_link, get_valid_extensions("h3")), m}
+        {
+          "h3",
+          atts,
+          map_purple_ast(children, get_tag_link, get_valid_extensions("h3")),
+          m
+        }
 
       {"h3", atts, children, m} ->
-        {"h4", atts, map_purple_ast(children, get_tag_link, get_valid_extensions("h4")), m}
+        {
+          "h4",
+          atts,
+          map_purple_ast(children, get_tag_link, get_valid_extensions("h4")),
+          m
+        }
 
       {html_tag, atts, children, m} ->
         {
