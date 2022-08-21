@@ -1,44 +1,26 @@
 defmodule Purple.Tags do
+  @moduledoc """
+  Functions for parsing and saving tags.
+  """
+
   alias Purple.Repo
   alias Purple.Tags.{ItemTag, RunTag, Tag, MerchantTag, TransactionTag, SharedBudgetAdjustmentTag}
 
   import Ecto.Query
 
-  @valid_tag_parents ["p", "li", "h1", "h2", "h3"]
-
-  def valid_tag_parents, do: @valid_tag_parents
   def tag_pattern, do: ~r/#([a-zA-Z0-9]{2,})/
   def anchored_tag_pattern, do: ~r/^#([a-zA-Z0-9]{2,})$/
 
-  def extract_tags_from_earmark_ast(ast) do
-    {_, result} =
-      Earmark.Transform.map_ast_with(
-        ast,
-        [],
-        fn
-          {tag, _, children, _} = node, result when tag in @valid_tag_parents ->
-            {
-              node,
-              Enum.reduce(children, result, fn
-                text_leaf, acc when is_binary(text_leaf) -> extract_tags(text_leaf) ++ acc
-                _, acc -> acc
-              end)
-            }
-
-          node, result ->
-            {node, result}
-        end,
-        true
-      )
-
-    result
-  end
-
-  def extract_tags_from_markdown(md) do
-    case EarmarkParser.as_ast(md) do
-      {:ok, ast, _} -> extract_tags_from_earmark_ast(ast)
-      _ -> []
-    end
+  def extract_tags_from_markdown(content) when is_binary(content) do
+    content
+    |> Purple.Markdown.extract_eligible_tag_text_from_markdown()
+    |> Enum.reduce(
+      [],
+      fn eligible_text, acc ->
+        acc ++ extract_tags(eligible_text)
+      end
+    )
+    |> Enum.uniq()
   end
 
   def extract_tags(content) when is_binary(content) do

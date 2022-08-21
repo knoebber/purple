@@ -6,7 +6,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   alias Purple.Board
   alias Purple.Board.ItemEntry
   alias Purple.Uploads
-  alias PurpleWeb.Markdown
 
   defp assign_uploads(socket, item_id) do
     files = Uploads.get_files_by_item(item_id)
@@ -224,7 +223,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       </div>
       <%= if @entry.is_collapsed do %>
         <strong class="whitespace-nowrap overflow-hidden text-ellipsis w-1/2 text-purple-900">
-          <%= String.slice(Markdown.strip_markdown(@entry.content), 0, 100) %>
+          <%= String.slice(strip_markdown(@entry.content), 0, 100) %>
         </strong>
       <% end %>
       <.timestamp model={@entry} />
@@ -281,7 +280,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         </div>
       <% else %>
         <div class="markdown-content">
-          <%= Markdown.markdown_to_html("# #{@item.description}", :board) %>
+          <%= markdown("# #{@item.description}", :board) %>
         </div>
       <% end %>
       <div>
@@ -381,7 +380,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
             <%= unless entry.is_collapsed do %>
               <div class="markdown-content">
-                <%= Markdown.markdown_to_html(entry.content, :board) %>
+                <%= markdown(entry.content, :board) %>
               </div>
             <% end %>
           <% end %>

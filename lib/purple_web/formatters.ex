@@ -2,6 +2,12 @@ defmodule PurpleWeb.Formatters do
   @moduledoc """
   Formatters that are available to all purple web views
   """
+  alias PurpleWeb.Endpoint
+  alias PurpleWeb.Router.Helpers, as: Routes
+
+  def strip_markdown(markdown) do
+    Regex.replace(~r/[#`*\n]/, markdown, "")
+  end
 
   defp is_positive_number(i) do
     is_number(i) and i > 0
@@ -81,5 +87,16 @@ defmodule PurpleWeb.Formatters do
     content
     |> String.split("\n")
     |> length()
+  end
+
+  def get_tag_link(tag, :board), do: Routes.board_index_path(Endpoint, :index, tag: tag)
+  def get_tag_link(tag, :run), do: Routes.run_index_path(Endpoint, :index, tag: tag)
+  def get_tag_link(tag, :finance), do: Routes.finance_index_path(Endpoint, :index, tag: tag)
+  def get_tag_link(tag, _), do: "?tag=#{tag}"
+
+  def markdown(md, link_type) when is_binary(md) and is_atom(link_type) do
+    md
+    |> Purple.Markdown.markdown_to_html(fn tag -> get_tag_link(tag, link_type) end)
+    |> Phoenix.HTML.raw()
   end
 end
