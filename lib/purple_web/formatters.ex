@@ -95,8 +95,13 @@ defmodule PurpleWeb.Formatters do
   def get_tag_link(tag, _), do: "?tag=#{tag}"
 
   def markdown(md, link_type) when is_binary(md) and is_atom(link_type) do
+    extension_data = %{
+      checkbox_map: %{},
+      get_tag_link: &get_tag_link(&1, link_type)
+    }
+
     md
-    |> Purple.Markdown.markdown_to_html(fn tag -> get_tag_link(tag, link_type) end)
+    |> Purple.Markdown.markdown_to_html(extension_data)
     |> Phoenix.HTML.raw()
   end
 end
