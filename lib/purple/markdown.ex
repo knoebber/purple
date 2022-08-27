@@ -4,6 +4,8 @@ defmodule Purple.Markdown do
   """
   @valid_tag_parents ["p", "li", "h1", "h2", "h3", "h4"]
 
+  def checkbox_pattern, do: ~r/^x /
+
   def extract_eligible_tag_text_from_ast(ast) when is_list(ast) do
     {_, result} =
       Earmark.Transform.map_ast_with(
@@ -36,6 +38,23 @@ defmodule Purple.Markdown do
   end
 
   def extract_checkboxes_from_markdown(md) when is_binary(md) do
+    []
+  end
+
+  def make_checkbox_node(checkbox_map) do
+    {"input",
+     [
+       {"type", "checkbox"},
+       {"class", "markdown-checkbox"}
+     ], [], %{}}
+  end
+
+  def make_tag_link_node(get_tag_link, tagname) do
+    {"a",
+     [
+       {"class", "tag"},
+       {"href", get_tag_link.(tagname)}
+     ], ["#" <> tagname], %{}}
   end
 
   def render_tag_links(text_leaf, %{get_tag_link: get_tag_link}) when is_binary(text_leaf) do
@@ -45,37 +64,29 @@ defmodule Purple.Markdown do
         text_leaf,
         include_captures: true
       ),
-      fn
-        <<?#, tagname::binary>> ->
-          {"a",
-           [
-             {"class", "tag"},
-             {"href", get_tag_link.(tagname)}
-           ], ["#" <> tagname], %{}}
-
-        text ->
+      fn text ->
+        if String.starts_with?(text, "#") do
+          make_tag_link_node(get_tag_link, String.trim_leading(text, "#"))
+        else
           text
+        end
       end
     )
   end
 
-  def render_checkboxes(text_leaf, %{checkbox_map: checkbox_map}) when is_binary(text_leaf) do
+  def render_checkbox(text_leaf, %{checkbox_map: checkbox_map}) when is_binary(text_leaf) do
     Enum.map(
       Regex.split(
-        ~r/ x /,
+        checkbox_pattern(),
         text_leaf,
         include_captures: true
       ),
-      fn
-        " x " ->
-          {"input",
-           [
-             {"type", "checkbox"},
-             {"class", "markdown-checkbox"}
-           ], [], %{}}
-
-        text ->
+      fn text ->
+        if Regex.match?(checkbox_pattern(), text) do
+          make_checkbox_node(checkbox_map)
+        else
           text
+        end
       end
     )
   end
@@ -90,9 +101,17 @@ defmodule Purple.Markdown do
     end
   end
 
-  def get_valid_extensions(html_tag \\ "") do
+  def get_valid_extensions(html_tag \\ "", children \\ []) do
     %{
-      checkbox: html_tag == "li",
+      checkbox:
+        html_tag == "li" and
+          case children do
+            [text_leaf] when is_binary(text_leaf) ->
+              String.length(text_leaf) >= 3
+
+            _ ->
+              true
+          end,
       tag_link: html_tag in @valid_tag_parents
     }
   end
@@ -110,49 +129,61 @@ defmodule Purple.Markdown do
   Transforms a default earmark ast into a custom purple ast.
   """
   def map_purple_ast(ast, extension_data, valid_extensions) do
-    Enum.map(ast, fn
-      {"a", _, _, _} = node ->
+    ast
+    |> Enum.with_index()
+    |> Enum.map(fn
+      {{"a", _, _, _} = node, _} ->
         make_link(node)
 
-      {html_tag, atts, children, m} ->
+      {{html_tag, atts, children, m}, _} ->
         new_tag = change_html_tag(html_tag)
 
         {
           new_tag,
           atts,
-          map_purple_ast(children, extension_data, get_valid_extensions(new_tag)),
+          map_purple_ast(children, extension_data, get_valid_extensions(new_tag, children)),
           m
         }
 
-      text_leaf when is_binary(text_leaf) ->
-        case valid_extensions do
-          %{tag_link: true} ->
+      {text_leaf, index} when is_binary(text_leaf) ->
+        cond do
+          valid_extensions.tag_link ->
             map_purple_ast(
               render_tag_links(text_leaf, extension_data),
               extension_data,
               Map.put(valid_extensions, :tag_link, false)
             )
 
-          %{checkbox: true} ->
+          valid_extensions.checkbox ->
             map_purple_ast(
-              render_checkboxes(text_leaf, extension_data),
+              render_checkbox(text_leaf, extension_data),
               extension_data,
               Map.put(valid_extensions, :checkbox, false)
             )
 
-          _ ->
+          true ->
             text_leaf
         end
     end)
   end
 
-  def markdown_to_html(md, extension_data) do
+  defp set_default_extension_data(extension_data) when is_map(extension_data) do
+    Map.merge(
+      %{
+        get_tag_link: &("/?tag=" <> &1),
+        checkbox_map: %{}
+      },
+      extension_data
+    )
+  end
+
+  def markdown_to_html(md, extension_data \\ %{}) do
     case EarmarkParser.as_ast(md) do
       {:ok, ast, _} ->
         Earmark.Transform.transform(
           map_purple_ast(
             ast,
-            extension_data,
+            set_default_extension_data(extension_data),
             get_valid_extensions()
           )
         )
