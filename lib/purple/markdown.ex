@@ -129,13 +129,11 @@ defmodule Purple.Markdown do
   Transforms a default earmark ast into a custom purple ast.
   """
   def map_purple_ast(ast, extension_data, valid_extensions) do
-    ast
-    |> Enum.with_index()
-    |> Enum.map(fn
-      {{"a", _, _, _} = node, _} ->
+    Enum.map(ast, fn
+      {"a", _, _, _} = node ->
         make_link(node)
 
-      {{html_tag, atts, children, m}, _} ->
+      {html_tag, atts, children, m} ->
         new_tag = change_html_tag(html_tag)
 
         {
@@ -145,7 +143,7 @@ defmodule Purple.Markdown do
           m
         }
 
-      {text_leaf, index} when is_binary(text_leaf) ->
+      text_leaf when is_binary(text_leaf) ->
         cond do
           valid_extensions.tag_link ->
             map_purple_ast(
