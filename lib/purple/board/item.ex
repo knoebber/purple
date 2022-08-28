@@ -1,4 +1,8 @@
 defmodule Purple.Board.Item do
+  @moduledoc """
+  Model for items
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 

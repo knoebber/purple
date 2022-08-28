@@ -4,7 +4,6 @@ defmodule Purple.Board.EntryCheckbox do
   """
 
   use Ecto.Schema
-  import Ecto.Changeset
 
   schema "entry_checkboxes" do
     field :description, :string
@@ -15,14 +14,12 @@ defmodule Purple.Board.EntryCheckbox do
     timestamps()
   end
 
-  def changeset(entry_checkbox, attrs) do
-    entry_checkbox
-    |> cast(attrs, [:description, :is_done])
-    |> validate_required([:description])
-    |> unique_constraint(
-      [:item_entry_id, :description],
-      message: "checkbox already exists",
-      name: "entry_checkboxes_item_entry_id_description_index"
-    )
+  def new(item_entry_id, description)
+      when is_integer(item_entry_id) and is_binary(description) and description != "" do
+    %__MODULE__{
+      description: description,
+      item_entry_id: item_entry_id,
+      is_done: false
+    }
   end
 end

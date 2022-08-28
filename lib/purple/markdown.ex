@@ -6,6 +6,8 @@ defmodule Purple.Markdown do
   @valid_tag_parents ["p", "li", "h1", "h2", "h3", "h4"]
   @valid_checkbox_parent "li"
 
+  def checkbox_pattern, do: ~r/^x .+/
+
   def extract_eligible_text_from_ast(ast, valid_parents)
       when is_list(ast) and is_list(valid_parents) do
     {_, result} =
@@ -47,6 +49,26 @@ defmodule Purple.Markdown do
     extract_eligible_text_from_ast(md, [@valid_checkbox_parent])
   end
 
+  def extract_checkbox_content(content) when is_binary(content) do
+    content
+    |> extract_eligible_checkbox_text_from_markdown()
+    |> Enum.reduce(
+      [],
+      fn eligible_text, acc ->
+        acc ++
+          (checkbox_pattern()
+           |> Regex.scan(eligible_text)
+           |> Enum.flat_map(fn [match] ->
+             [
+               match
+               |> String.replace_prefix("x ", "")
+               |> String.trim()
+             ]
+           end))
+      end
+    )
+  end
+
   def make_checkbox_node(checkbox_map) do
     {"input",
      [
@@ -83,12 +105,12 @@ defmodule Purple.Markdown do
   def render_checkbox(text_leaf, %{checkbox_map: checkbox_map}) when is_binary(text_leaf) do
     Enum.map(
       Regex.split(
-        Purple.Board.checkbox_pattern(),
+        checkbox_pattern(),
         text_leaf,
         include_captures: true
       ),
       fn text ->
-        if Regex.match?(Purple.Board.checkbox_pattern(), text) do
+        if Regex.match?(checkbox_pattern(), text) do
           make_checkbox_node(checkbox_map)
         else
           text

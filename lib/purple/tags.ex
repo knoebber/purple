@@ -141,8 +141,9 @@ defmodule Purple.Tags do
   end
 
   def sync_tags(module, model, ref_params)
-      when is_atom(module) and is_struct(model) and is_map(ref_params),
-      do: update_tag_refs(module, get_or_create_tags(model) |> diff_tags(model.tags), ref_params)
+      when is_atom(module) and is_struct(model) and is_map(ref_params) do
+    update_tag_refs(module, get_or_create_tags(model) |> diff_tags(model.tags), ref_params)
+  end
 
   def sync_tags(id, :item) do
     item = Purple.Board.get_item!(id, :entries, :tags)

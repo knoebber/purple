@@ -58,8 +58,8 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     end)
   end
 
-  defp save_entry(_socket, :create_entry, params) do
-    Board.create_item_entry(params)
+  defp save_entry(socket, :create_entry, params) do
+    Board.create_item_entry(params, socket.assigns.item.id)
   end
 
   defp save_entry(socket, :edit_entry, params) do

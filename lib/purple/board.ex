@@ -3,14 +3,12 @@ defmodule Purple.Board do
   Context for managing boards, items, and entries.
   """
 
-  alias Purple.Board.{ItemEntry, Item, UserBoard}
+  alias Purple.Board.{ItemEntry, Item, UserBoard, EntryCheckbox}
   alias Purple.Repo
   alias Purple.Tags
   alias Purple.Tags.{UserBoardTag}
 
   import Ecto.Query
-
-  def checkbox_pattern, do: ~r/^x .+/
 
   def change_item(%Item{} = item, attrs \\ %{}) do
     Item.changeset(item, attrs)
@@ -26,10 +24,11 @@ defmodule Purple.Board do
     |> Repo.insert()
   end
 
-  def create_item_entry(params) do
-    %ItemEntry{}
+  def create_item_entry(params, item_id) when is_map(params) and is_integer(item_id) do
+    %ItemEntry{item_id: item_id}
     |> ItemEntry.changeset(params)
     |> Repo.insert()
+    |> Map.put(:checkboxes, [])
   end
 
   def update_item(%Item{} = item, params) do
@@ -44,21 +43,72 @@ defmodule Purple.Board do
     |> Repo.update()
   end
 
-  def extract_checkboxes(%ItemEntry{} = entry) do
-    entry.content
-    |> Purple.Markdown.extract_eligible_checkbox_text_from_markdown()
-    |> Enum.reduce(
-      [],
-      fn eligible_text, acc ->
-        acc ++
-          (checkbox_pattern()
-           |> Regex.scan(eligible_text)
-           |> Enum.flat_map(fn [match] -> [String.replace_prefix(match, "x ", "")] end))
+  def get_entry_checkboxes(%ItemEntry{id: id} = entry) when is_integer(id) do
+    checkbox_descriptions = Purple.Markdown.extract_checkbox_content(entry.content)
+
+    persisted_checkboxes =
+      EntryCheckbox
+      |> where([x], x.description in ^checkbox_descriptions)
+      |> where([x], x.item_entry_id == ^entry.id)
+      |> Repo.all()
+
+    Enum.map(
+      checkbox_descriptions,
+      fn description ->
+        persisted = Enum.find(persisted_checkboxes, &(&1.description == description))
+
+        if persisted do
+          persisted
+        else
+          EntryCheckbox.new(entry.id, description)
+        end
       end
     )
   end
 
-  def sync_entry_checkboxes(%ItemEntry{} = entry) do
+  def sync_entry_checkboxes(%ItemEntry{checkboxes: checkboxes} = entry)
+      when is_list(checkboxes) do
+    entry
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:checkboxes, get_entry_checkboxes(entry))
+    |> Repo.update()
+  end
+
+  def save_item(action, model, params, item_id \\ nil)
+      when is_atom(action) and is_map(model) and is_map(params) do
+    sync_tags = &Purple.Tags.sync_tags(&1, :item)
+
+    Repo.transaction(fn ->
+      {:ok, _} =
+        case action do
+          :create_item ->
+            {:ok, item} = create_item(params)
+            {:ok, _} = sync_tags.(item.id)
+            {:ok, item}
+
+          :update_item ->
+            {:ok, item} = update_item(model, params)
+            {:ok, _} = sync_tags.(item.id)
+            {:ok, item}
+
+          :update_entry ->
+            {:ok, entry} = update_item_entry(model, params)
+            {:ok, entry} = sync_entry_checkboxes(entry)
+            {:ok, _} = sync_tags.(entry.item_id)
+            {:ok, entry}
+
+          :create_entry ->
+            {:ok, entry} = create_item_entry(params, item_id)
+            {:ok, entry} = sync_entry_checkboxes(entry)
+            {:ok, _} = sync_tags.(item_id)
+            {:ok, entry}
+
+          :delete_entry ->
+            delete_entry!(model.id)
+            {:ok, _} = sync_tags.(model.item_id)
+            {:ok, model}
+        end
+    end)
   end
 
   def get_item!(id) do
