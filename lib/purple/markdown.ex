@@ -1,12 +1,13 @@
 defmodule Purple.Markdown do
   @moduledoc """
-  Functions for parsing and manipulating markdown
+  Functions for parsing and manipulating markdown.
+  Parameters named "ast" are Earmark abstract syntax trees.
   """
   @valid_tag_parents ["p", "li", "h1", "h2", "h3", "h4"]
+  @valid_checkbox_parent "li"
 
-  def checkbox_pattern, do: ~r/^x /
-
-  def extract_eligible_tag_text_from_ast(ast) when is_list(ast) do
+  def extract_eligible_text_from_ast(ast, valid_parents)
+      when is_list(ast) and is_list(valid_parents) do
     {_, result} =
       Earmark.Transform.map_ast_with(
         ast,
@@ -30,15 +31,20 @@ defmodule Purple.Markdown do
     result
   end
 
-  def extract_eligible_tag_text_from_markdown(md) when is_binary(md) do
+  def extract_eligible_text_from_ast(md, valid_parents)
+      when is_binary(md) and is_list(valid_parents) do
     case EarmarkParser.as_ast(md) do
-      {:ok, ast, _} -> extract_eligible_tag_text_from_ast(ast)
+      {:ok, ast, _} -> extract_eligible_text_from_ast(ast, valid_parents)
       _ -> []
     end
   end
 
-  def extract_checkboxes_from_markdown(md) when is_binary(md) do
-    []
+  def extract_eligible_tag_text_from_markdown(md) when is_binary(md) do
+    extract_eligible_text_from_ast(md, @valid_tag_parents)
+  end
+
+  def extract_eligible_checkbox_text_from_markdown(md) when is_binary(md) do
+    extract_eligible_text_from_ast(md, [@valid_checkbox_parent])
   end
 
   def make_checkbox_node(checkbox_map) do
@@ -77,12 +83,12 @@ defmodule Purple.Markdown do
   def render_checkbox(text_leaf, %{checkbox_map: checkbox_map}) when is_binary(text_leaf) do
     Enum.map(
       Regex.split(
-        checkbox_pattern(),
+        Purple.Board.checkbox_pattern(),
         text_leaf,
         include_captures: true
       ),
       fn text ->
-        if Regex.match?(checkbox_pattern(), text) do
+        if Regex.match?(Purple.Board.checkbox_pattern(), text) do
           make_checkbox_node(checkbox_map)
         else
           text
@@ -104,7 +110,7 @@ defmodule Purple.Markdown do
   def get_valid_extensions(html_tag \\ "", children \\ []) do
     %{
       checkbox:
-        html_tag == "li" and
+        html_tag == @valid_checkbox_parent and
           case children do
             [text_leaf] when is_binary(text_leaf) ->
               String.length(text_leaf) >= 3

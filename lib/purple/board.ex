@@ -10,6 +10,8 @@ defmodule Purple.Board do
 
   import Ecto.Query
 
+  def checkbox_pattern, do: ~r/^x .+/
+
   def change_item(%Item{} = item, attrs \\ %{}) do
     Item.changeset(item, attrs)
   end
@@ -40,6 +42,23 @@ defmodule Purple.Board do
     entry
     |> ItemEntry.changeset(params)
     |> Repo.update()
+  end
+
+  def extract_checkboxes(%ItemEntry{} = entry) do
+    entry.content
+    |> Purple.Markdown.extract_eligible_checkbox_text_from_markdown()
+    |> Enum.reduce(
+      [],
+      fn eligible_text, acc ->
+        acc ++
+          (checkbox_pattern()
+           |> Regex.scan(eligible_text)
+           |> Enum.flat_map(fn [match] -> [String.replace_prefix(match, "x ", "")] end))
+      end
+    )
+  end
+
+  def sync_entry_checkboxes(%ItemEntry{} = entry) do
   end
 
   def get_item!(id) do
