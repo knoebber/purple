@@ -32,4 +32,7 @@ assets:
 migrate:
 	mix ecto.migrate
 
-.PHONY: all test hex rebar deps create_db js compile assets migrate
+deploy: test
+	fly deploy
+
+.PHONY: all test hex rebar deps create_db js compile assets migrate deploy
