@@ -73,4 +73,46 @@ defmodule Purple.MarkdownTest do
       assert length(find_tag_links(doc)) == 4
     end
   end
+
+  describe "extract_checkbox_content/1" do
+    test "finds expected checkbox lists" do
+      assert extract_checkbox_content("+ x") == []
+      assert extract_checkbox_content("+ x ") == []
+      assert extract_checkbox_content("+ x task") == ["task"]
+      assert extract_checkbox_content("+ x task x ") == ["task x"]
+
+      assert extract_checkbox_content("- x task\n- x task2\n- x task3") == [
+               "task3",
+               "task2",
+               "task"
+             ]
+
+      assert extract_checkbox_content("1. x task\n1. x task two \n1. x 👍\n1. x 4 ") == [
+               "4",
+               "👍",
+               "task two",
+               "task"
+             ]
+
+      assert extract_checkbox_content(~s"""
+             # header #tag1 x 
+
+             + x checkbox1 #tag2
+             + x checkbox2
+             + x checkbox3 #tag3
+
+             ```
+             whatever #notag
+             ```
+             - x checkbox4
+
+             #tag4
+             """) == [
+               "checkbox4",
+               "checkbox3 #tag3",
+               "checkbox2",
+               "checkbox1 #tag2"
+             ]
+    end
+  end
 end
