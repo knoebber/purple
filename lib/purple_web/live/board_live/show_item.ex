@@ -93,7 +93,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def handle_event("delete_entry", %{"id" => id}, socket) do
     {entry_id, _} = Integer.parse(id)
     Board.delete_entry!(%ItemEntry{id: entry_id})
-    Purple.Tags.sync_tags(socket.assigns.item.id, :item)
 
     {:noreply,
      socket
@@ -105,8 +104,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def handle_event("save_entry", %{"item_entry" => params}, socket) do
     case save_entry(socket, socket.assigns.live_action, params) do
       {:ok, entry} ->
-        Purple.Tags.sync_tags(entry.item_id, :item)
-
         {
           :noreply,
           socket

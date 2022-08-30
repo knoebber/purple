@@ -18,29 +18,86 @@ defmodule Purple.Board do
     ItemEntry.changeset(entry, attrs)
   end
 
-  def create_item(params) do
-    %Item{}
-    |> Item.changeset(params)
-    |> Repo.insert()
+  defp item_transaction(f) do
+    {:ok, result} = Repo.transaction(f)
+    result
   end
 
-  def create_item_entry(params, item_id) when is_map(params) and is_integer(item_id) do
-    %ItemEntry{item_id: item_id}
-    |> ItemEntry.changeset(params)
-    |> Repo.insert()
-    |> Map.put(:checkboxes, [])
+  def create_item(params) do
+    item_transaction(fn ->
+      result =
+        %Item{}
+        |> Item.changeset(params)
+        |> Repo.insert()
+
+      case result do
+        {:ok, item} -> post_process_item!(item.id)
+        _ -> nil
+      end
+
+      result
+    end)
   end
 
   def update_item(%Item{} = item, params) do
-    item
-    |> Item.changeset(params)
-    |> Repo.update()
+    item_transaction(fn ->
+      result =
+        item
+        |> Item.changeset(params)
+        |> Repo.update()
+
+      if elem(result, 0) == :ok, do: post_process_item!(item.id)
+
+      result
+    end)
+  end
+
+  def create_item_entry(params, item_id) when is_map(params) and is_integer(item_id) do
+    item_transaction(fn ->
+      result =
+        %ItemEntry{item_id: item_id}
+        |> ItemEntry.changeset(params)
+        |> Repo.insert()
+
+      case result do
+        {:ok, entry} -> post_process_item!(item_id, Map.put(entry, :checkboxes, []))
+        _ -> nil
+      end
+
+      result
+    end)
   end
 
   def update_item_entry(%ItemEntry{} = entry, params) do
-    entry
-    |> ItemEntry.changeset(params)
-    |> Repo.update()
+    item_transaction(fn ->
+      result =
+        entry
+        |> ItemEntry.changeset(params)
+        |> Repo.update()
+
+      case result do
+        {:ok, entry} ->
+          entry =
+            if is_list(entry.checkboxes) do
+              entry
+            else
+              Repo.preload(entry, :checkboxes)
+            end
+
+          post_process_item!(entry.item_id, entry)
+          {:ok, entry}
+
+        result ->
+          result
+      end
+    end)
+  end
+
+  def delete_entry!(%ItemEntry{} = item_entry) do
+    item_transaction(fn ->
+      Repo.delete!(item_entry)
+      post_process_item!(item_entry.item_id)
+    end)
   end
 
   def get_entry_checkboxes(%ItemEntry{id: id} = entry) when is_integer(id) do
@@ -74,41 +131,14 @@ defmodule Purple.Board do
     |> Repo.update()
   end
 
-  def save_item(action, model, params, item_id \\ nil)
-      when is_atom(action) and is_map(model) and is_map(params) do
-    sync_tags = &Purple.Tags.sync_tags(&1, :item)
+  def post_process_item!(item_id, entry \\ nil) when is_integer(item_id) do
+    {:ok, _} = Purple.Tags.sync_tags(item_id, :item)
 
-    Repo.transaction(fn ->
-      {:ok, _} =
-        case action do
-          :create_item ->
-            {:ok, item} = create_item(params)
-            {:ok, _} = sync_tags.(item.id)
-            {:ok, item}
+    if entry do
+      {:ok, _} = sync_entry_checkboxes(entry)
+    end
 
-          :update_item ->
-            {:ok, item} = update_item(model, params)
-            {:ok, _} = sync_tags.(item.id)
-            {:ok, item}
-
-          :update_entry ->
-            {:ok, entry} = update_item_entry(model, params)
-            {:ok, entry} = sync_entry_checkboxes(entry)
-            {:ok, _} = sync_tags.(entry.item_id)
-            {:ok, entry}
-
-          :create_entry ->
-            {:ok, entry} = create_item_entry(params, item_id)
-            {:ok, entry} = sync_entry_checkboxes(entry)
-            {:ok, _} = sync_tags.(item_id)
-            {:ok, entry}
-
-          :delete_entry ->
-            delete_entry!(model.id)
-            {:ok, _} = sync_tags.(model.item_id)
-            {:ok, model}
-        end
-    end)
+    :ok
   end
 
   def get_item!(id) do
@@ -300,10 +330,6 @@ defmodule Purple.Board do
 
   def item_status_mappings do
     Ecto.Enum.mappings(Item, :status)
-  end
-
-  def delete_entry!(%ItemEntry{} = item_entry) do
-    Repo.delete!(item_entry)
   end
 
   def delete_item!(%Item{} = item) do

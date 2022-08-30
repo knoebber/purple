@@ -14,31 +14,28 @@ defmodule Purple.BoardFixtures do
 
   def valid_entry_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
-      content: "# Test Entry! 😺\n\n#tdd #purple #postgres\n\n#Checkboxes!\n- x one\n- x two",
+      content: "# Test Entry! 😺\n\n#tdd #purple #postgres\n+ x checkbox 1\n+ \n checkbox2",
       is_collapsed: false
     })
   end
 
   def item_fixture(attrs \\ %{}) do
-    {:ok, item} = Purple.Board.save_item(:create_item, %{}, valid_item_attributes(attrs))
+    {:ok, item} = Purple.Board.create_item(valid_item_attributes(attrs))
 
-    {:ok, entry} =
-      Purple.Board.save_item(
-        :create_entry,
-        %{},
-        # Can add an :entry key to attrs to override default entry.
+    {:ok, _} =
+      Purple.Board.create_item_entry(
         valid_entry_attributes(Map.get(attrs, :entry, %{})),
         item.id
       )
 
-    Map.put(item, :entries, [entry])
+    Purple.Board.get_item!(item.id, :entries, :tags)
   end
 
   def entry_fixture(attrs \\ %{}) do
     %{entries: [entry]} = item_fixture()
 
     if attrs != %{} do
-      {:ok, entry} = Purple.Board.save_item(:update_entry, entry, attrs)
+      {:ok, entry} = Purple.Board.update_item_entry(entry, attrs)
       entry
     else
       entry

@@ -1,12 +1,15 @@
 defmodule Purple.BoardTest do
   use Purple.DataCase
+  alias Purple.Board.CheckBox
+  alias Purple.Board.Item
+  alias Purple.Board.ItemEntry
   alias Purple.Repo
 
   import Purple.Board
   import Purple.BoardFixtures
 
-  describe "items" do
-    test "item, entry, and tags are created" do
+  describe "item and entry crud" do
+    test "fixture is expected" do
       item = item_fixture()
 
       assert length(item.entries) > 0
@@ -15,26 +18,38 @@ defmodule Purple.BoardTest do
       assert item.entries |> Enum.at(0) |> Map.get(:content) |> String.length() > 0
       assert item.tags |> Enum.at(0) |> Map.get(:name) |> String.length() > 0
 
-      item_with_children = get_item!(item.id, :entries, :tags)
-      assert length(item_with_children.entries) > 0
-      assert length(item_with_children.tags) > 0
-    end
-  end
+      item = get_item!(item.id, :entries, :tags)
+      assert length(item.entries) > 0
+      assert length(item.tags) > 0
 
-  describe "save_item/4" do
-    test ":create_item" do
-    end
-
-    test ":update_item" do
+      [entry] = item.entries
+      entry = Repo.preload(entry, :checkboxes)
+      assert length(entry.checkboxes) > 0
     end
 
-    test ":update_entry" do
+    test "create_item/1" do
+      {:error, changeset} = Purple.Board.create_item(%{})
     end
 
-    test ":create_entry" do
+    test "update_item/2" do
+      item = item_fixture()
+      {:error, changeset} = Purple.Board.update_item(item, %{description: ""})
     end
 
-    test ":delete_entry" do
+    test "create_item_entry/2" do
+      {:error, changeset} = Purple.Board.create_item_entry(%{}, 0)
+    end
+
+    test "update_item_entry/2" do
+      entry = entry_fixture()
+      {:error, changeset} = Purple.Board.update_item_entry(entry, %{content: ""})
+    end
+
+    test "delete_entry/2" do
+      entry = entry_fixture()
+      dbg entry
+      Purple.Board.delete_entry!(entry)
+      assert Repo.get(ItemEntry, entry.id) == nil
     end
   end
 

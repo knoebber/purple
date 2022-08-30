@@ -67,8 +67,6 @@ defmodule PurpleWeb.BoardLive.CreateItem do
 
     case Board.create_item(params) do
       {:ok, item} ->
-        Purple.Tags.sync_tags(item.id, :item)
-
         {:noreply, push_redirect(socket, to: show_item_path(item))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
