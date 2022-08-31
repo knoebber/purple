@@ -1,9 +1,6 @@
 defmodule Purple.BoardTest do
   use Purple.DataCase
-  alias Purple.Board.CheckBox
-  alias Purple.Board.Item
   alias Purple.Board.ItemEntry
-  alias Purple.Repo
 
   import Purple.Board
   import Purple.BoardFixtures
@@ -28,56 +25,58 @@ defmodule Purple.BoardTest do
     end
 
     test "create_item/1" do
-      {:error, changeset} = Purple.Board.create_item(%{})
+      assert {:error, changeset} = Purple.Board.create_item(%{})
+      assert !changeset.valid?
     end
 
     test "update_item/2" do
       item = item_fixture()
-      {:error, changeset} = Purple.Board.update_item(item, %{description: ""})
+      assert {:error, changeset} = Purple.Board.update_item(item, %{description: ""})
+      assert !changeset.valid?
     end
 
     test "create_item_entry/2" do
-      {:error, changeset} = Purple.Board.create_item_entry(%{}, 0)
+      assert {:error, changeset} = Purple.Board.create_item_entry(%{}, 0)
+      assert !changeset.valid?
+
+      item = item_fixture()
+
+      assert {:ok, entry} =
+               create_item_entry(%{content: "# New Entry!!\n\n- x a checkbox!"}, item.id)
+
+      assert %{checkboxes: [%{description: "a checkbox!"}]} = entry
     end
 
     test "update_item_entry/2" do
       entry = entry_fixture()
-      {:error, changeset} = Purple.Board.update_item_entry(entry, %{content: ""})
-    end
+      assert {:error, changeset} = Purple.Board.update_item_entry(entry, %{content: ""})
+      assert !changeset.valid?
 
-    test "delete_entry/2" do
-      entry = entry_fixture()
-      dbg entry
-      Purple.Board.delete_entry!(entry)
-      assert Repo.get(ItemEntry, entry.id) == nil
-    end
-  end
-
-  describe "item entries" do
-    test "sync_entry_checkboxes/1" do
-      entry = entry_fixture(%{content: "+ x checkbox1 \n+ x checkbox2"})
-
-      {
-        :ok,
-        %{checkboxes: [checkbox2, checkbox1]}
-      } = sync_entry_checkboxes(Repo.preload(entry, :checkboxes))
+      assert {:ok, %{checkboxes: [checkbox2, checkbox1]}} =
+               update_item_entry(entry, %{content: "+ x checkbox1 \n+ x checkbox2"})
 
       assert checkbox1.description == "checkbox1"
       assert checkbox2.description == "checkbox2"
 
-      {:ok, entry} =
-        update_item_entry(entry, %{content: "+ x checkbox1 \n+ x checkbox2\n+ x checkbox 3️⃣! "})
+      assert {:ok, %{checkboxes: [new_checkbox, exists2, exists1]}} =
+               update_item_entry(entry, %{
+                 content: "+ x checkbox1 \n+ x checkbox2\n+ x checkbox 3️⃣! "
+               })
 
-      {
-        :ok,
-        %{checkboxes: checkboxes}
-      } = sync_entry_checkboxes(Repo.preload(entry, :checkboxes))
-
-      assert length(checkboxes) == 3
-      [new_checkbox, exists2, exists1] = checkboxes
       assert exists1.id == checkbox1.id
       assert exists2.id == checkbox2.id
       assert new_checkbox.description == "checkbox 3️⃣!"
+
+      assert {:error, changeset} =
+               update_item_entry(entry, %{content: "+ x duplicate\n+ x duplicate"})
+
+      assert !changeset.valid?
+    end
+
+    test "delete_entry/2" do
+      entry = entry_fixture()
+      Purple.Board.delete_entry!(entry)
+      assert Repo.get(ItemEntry, entry.id) == nil
     end
   end
 end

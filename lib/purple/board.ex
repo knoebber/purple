@@ -20,6 +20,7 @@ defmodule Purple.Board do
 
   defp item_transaction(f) do
     {:ok, result} = Repo.transaction(f)
+    # This is throwing uncaught error on duplicate checkbox, not good.
     result
   end
 
@@ -61,10 +62,8 @@ defmodule Purple.Board do
 
       case result do
         {:ok, entry} -> post_process_item!(item_id, Map.put(entry, :checkboxes, []))
-        _ -> nil
+        _ -> result
       end
-
-      result
     end)
   end
 
@@ -77,15 +76,10 @@ defmodule Purple.Board do
 
       case result do
         {:ok, entry} ->
-          entry =
-            if is_list(entry.checkboxes) do
-              entry
-            else
-              Repo.preload(entry, :checkboxes)
-            end
-
-          post_process_item!(entry.item_id, entry)
-          {:ok, entry}
+          post_process_item!(
+            entry.item_id,
+            Repo.preload(entry, :checkboxes)
+          )
 
         result ->
           result
@@ -136,9 +130,9 @@ defmodule Purple.Board do
 
     if entry do
       {:ok, _} = sync_entry_checkboxes(entry)
+    else
+      {:ok, item_id}
     end
-
-    :ok
   end
 
   def get_item!(id) do
@@ -251,6 +245,10 @@ defmodule Purple.Board do
         order_by: [ub.name],
         preload: [tags: t]
     )
+  end
+
+  def list_entry_checkboxes(entry_id) do
+    Repo.all(where(EntryCheckbox, [ec], ec.item_entry_id == ^entry_id))
   end
 
   def get_user_board!(id) do
