@@ -19,70 +19,59 @@ defmodule Purple.Board do
   end
 
   defp item_transaction(f) do
-    {:ok, result} = Repo.transaction(f)
-    # This is throwing uncaught error on duplicate checkbox, not good.
-    result
+    Repo.transaction(fn ->
+      result = f.()
+
+      case result do
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+
+        _ ->
+          result
+      end
+    end)
   end
 
   def create_item(params) do
+    changeset = Item.changeset(%Item{}, params)
+
     item_transaction(fn ->
-      result =
-        %Item{}
-        |> Item.changeset(params)
-        |> Repo.insert()
-
-      case result do
-        {:ok, item} -> post_process_item!(item.id)
-        _ -> nil
+      with {:ok, item} <- Repo.insert(changeset),
+           {:ok, _} <- post_process_item(item.id) do
+        item
       end
-
-      result
     end)
   end
 
   def update_item(%Item{} = item, params) do
+    changeset = Item.changeset(item, params)
+
     item_transaction(fn ->
-      result =
+      with {:ok, item} <- Repo.update(changeset),
+           {:ok, _} <- post_process_item(item.id) do
         item
-        |> Item.changeset(params)
-        |> Repo.update()
-
-      if elem(result, 0) == :ok, do: post_process_item!(item.id)
-
-      result
+      end
     end)
   end
 
   def create_item_entry(params, item_id) when is_map(params) and is_integer(item_id) do
-    item_transaction(fn ->
-      result =
-        %ItemEntry{item_id: item_id}
-        |> ItemEntry.changeset(params)
-        |> Repo.insert()
+    changeset = ItemEntry.changeset(%ItemEntry{item_id: item_id}, params)
 
-      case result do
-        {:ok, entry} -> post_process_item!(item_id, Map.put(entry, :checkboxes, []))
-        _ -> result
+    item_transaction(fn ->
+      with {:ok, entry} <- Repo.insert(changeset),
+           {:ok, entry} <- post_process_item(item_id, Map.put(entry, :checkboxes, [])) do
+        entry
       end
     end)
   end
 
   def update_item_entry(%ItemEntry{} = entry, params) do
+    changeset = ItemEntry.changeset(entry, params)
+
     item_transaction(fn ->
-      result =
+      with {:ok, entry} <- Repo.update(changeset),
+           {:ok, entry} <- post_process_item(entry.item_id, Repo.preload(entry, :checkboxes)) do
         entry
-        |> ItemEntry.changeset(params)
-        |> Repo.update()
-
-      case result do
-        {:ok, entry} ->
-          post_process_item!(
-            entry.item_id,
-            Repo.preload(entry, :checkboxes)
-          )
-
-        result ->
-          result
       end
     end)
   end
@@ -90,7 +79,8 @@ defmodule Purple.Board do
   def delete_entry!(%ItemEntry{} = item_entry) do
     item_transaction(fn ->
       Repo.delete!(item_entry)
-      post_process_item!(item_entry.item_id)
+      {:ok, _} = post_process_item(item_entry.item_id)
+      :ok
     end)
   end
 
@@ -109,9 +99,9 @@ defmodule Purple.Board do
         persisted = Enum.find(persisted_checkboxes, &(&1.description == description))
 
         if persisted do
-          persisted
+          EntryCheckbox.changeset(persisted)
         else
-          EntryCheckbox.new(entry.id, description)
+          EntryCheckbox.changeset(EntryCheckbox.new(entry.id, description))
         end
       end
     )
@@ -125,11 +115,11 @@ defmodule Purple.Board do
     |> Repo.update()
   end
 
-  def post_process_item!(item_id, entry \\ nil) when is_integer(item_id) do
+  def post_process_item(item_id, entry \\ nil) when is_integer(item_id) do
     {:ok, _} = Purple.Tags.sync_tags(item_id, :item)
 
     if entry do
-      {:ok, _} = sync_entry_checkboxes(entry)
+      sync_entry_checkboxes(entry)
     else
       {:ok, item_id}
     end
