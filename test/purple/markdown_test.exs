@@ -40,6 +40,18 @@ defmodule Purple.MarkdownTest do
       assert count_rendered_checkboxes("+ x task x ") == 1
       assert count_rendered_checkboxes("- x task\n- x task2\n- x task3") == 3
       assert count_rendered_checkboxes("1. x task\n1. x task2\n1. x 👍\n1. x 4") == 4
+
+      html = markdown_to_html("- x task\n- x task2\n- x 👍")
+
+      expected_html = ~s"""
+      <ul>
+        <li><span><input type="checkbox"/>task</span></li>
+        <li><span><input type="checkbox"/>task2</span></li>
+        <li><span><input type="checkbox"/>👍</span></li>
+      </ul>
+      """
+
+      assert String.replace(html, ~r/\s/, "") == String.replace(expected_html, ~r/\s/, "")
     end
 
     test "renders tag links" do

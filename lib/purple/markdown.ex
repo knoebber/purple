@@ -8,6 +8,10 @@ defmodule Purple.Markdown do
 
   def checkbox_pattern, do: ~r/^x .+/
 
+  defp strip_checkbox_prefix(text_leaf) when is_binary(text_leaf) do
+    String.replace_prefix(text_leaf, "x ", "")
+  end
+
   def extract_eligible_text_from_ast(ast, valid_parents)
       when is_list(ast) and is_list(valid_parents) do
     {_, result} =
@@ -61,7 +65,7 @@ defmodule Purple.Markdown do
            |> Enum.flat_map(fn [match] ->
              [
                match
-               |> String.replace_prefix("x ", "")
+               |> strip_checkbox_prefix()
                |> String.trim()
              ]
            end))
@@ -69,12 +73,15 @@ defmodule Purple.Markdown do
     )
   end
 
-  def make_checkbox_node(checkbox_map) do
-    {"input",
+  def make_checkbox_node(checkbox_map, text) do
+    {"span", [],
      [
-       {"type", "checkbox"},
-       {"class", "markdown-checkbox"}
-     ], [], %{}}
+       {"input",
+        [
+          {"type", "checkbox"}
+        ], [], %{}},
+       text
+     ], %{}}
   end
 
   def make_tag_link_node(get_tag_link, tagname) do
@@ -110,8 +117,8 @@ defmodule Purple.Markdown do
         include_captures: true
       ),
       fn text ->
-        if Regex.match?(checkbox_pattern(), text) do
-          make_checkbox_node(checkbox_map)
+        if text =~ checkbox_pattern() do
+          make_checkbox_node(checkbox_map, strip_checkbox_prefix(text))
         else
           text
         end
