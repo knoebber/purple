@@ -139,10 +139,23 @@ defmodule Purple.Board do
     )
   end
 
-  def get_item_entries(item_id) do
+  defp list_item_entries_query(item_id) do
     ItemEntry
     |> where([ie], ie.item_id == ^item_id)
     |> order_by(asc: :sort_order, desc: :inserted_at)
+  end
+
+  def list_item_entries(item_id) do
+    item_id
+    |> list_item_entries_query()
+    |> Repo.all()
+  end
+
+  def list_item_entries(item_id, :checkboxes) do
+    item_id
+    |> list_item_entries_query()
+    |> join(:left, [entry], x in assoc(entry, :checkboxes))
+    |> preload([_, x], [checkboxes: x])
     |> Repo.all()
   end
 

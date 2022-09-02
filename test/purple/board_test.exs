@@ -68,6 +68,10 @@ defmodule Purple.BoardTest do
                  content: "+ x checkbox1 \n+ x checkbox2\n+ x checkbox 3️⃣! "
                })
 
+      assert [entry] = list_item_entries(entry.item_id, :checkboxes)
+      assert length(entry.checkboxes) == 3
+      assert hd(entry.checkboxes).description != ""
+
       assert exists1.id == checkbox1.id
       assert exists2.id == checkbox2.id
       assert new_checkbox.description == "checkbox 3️⃣!"

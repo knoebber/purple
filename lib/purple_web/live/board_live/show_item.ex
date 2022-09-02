@@ -16,6 +16,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     |> assign(:total_files, length(files))
   end
 
+  defp assign_entries(socket) do
+    assign(socket, :entries, Board.list_item_entries(socket.assigns.item.id, :checkboxes))
+  end
+
   defp assign_default_params(socket, item_id) do
     item = Board.get_item!(item_id)
 
@@ -23,7 +27,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     |> assign_uploads(item_id)
     |> assign(:page_title, item.description)
     |> assign(:item, item)
-    |> assign(:entries, Board.get_item_entries(item_id))
+    |> assign_entries()
   end
 
   defp apply_action(socket, :edit_entry, %{"id" => item_id, "entry_id" => entry_id}) do
@@ -72,10 +76,16 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("toggle-checkbox", %{"id" => checkbox_name}, socket) do
+    dbg(checkbox_name)
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("toggle_entry_collapse", %{"id" => id}, socket) do
     entry = get_entry(socket, id)
     Board.collapse_item_entries([id], !entry.is_collapsed)
-    {:noreply, assign(socket, :entries, Board.get_item_entries(socket.assigns.item.id))}
+    {:noreply, assign_entries(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -94,10 +104,12 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     {entry_id, _} = Integer.parse(id)
     Board.delete_entry!(%ItemEntry{id: entry_id})
 
-    {:noreply,
-     socket
-     |> put_flash(:info, "Entry deleted")
-     |> assign(:entries, Board.get_item_entries(socket.assigns.item.id))}
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Entry deleted")
+      |> assign_entries()
+    }
   end
 
   @impl Phoenix.LiveView
