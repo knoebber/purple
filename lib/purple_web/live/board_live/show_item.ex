@@ -70,15 +70,24 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     Board.update_item_entry(socket.assigns.editable_entry, params)
   end
 
+  defp make_checkbox_map(entry) do
+    Enum.reduce(
+      entry.checkboxes,
+      %{},
+      fn checkbox, acc -> Map.put(acc, checkbox.description, checkbox) end
+    )
+  end
+
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   @impl Phoenix.LiveView
-  def handle_event("toggle-checkbox", %{"id" => checkbox_name}, socket) do
-    dbg(checkbox_name)
-    {:noreply, socket}
+  def handle_event("toggle-checkbox", %{"id" => id}, socket) do
+    checkbox = Board.get_entry_checkbox!(id)
+    Board.set_checkbox_done(checkbox, !checkbox.is_done)
+    {:noreply, assign_entries(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -389,7 +398,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
             <%= unless entry.is_collapsed do %>
               <div class="markdown-content">
-                <%= markdown(entry.content, :board) %>
+                <%= markdown(entry.content, :board, make_checkbox_map(entry)) %>
               </div>
             <% end %>
           <% end %>

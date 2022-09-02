@@ -94,9 +94,9 @@ defmodule PurpleWeb.Formatters do
   def get_tag_link(tag, :finance), do: Routes.finance_index_path(Endpoint, :index, tag: tag)
   def get_tag_link(tag, _), do: "?tag=#{tag}"
 
-  def markdown(md, link_type) when is_binary(md) and is_atom(link_type) do
+  def markdown(md, link_type, checkbox_map \\ %{}) when is_binary(md) and is_atom(link_type) do
     extension_data = %{
-      checkbox_map: %{},
+      checkbox_map: checkbox_map,
       get_tag_link: &get_tag_link(&1, link_type)
     }
 

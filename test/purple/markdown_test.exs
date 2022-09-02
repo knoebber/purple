@@ -41,13 +41,38 @@ defmodule Purple.MarkdownTest do
       assert count_rendered_checkboxes("- x task\n- x task2\n- x task3") == 3
       assert count_rendered_checkboxes("1. x task\n1. x task2\n1. x 👍\n1. x 4") == 4
 
-      html = markdown_to_html("- x task\n- x task2\n- x 👍")
+      html =
+        markdown_to_html(
+          "- x task\n- x task2 \n- x 👍 ",
+          %{
+            checkbox_map: %{
+              "task" => %{id: 1, is_done: false},
+              "task2" => %{id: 2, is_done: true},
+              "👍" => %{id: 3, is_done: true}
+            }
+          }
+        )
 
       expected_html = ~s"""
       <ul>
-        <li><span><input type="checkbox"/>task</span></li>
-        <li><span><input type="checkbox"/>task2</span></li>
-        <li><span><input type="checkbox"/>👍</span></li>
+        <li>
+          <span>
+            <input type="checkbox" phx-click="toggle-checkbox" phx-value-id="1"/>
+            task
+          </span>
+        </li>
+        <li>
+          <span>
+            <input checked="checked" type="checkbox" phx-click="toggle-checkbox" phx-value-id="2"/>
+            task2
+          </span>
+        </li>
+        <li>
+          <span>
+            <input checked="checked" type="checkbox" phx-click="toggle-checkbox" phx-value-id="3"/>
+            👍
+          </span>
+        </li>
       </ul>
       """
 

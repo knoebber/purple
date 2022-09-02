@@ -75,6 +75,7 @@ defmodule Purple.BoardTest do
       assert exists1.id == checkbox1.id
       assert exists2.id == checkbox2.id
       assert new_checkbox.description == "checkbox 3️⃣!"
+      assert !exists1.is_done and !exists2.is_done and !new_checkbox.is_done
 
       assert {:error, changeset} =
                update_item_entry(entry, %{content: "+ x duplicate\n+ x duplicate"})

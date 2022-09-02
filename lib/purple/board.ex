@@ -84,7 +84,7 @@ defmodule Purple.Board do
     end)
   end
 
-  def get_entry_checkboxes(%ItemEntry{id: id} = entry) when is_integer(id) do
+  def get_entry_checkbox_changes(%ItemEntry{id: id} = entry) when is_integer(id) do
     checkbox_descriptions = Purple.Markdown.extract_checkbox_content(entry.content)
 
     persisted_checkboxes =
@@ -99,7 +99,7 @@ defmodule Purple.Board do
         persisted = Enum.find(persisted_checkboxes, &(&1.description == description))
 
         if persisted do
-          EntryCheckbox.changeset(persisted)
+          EntryCheckbox.changeset(persisted, persisted.is_done)
         else
           EntryCheckbox.changeset(EntryCheckbox.new(entry.id, description))
         end
@@ -111,7 +111,7 @@ defmodule Purple.Board do
       when is_list(checkboxes) do
     entry
     |> Ecto.Changeset.change()
-    |> Ecto.Changeset.put_assoc(:checkboxes, get_entry_checkboxes(entry))
+    |> Ecto.Changeset.put_assoc(:checkboxes, get_entry_checkbox_changes(entry))
     |> Repo.update()
   end
 
@@ -139,6 +139,10 @@ defmodule Purple.Board do
     )
   end
 
+  def get_entry_checkbox!(id) do
+    Repo.get!(EntryCheckbox, id)
+  end
+
   defp list_item_entries_query(item_id) do
     ItemEntry
     |> where([ie], ie.item_id == ^item_id)
@@ -155,7 +159,7 @@ defmodule Purple.Board do
     item_id
     |> list_item_entries_query()
     |> join(:left, [entry], x in assoc(entry, :checkboxes))
-    |> preload([_, x], [checkboxes: x])
+    |> preload([_, x], checkboxes: x)
     |> Repo.all()
   end
 
@@ -252,6 +256,13 @@ defmodule Purple.Board do
 
   def list_entry_checkboxes(entry_id) do
     Repo.all(where(EntryCheckbox, [ec], ec.item_entry_id == ^entry_id))
+  end
+
+  def set_checkbox_done(checkbox = %EntryCheckbox{id: id}, is_done)
+      when is_integer(id) and is_boolean(is_done) do
+    checkbox
+    |> EntryCheckbox.changeset(is_done)
+    |> Repo.update()
   end
 
   def get_user_board!(id) do

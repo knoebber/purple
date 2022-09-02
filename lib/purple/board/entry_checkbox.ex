@@ -24,9 +24,9 @@ defmodule Purple.Board.EntryCheckbox do
     }
   end
 
-  def changeset(checkbox) do
+  def changeset(checkbox, is_done \\ false) do
     checkbox
-    |> change()
+    |> change(is_done: is_done)
     |> validate_required([:description])
     |> unique_constraint([:description, :item_entry_id],
       message: "checkbox '" <> checkbox.description <> "' exists",
