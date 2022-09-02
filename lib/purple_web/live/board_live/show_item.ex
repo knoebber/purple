@@ -6,7 +6,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   alias Purple.Board
   alias Purple.Board.ItemEntry
   alias Purple.Uploads
-  alias PurpleWeb.Markdown
 
   defp assign_uploads(socket, item_id) do
     files = Uploads.get_files_by_item(item_id)
@@ -17,6 +16,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     |> assign(:total_files, length(files))
   end
 
+  defp assign_entries(socket) do
+    assign(socket, :entries, Board.list_item_entries(socket.assigns.item.id, :checkboxes))
+  end
+
   defp assign_default_params(socket, item_id) do
     item = Board.get_item!(item_id)
 
@@ -24,7 +27,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     |> assign_uploads(item_id)
     |> assign(:page_title, item.description)
     |> assign(:item, item)
-    |> assign(:entries, Board.get_item_entries(item_id))
+    |> assign_entries()
   end
 
   defp apply_action(socket, :edit_entry, %{"id" => item_id, "entry_id" => entry_id}) do
@@ -59,12 +62,20 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     end)
   end
 
-  defp save_entry(_socket, :create_entry, params) do
-    Board.create_item_entry(params)
+  defp save_entry(socket, :create_entry, params) do
+    Board.create_item_entry(params, socket.assigns.item.id)
   end
 
   defp save_entry(socket, :edit_entry, params) do
     Board.update_item_entry(socket.assigns.editable_entry, params)
+  end
+
+  defp make_checkbox_map(entry) do
+    Enum.reduce(
+      entry.checkboxes,
+      %{},
+      fn checkbox, acc -> Map.put(acc, checkbox.description, checkbox) end
+    )
   end
 
   @impl Phoenix.LiveView
@@ -73,10 +84,17 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("toggle-checkbox", %{"id" => id}, socket) do
+    checkbox = Board.get_entry_checkbox!(id)
+    Board.set_checkbox_done(checkbox, !checkbox.is_done)
+    {:noreply, assign_entries(socket)}
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("toggle_entry_collapse", %{"id" => id}, socket) do
     entry = get_entry(socket, id)
     Board.collapse_item_entries([id], !entry.is_collapsed)
-    {:noreply, assign(socket, :entries, Board.get_item_entries(socket.assigns.item.id))}
+    {:noreply, assign_entries(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -94,20 +112,19 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def handle_event("delete_entry", %{"id" => id}, socket) do
     {entry_id, _} = Integer.parse(id)
     Board.delete_entry!(%ItemEntry{id: entry_id})
-    Purple.Tags.sync_tags(socket.assigns.item.id, :item)
 
-    {:noreply,
-     socket
-     |> put_flash(:info, "Entry deleted")
-     |> assign(:entries, Board.get_item_entries(socket.assigns.item.id))}
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Entry deleted")
+      |> assign_entries()
+    }
   end
 
   @impl Phoenix.LiveView
   def handle_event("save_entry", %{"item_entry" => params}, socket) do
     case save_entry(socket, socket.assigns.live_action, params) do
       {:ok, entry} ->
-        Purple.Tags.sync_tags(entry.item_id, :item)
-
         {
           :noreply,
           socket
@@ -224,7 +241,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       </div>
       <%= if @entry.is_collapsed do %>
         <strong class="whitespace-nowrap overflow-hidden text-ellipsis w-1/2 text-purple-900">
-          <%= String.slice(Markdown.strip_markdown(@entry.content), 0, 100) %>
+          <%= String.slice(strip_markdown(@entry.content), 0, 100) %>
         </strong>
       <% end %>
       <.timestamp model={@entry} />
@@ -281,7 +298,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         </div>
       <% else %>
         <div class="markdown-content">
-          <%= Markdown.markdown_to_html("# #{@item.description}", :board) %>
+          <%= markdown("# #{@item.description}", :board) %>
         </div>
       <% end %>
       <div>
@@ -381,7 +398,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
             <%= unless entry.is_collapsed do %>
               <div class="markdown-content">
-                <%= Markdown.markdown_to_html(entry.content, :board) %>
+                <%= markdown(entry.content, :board, make_checkbox_map(entry)) %>
               </div>
             <% end %>
           <% end %>

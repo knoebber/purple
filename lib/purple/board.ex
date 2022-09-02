@@ -3,7 +3,7 @@ defmodule Purple.Board do
   Context for managing boards, items, and entries.
   """
 
-  alias Purple.Board.{ItemEntry, Item, UserBoard}
+  alias Purple.Board.{ItemEntry, Item, UserBoard, EntryCheckbox}
   alias Purple.Repo
   alias Purple.Tags
   alias Purple.Tags.{UserBoardTag}
@@ -18,28 +18,111 @@ defmodule Purple.Board do
     ItemEntry.changeset(entry, attrs)
   end
 
-  def create_item(params) do
-    %Item{}
-    |> Item.changeset(params)
-    |> Repo.insert()
+  defp item_transaction(f) do
+    Repo.transaction(fn ->
+      result = f.()
+
+      case result do
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+
+        _ ->
+          result
+      end
+    end)
   end
 
-  def create_item_entry(params) do
-    %ItemEntry{}
-    |> ItemEntry.changeset(params)
-    |> Repo.insert()
+  def create_item(params) do
+    changeset = Item.changeset(%Item{}, params)
+
+    item_transaction(fn ->
+      with {:ok, item} <- Repo.insert(changeset),
+           {:ok, _} <- post_process_item(item.id) do
+        item
+      end
+    end)
   end
 
   def update_item(%Item{} = item, params) do
-    item
-    |> Item.changeset(params)
-    |> Repo.update()
+    changeset = Item.changeset(item, params)
+
+    item_transaction(fn ->
+      with {:ok, item} <- Repo.update(changeset),
+           {:ok, _} <- post_process_item(item.id) do
+        item
+      end
+    end)
+  end
+
+  def create_item_entry(params, item_id) when is_map(params) and is_integer(item_id) do
+    changeset = ItemEntry.changeset(%ItemEntry{item_id: item_id}, params)
+
+    item_transaction(fn ->
+      with {:ok, entry} <- Repo.insert(changeset),
+           {:ok, entry} <- post_process_item(item_id, Map.put(entry, :checkboxes, [])) do
+        entry
+      end
+    end)
   end
 
   def update_item_entry(%ItemEntry{} = entry, params) do
+    changeset = ItemEntry.changeset(entry, params)
+
+    item_transaction(fn ->
+      with {:ok, entry} <- Repo.update(changeset),
+           {:ok, entry} <- post_process_item(entry.item_id, Repo.preload(entry, :checkboxes)) do
+        entry
+      end
+    end)
+  end
+
+  def delete_entry!(%ItemEntry{} = item_entry) do
+    item_transaction(fn ->
+      Repo.delete!(item_entry)
+      {:ok, _} = post_process_item(item_entry.item_id)
+      :ok
+    end)
+  end
+
+  def get_entry_checkbox_changes(%ItemEntry{id: id} = entry) when is_integer(id) do
+    checkbox_descriptions = Purple.Markdown.extract_checkbox_content(entry.content)
+
+    persisted_checkboxes =
+      EntryCheckbox
+      |> where([x], x.description in ^checkbox_descriptions)
+      |> where([x], x.item_entry_id == ^entry.id)
+      |> Repo.all()
+
+    Enum.map(
+      checkbox_descriptions,
+      fn description ->
+        persisted = Enum.find(persisted_checkboxes, &(&1.description == description))
+
+        if persisted do
+          EntryCheckbox.changeset(persisted, persisted.is_done)
+        else
+          EntryCheckbox.changeset(EntryCheckbox.new(entry.id, description))
+        end
+      end
+    )
+  end
+
+  def sync_entry_checkboxes(%ItemEntry{checkboxes: checkboxes} = entry)
+      when is_list(checkboxes) do
     entry
-    |> ItemEntry.changeset(params)
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:checkboxes, get_entry_checkbox_changes(entry))
     |> Repo.update()
+  end
+
+  def post_process_item(item_id, entry \\ nil) when is_integer(item_id) do
+    {:ok, _} = Purple.Tags.sync_tags(item_id, :item)
+
+    if entry do
+      sync_entry_checkboxes(entry)
+    else
+      {:ok, item_id}
+    end
   end
 
   def get_item!(id) do
@@ -56,10 +139,27 @@ defmodule Purple.Board do
     )
   end
 
-  def get_item_entries(item_id) do
+  def get_entry_checkbox!(id) do
+    Repo.get!(EntryCheckbox, id)
+  end
+
+  defp list_item_entries_query(item_id) do
     ItemEntry
     |> where([ie], ie.item_id == ^item_id)
     |> order_by(asc: :sort_order, desc: :inserted_at)
+  end
+
+  def list_item_entries(item_id) do
+    item_id
+    |> list_item_entries_query()
+    |> Repo.all()
+  end
+
+  def list_item_entries(item_id, :checkboxes) do
+    item_id
+    |> list_item_entries_query()
+    |> join(:left, [entry], x in assoc(entry, :checkboxes))
+    |> preload([_, x], checkboxes: x)
     |> Repo.all()
   end
 
@@ -154,6 +254,17 @@ defmodule Purple.Board do
     )
   end
 
+  def list_entry_checkboxes(entry_id) do
+    Repo.all(where(EntryCheckbox, [ec], ec.item_entry_id == ^entry_id))
+  end
+
+  def set_checkbox_done(checkbox = %EntryCheckbox{id: id}, is_done)
+      when is_integer(id) and is_boolean(is_done) do
+    checkbox
+    |> EntryCheckbox.changeset(is_done)
+    |> Repo.update()
+  end
+
   def get_user_board!(id) do
     Repo.one(
       from ub in UserBoard,
@@ -231,10 +342,6 @@ defmodule Purple.Board do
 
   def item_status_mappings do
     Ecto.Enum.mappings(Item, :status)
-  end
-
-  def delete_entry!(%ItemEntry{} = item_entry) do
-    Repo.delete!(item_entry)
   end
 
   def delete_item!(%Item{} = item) do

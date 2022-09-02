@@ -4,7 +4,6 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
   import PurpleWeb.FinanceLive.FinanceHelpers
 
   alias Purple.Finance
-  alias PurpleWeb.Markdown
 
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
@@ -45,7 +44,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
         <.timestamp model={@transaction} />
       </div>
       <div class="markdown-content">
-        <%= Markdown.markdown_to_html(@transaction.notes, :finance) %>
+        <%= markdown(@transaction.notes, :finance) %>
       </div>
     </section>
     """

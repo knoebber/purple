@@ -8,13 +8,14 @@ defmodule Purple.Board.ItemEntry do
     field :sort_order, :integer, default: 0
 
     belongs_to :item, Purple.Board.Item
+    has_many :checkboxes, Purple.Board.EntryCheckbox, on_replace: :delete_if_exists
 
     timestamps()
   end
 
   def changeset(item_entry, attrs) do
     item_entry
-    |> cast(attrs, [:content, :is_collapsed, :sort_order, :item_id])
+    |> cast(attrs, [:content, :is_collapsed, :sort_order])
     |> validate_required([:content])
     |> assoc_constraint(:item)
   end

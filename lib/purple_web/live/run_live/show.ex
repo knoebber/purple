@@ -4,7 +4,6 @@ defmodule PurpleWeb.RunLive.Show do
   import PurpleWeb.RunLive.RunHelpers
 
   alias Purple.Activities
-  alias PurpleWeb.Markdown
 
   defp page_title(:show), do: "Show Run"
   defp page_title(:edit), do: "Edit Run"
@@ -75,7 +74,7 @@ defmodule PurpleWeb.RunLive.Show do
         </div>
       <% else %>
         <div class="markdown-content">
-          <%= Markdown.markdown_to_html(@run.description, :run) %>
+          <%= markdown(@run.description, :run) %>
         </div>
       <% end %>
     </section>
