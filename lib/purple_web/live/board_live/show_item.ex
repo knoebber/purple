@@ -309,7 +309,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             class: "ml-1 no-underline font-mono"
           ) %>
           <%= if @total_files > 0 do %>
-            <%= live_patch to: Routes.board_item_gallery_path(@socket, :index, @item) do %>
+            <%= live_redirect to: Routes.board_item_gallery_path(@socket, :index, @item) do %>
               <%= @total_files %> file<%= if length(@image_refs) != 1, do: "s" %>
             <% end %>
           <% else %>
@@ -341,7 +341,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
                 >
                   🔗
                 </div>
-                <%= live_patch(
+                <%= live_redirect(
                   to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
                   class: "no-underline"
                 ) do %>
