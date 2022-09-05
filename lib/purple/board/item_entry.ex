@@ -13,7 +13,7 @@ defmodule Purple.Board.ItemEntry do
     timestamps()
   end
 
-  def changeset(item_entry, attrs) do
+  def changeset(item_entry, attrs \\ %{}) do
     item_entry
     |> cast(attrs, [:content, :is_collapsed, :sort_order])
     |> validate_required([:content])

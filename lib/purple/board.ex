@@ -32,12 +32,26 @@ defmodule Purple.Board do
     end)
   end
 
+  defp set_empty_item_children(%Item{} = item) do
+    Map.put(
+      item,
+      :entries,
+      Enum.map(
+        if(is_list(item.entries), do: item.entries, else: []),
+        &Map.put(&1, :checkboxes, [])
+      )
+    )
+  end
+
   def create_item(params) do
     changeset = Item.changeset(%Item{}, params)
 
     item_transaction(fn ->
       with {:ok, item} <- Repo.insert(changeset),
-           {:ok, _} <- post_process_item(item.id) do
+           {:ok, _} <-
+             item
+             |> set_empty_item_children()
+             |> post_process_item() do
         item
       end
     end)
@@ -48,7 +62,7 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, item} <- Repo.update(changeset),
-           {:ok, _} <- post_process_item(item.id) do
+           {:ok, _} <- post_process_item(item) do
         item
       end
     end)
@@ -59,7 +73,7 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, entry} <- Repo.insert(changeset),
-           {:ok, entry} <- post_process_item(item_id, Map.put(entry, :checkboxes, [])) do
+           {:ok, entry} <- post_process_item(Map.put(entry, :checkboxes, [])) do
         entry
       end
     end)
@@ -70,7 +84,7 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, entry} <- Repo.update(changeset),
-           {:ok, entry} <- post_process_item(entry.item_id, Repo.preload(entry, :checkboxes)) do
+           {:ok, entry} <- post_process_item(Repo.preload(entry, :checkboxes)) do
         entry
       end
     end)
@@ -79,7 +93,7 @@ defmodule Purple.Board do
   def delete_entry!(%ItemEntry{} = item_entry) do
     item_transaction(fn ->
       Repo.delete!(item_entry)
-      {:ok, _} = post_process_item(item_entry.item_id)
+      {:ok, _} = post_process_item(item_entry)
       :ok
     end)
   end
@@ -115,14 +129,21 @@ defmodule Purple.Board do
     |> Repo.update()
   end
 
-  def post_process_item(item_id, entry \\ nil) when is_integer(item_id) do
-    {:ok, _} = Purple.Tags.sync_tags(item_id, :item)
+  def sync_entry_checkboxes(%ItemEntry{} = entry), do: {:ok, ItemEntry.changeset(entry)}
 
-    if entry do
-      sync_entry_checkboxes(entry)
-    else
-      {:ok, item_id}
+  defp post_process_item(%Item{} = item) do
+    result = {:ok, _} = Purple.Tags.sync_tags(item.id, :item)
+
+    if is_list(item.entries) do
+      Enum.each(item.entries, &sync_entry_checkboxes(&1))
     end
+
+    result
+  end
+
+  defp post_process_item(%ItemEntry{} = entry) do
+    {:ok, _} = Purple.Tags.sync_tags(entry.item_id, :item)
+    sync_entry_checkboxes(entry)
   end
 
   def get_item!(id) do

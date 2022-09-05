@@ -27,6 +27,22 @@ defmodule Purple.BoardTest do
     test "create_item/1" do
       assert {:error, changeset} = create_item(%{})
       assert !changeset.valid?
+
+      assert {:ok, item} = create_item(%{description: "test item!"})
+      assert item.id > 0
+
+      assert {:ok, item_with_children} =
+               create_item(%{
+                 description: "i have children 👶",
+                 entries: [
+                   %{content: "# entry!\n\n- x 1\n- x 2\n\n :)"},
+                   %{content: "- x 1\n- x 2\n\n (dupe checkboxes are ok between siblings"}
+                 ]
+               })
+
+      assert [entry1, entry2] = list_item_entries(item_with_children.id, :checkboxes)
+      assert [%{description: "2"}, %{description: "1"} ] = entry1.checkboxes
+      assert [%{description: "2"}, %{description: "1"} ] = entry2.checkboxes
     end
 
     test "update_item/2" do
