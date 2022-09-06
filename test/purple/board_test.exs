@@ -41,8 +41,16 @@ defmodule Purple.BoardTest do
                })
 
       assert [entry1, entry2] = list_item_entries(item_with_children.id, :checkboxes)
-      assert [%{description: "2"}, %{description: "1"} ] = entry1.checkboxes
-      assert [%{description: "2"}, %{description: "1"} ] = entry2.checkboxes
+      assert [%{description: "2"}, %{description: "1"}] = entry1.checkboxes
+      assert [%{description: "2"}, %{description: "1"}] = entry2.checkboxes
+
+      assert {:error, :rollback} =
+               create_item(%{
+                 description: "entry has dupe checkboxes",
+                 entries: [
+                   %{content: "# invalid entry!\n\n- x create item test \n- x create item test"}
+                 ]
+               })
     end
 
     test "update_item/2" do

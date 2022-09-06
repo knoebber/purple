@@ -71,6 +71,13 @@ defmodule PurpleWeb.BoardLive.CreateItem do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
+
+      {:error, :rollback} ->
+        {:noreply,
+         socket
+         |> assign(:changeset, Board.change_item(%Item{}, params))
+         |> put_flash(:error, "Failed to create item")
+        }
     end
   end
 

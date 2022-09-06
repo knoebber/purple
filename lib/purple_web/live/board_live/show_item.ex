@@ -132,7 +132,14 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           |> push_patch(to: Routes.board_show_item_path(socket, :show, entry.item_id))
         }
 
-      _ ->
+      {:error, changeset} ->
+        socket =
+          if socket.assigns.live_action == :create_entry do
+            assign(socket, :new_entry_changeset, changeset)
+          else
+            assign(socket, :entry_update_changeset, changeset)
+          end
+
         {:noreply, put_flash(socket, :error, "Failed to create entry")}
     end
   end
