@@ -111,7 +111,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   @impl Phoenix.LiveView
   def handle_event("delete_entry", %{"id" => id}, socket) do
     {entry_id, _} = Integer.parse(id)
-    Board.delete_entry!(%ItemEntry{id: entry_id})
+    Board.delete_entry!(%ItemEntry{id: entry_id, item_id: socket.assigns.item.id})
 
     {
       :noreply,

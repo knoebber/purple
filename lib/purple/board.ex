@@ -90,7 +90,7 @@ defmodule Purple.Board do
     end)
   end
 
-  def delete_entry!(%ItemEntry{} = item_entry) do
+  def delete_entry!(%ItemEntry{item_id: item_id} = item_entry) when is_integer(item_id) do
     item_transaction(fn ->
       Repo.delete!(item_entry)
       {:ok, _} = post_process_item(item_entry)
@@ -131,7 +131,16 @@ defmodule Purple.Board do
 
   def sync_entry_checkboxes(%ItemEntry{} = entry), do: {:ok, ItemEntry.changeset(entry)}
 
+  defp set_item_last_active_at(item_id) do
+    {1, _} =
+      Item
+      |> where([i], i.id == ^item_id)
+      |> Repo.update_all(set: [last_active_at: Purple.utc_now()])
+  end
+
   defp post_process_item(%Item{} = item) do
+    set_item_last_active_at(item.id)
+
     result = {:ok, _} = Purple.Tags.sync_tags(item.id, :item)
 
     if is_list(item.entries) do
@@ -142,6 +151,8 @@ defmodule Purple.Board do
   end
 
   defp post_process_item(%ItemEntry{} = entry) do
+    dbg(entry)
+    set_item_last_active_at(entry.item_id)
     {:ok, _} = Purple.Tags.sync_tags(entry.item_id, :item)
     sync_entry_checkboxes(entry)
   end
@@ -187,7 +198,8 @@ defmodule Purple.Board do
   def set_item_complete!(%Item{} = item, true) do
     item
     |> Item.changeset(%{
-      completed_at: NaiveDateTime.utc_now(),
+      last_active_at: Purple.utc_now(),
+      completed_at: Purple.utc_now(),
       status: :DONE
     })
     |> Repo.update!()
@@ -196,6 +208,7 @@ defmodule Purple.Board do
   def set_item_complete!(%Item{} = item, false) do
     item
     |> Item.changeset(%{
+      last_active_at: Purple.utc_now(),
       completed_at: nil,
       status: :TODO
     })
@@ -253,7 +266,7 @@ defmodule Purple.Board do
       end
 
     Item
-    |> order_by(desc: :is_pinned, desc: :completed_at, asc: :priority)
+    |> order_by(desc: :is_pinned, asc: :priority, desc: :last_active_at)
     |> item_text_search(filter)
     |> item_done_filter(filter)
     |> Tags.filter_by_tag(filter, :item)

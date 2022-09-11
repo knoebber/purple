@@ -10,6 +10,7 @@ defmodule Purple.Board.Item do
     field :completed_at, :naive_datetime
     field :description, :string
     field :is_pinned, :boolean, default: false
+    field :last_active_at, :naive_datetime
     field :priority, :integer, default: 3
     field :show_files, :boolean, default: false
     field :status, Ecto.Enum, values: [:TODO, :INFO, :DONE], default: :TODO
@@ -37,6 +38,7 @@ defmodule Purple.Board.Item do
   def changeset(item, attrs) do
     item
     |> cast(attrs, [
+      :last_active_at,
       :completed_at,
       :description,
       :is_pinned,
