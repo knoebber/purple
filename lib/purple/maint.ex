@@ -1,8 +1,4 @@
 defmodule Purple.Maint do
-  import Ecto.Query
-  alias Purple.Repo
-  alias Purple.Board.Item
-
   @moduledoc """
   Module for maintenance tasks.
   """
@@ -15,7 +11,7 @@ defmodule Purple.Maint do
       fn item ->
         item = Repo.preload(item, :entries)
         max_timestamp = Enum.max([item.updated_at] ++ Enum.map(item.entries, & &1.updated_at))
-        IO.inspect("item #{item.id} max timestamp is #{max_timestamp}")
+        # IO.inspect("item #{item.id} max timestamp is #{max_timestamp}")
 
         Item
         |> where([i], i.id == ^item.id)

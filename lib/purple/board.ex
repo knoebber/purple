@@ -151,7 +151,6 @@ defmodule Purple.Board do
   end
 
   defp post_process_item(%ItemEntry{} = entry) do
-    dbg(entry)
     set_item_last_active_at(entry.item_id)
     {:ok, _} = Purple.Tags.sync_tags(entry.item_id, :item)
     sync_entry_checkboxes(entry)
@@ -198,7 +197,6 @@ defmodule Purple.Board do
   def set_item_complete!(%Item{} = item, true) do
     item
     |> Item.changeset(%{
-      last_active_at: Purple.utc_now(),
       completed_at: Purple.utc_now(),
       status: :DONE
     })
@@ -208,7 +206,6 @@ defmodule Purple.Board do
   def set_item_complete!(%Item{} = item, false) do
     item
     |> Item.changeset(%{
-      last_active_at: Purple.utc_now(),
       completed_at: nil,
       status: :TODO
     })
