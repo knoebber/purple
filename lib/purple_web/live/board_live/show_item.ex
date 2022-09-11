@@ -100,7 +100,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   @impl Phoenix.LiveView
   def handle_event("toggle_files_collapsed", _, socket) do
     item = socket.assigns.item
-    Board.toggle_show_item_files(item.id, !item.show_files)
+    Board.toggle_show_item_files!(item, !item.show_files)
 
     {
       :noreply,

@@ -38,12 +38,8 @@ defmodule Purple.Board.Item do
   def changeset(item, attrs) do
     item
     |> cast(attrs, [
-      :last_active_at,
-      :completed_at,
       :description,
-      :is_pinned,
       :priority,
-      :show_files,
       :status
     ])
     |> cast_assoc(:entries, with: &Purple.Board.ItemEntry.changeset/2)

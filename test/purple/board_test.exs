@@ -1,6 +1,6 @@
 defmodule Purple.BoardTest do
   use Purple.DataCase
-  alias Purple.Board.ItemEntry
+  alias Purple.Board.{ItemEntry}
 
   import Purple.Board
   import Purple.BoardFixtures
@@ -30,6 +30,7 @@ defmodule Purple.BoardTest do
 
       assert {:ok, item} = create_item(%{description: "test item!"})
       assert item.id > 0
+      assert item.last_active_at != nil
 
       assert {:ok, item_with_children} =
                create_item(%{
@@ -57,6 +58,45 @@ defmodule Purple.BoardTest do
       item = item_fixture()
       assert {:error, changeset} = update_item(item, %{description: ""})
       assert !changeset.valid?
+
+      assert {:ok, updated_item} = update_item(item, %{description: "updated description"})
+      assert updated_item.description == "updated description"
+      assert updated_item.updated_at > item.updated_at
+      assert updated_item.last_active_at > item.last_active_at
+    end
+
+    test "set_item_complete!/2" do
+      item = item_fixture()
+      complete_item = set_item_complete!(item, true)
+      assert complete_item.status == :DONE
+      assert complete_item.completed_at != nil
+
+      incomplete_item = set_item_complete!(complete_item, false)
+      assert incomplete_item.status == :TODO
+      assert incomplete_item.completed_at == nil
+      assert incomplete_item.updated_at > item.updated_at
+    end
+
+    test "pin_item!/2" do
+      item = item_fixture()
+
+      pinned_item = pin_item!(item, true)
+      assert pinned_item.is_pinned == true
+
+      unpinned_item = pin_item!(pinned_item, false)
+      assert unpinned_item.is_pinned == false
+      assert unpinned_item.updated_at > item.updated_at
+    end
+
+    test "toggle_show_item_files!/2" do
+      item = item_fixture()
+
+      updated_item = toggle_show_item_files!(item, false)
+      assert updated_item.show_files == false
+
+      updated_item = toggle_show_item_files!(item, true)
+      assert updated_item.show_files == true
+      assert updated_item.updated_at > item.updated_at
     end
 
     test "create_item_entry/2" do

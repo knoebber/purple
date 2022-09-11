@@ -3,6 +3,7 @@ defmodule Purple.Board do
   Context for managing boards, items, and entries.
   """
 
+  alias Ecto.Changeset
   alias Purple.Board.{ItemEntry, Item, UserBoard, EntryCheckbox}
   alias Purple.Repo
   alias Purple.Tags
@@ -48,11 +49,11 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, item} <- Repo.insert(changeset),
-           {:ok, _} <-
+           {:ok, last_active_at} <-
              item
              |> set_empty_item_children()
              |> post_process_item() do
-        item
+        Map.put(item, :last_active_at, last_active_at)
       end
     end)
   end
@@ -62,8 +63,8 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, item} <- Repo.update(changeset),
-           {:ok, _} <- post_process_item(item) do
-        item
+           {:ok, last_active_at} <- post_process_item(item) do
+        Map.put(item, :last_active_at, last_active_at)
       end
     end)
   end
@@ -132,22 +133,25 @@ defmodule Purple.Board do
   def sync_entry_checkboxes(%ItemEntry{} = entry), do: {:ok, ItemEntry.changeset(entry)}
 
   defp set_item_last_active_at(item_id) do
+    last_active_at = Purple.utc_now()
+
     {1, _} =
       Item
       |> where([i], i.id == ^item_id)
-      |> Repo.update_all(set: [last_active_at: Purple.utc_now()])
+      |> Repo.update_all(set: [last_active_at: last_active_at])
+
+    last_active_at
   end
 
   defp post_process_item(%Item{} = item) do
-    set_item_last_active_at(item.id)
-
+    item_last_active_at = set_item_last_active_at(item.id)
     result = {:ok, _} = Purple.Tags.sync_tags(item.id, :item)
 
     if is_list(item.entries) do
       Enum.each(item.entries, &sync_entry_checkboxes(&1))
     end
 
-    result
+    {:ok, item_last_active_at}
   end
 
   defp post_process_item(%ItemEntry{} = entry) do
@@ -194,28 +198,32 @@ defmodule Purple.Board do
     |> Repo.all()
   end
 
-  def set_item_complete!(%Item{} = item, true) do
+  def set_item_complete!(%Item{} = item, is_complete) do
+    now = Purple.utc_now()
+
+    params =
+      if is_complete do
+        %{
+          completed_at: now,
+          status: :DONE
+        }
+      else
+        %{
+          completed_at: nil,
+          last_active_at: now,
+          status: :TODO
+        }
+      end
+
     item
-    |> Item.changeset(%{
-      completed_at: Purple.utc_now(),
-      status: :DONE
-    })
+    |> Changeset.change(params)
     |> Repo.update!()
   end
 
-  def set_item_complete!(%Item{} = item, false) do
+  def pin_item!(%Item{} = item, is_pinned) do
     item
-    |> Item.changeset(%{
-      completed_at: nil,
-      status: :TODO
-    })
+    |> Changeset.change(is_pinned: is_pinned)
     |> Repo.update!()
-  end
-
-  def pin_item(%Item{} = item, is_pinned) do
-    item
-    |> Item.changeset(%{is_pinned: is_pinned})
-    |> Repo.update()
   end
 
   def collapse_item_entries(entry_ids, is_collapsed) do
@@ -224,10 +232,10 @@ defmodule Purple.Board do
     |> Repo.update_all(set: [is_collapsed: is_collapsed])
   end
 
-  def toggle_show_item_files(item_id, show_files) do
-    Item
-    |> where([i], i.id == ^item_id)
-    |> Repo.update_all(set: [show_files: show_files])
+  def toggle_show_item_files!(%Item{} = item, show_files) do
+    item
+    |> Changeset.change(show_files: show_files)
+    |> Repo.update!()
   end
 
   def save_item_entry_sort_order(entries) do

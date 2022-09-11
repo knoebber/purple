@@ -85,7 +85,7 @@ defmodule PurpleWeb.BoardLive.Index do
   @impl Phoenix.LiveView
   def handle_event("toggle_pin", %{"id" => id}, socket) do
     item = Board.get_item!(id)
-    Board.pin_item(item, !item.is_pinned)
+    Board.pin_item!(item, !item.is_pinned)
     {:noreply, assign_data(socket)}
   end
 
