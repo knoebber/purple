@@ -35,6 +35,20 @@
 
     .content-flex > nav {
         @apply border-t-0;
+        @apply items-center;
+    }
+
+    .side-link-group {
+        @apply bg-purple-200;
+        @apply flex-col;
+        @apply flex;
+        @apply ml-8;
+        @apply p-4;
+        @apply rounded;
+    }
+
+    .side-link-group > a {
+        @apply mb-2;
     }
 
     main {
@@ -57,13 +71,19 @@
         .content-flex > nav {
             @apply pt-4;
             @apply w-56; /* Must match calc main */
+            @apply items-start;
 
             min-height: calc(100vh - theme('height.24'));
         }
 
         .content-flex > nav > a {
-            /* @apply pl-8; */
-            /* @apply pr-8; */
+            @apply ml-4;
+        }
+
+        .side-link-group {
+        }
+
+        .side-link-group > a {
         }
 
         main {

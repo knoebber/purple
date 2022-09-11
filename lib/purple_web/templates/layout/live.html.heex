@@ -1,16 +1,19 @@
 <div class="content-flex">
   <nav>
     <%= for link <- @side_nav || [] do %>
-      <%= live_redirect(link.label, to: link.to) %>
+      <%= live_redirect(link.label, to: link.to, class: "") %>
+      <%= if Map.has_key?(link, :children) do %>
+        <div class="side-link-group">
+          <%= for child <- link.children do %>
+            <%= live_redirect(child.label, to: child.to, class: "") %>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
   </nav>
   <main>
-    <p class="flash flash-info" role="alert"
-      phx-click="lv:clear-flash"
-      phx-value-key="info"><%= live_flash(@flash, :info) %></p>
-    <p class="flash flash-error" role="alert"
-      phx-click="lv:clear-flash"
-      phx-value-key="error"><%= live_flash(@flash, :error) %></p>
-      <%= @inner_content %>
+    <p class="flash flash-info" role="alert" phx-click="lv:clear-flash" phx-value-key="info"><%= live_flash(@flash, :info) %></p>
+    <p class="flash flash-error" role="alert" phx-click="lv:clear-flash" phx-value-key="error"><%= live_flash(@flash, :error) %></p>
+    <%= @inner_content %>
   </main>
 </div>

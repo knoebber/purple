@@ -71,19 +71,28 @@ defmodule PurpleWeb.BoardLive.BoardHelpers do
   end
 
   def side_nav(user_id) when is_integer(user_id) do
-    Enum.map(
-      Board.list_user_boards(user_id),
-      fn ub -> %{label: ub.name, to: index_path(ub.id)} end
-    ) ++
-      [
-        %{
-          label: "Create item",
-          to: item_create_path()
-        },
-        %{
-          label: "Board settings",
-          to: board_settings_path()
-        }
-      ]
+    [
+      %{
+        label: "All Items",
+        to: index_path(),
+        children:
+          Enum.map(
+            Board.list_user_boards(user_id),
+            &%{
+              group: true,
+              label: &1.name,
+              to: index_path(&1.id)
+            }
+          )
+      },
+      %{
+        label: "Create item",
+        to: item_create_path()
+      },
+      %{
+        label: "Board settings",
+        to: board_settings_path()
+      }
+    ]
   end
 end
