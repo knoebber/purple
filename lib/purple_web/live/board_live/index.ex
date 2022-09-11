@@ -28,13 +28,11 @@ defmodule PurpleWeb.BoardLive.Index do
     saved_tags = Purple.maybe_list(user_board.tags)
 
     filter =
-      Map.merge(
-        %{
-          show_done: user_board.show_done,
-          tag: Enum.map(saved_tags, & &1.name)
-        },
-        Purple.Filter.clean_filter(assigns.filter)
-      )
+      %{
+        show_done: user_board.show_done,
+        tag: Enum.map(saved_tags, & &1.name)
+      }
+      |> Map.merge(Purple.Filter.clean_filter(assigns.filter))
       |> Purple.drop_falsey_values()
 
     tag_options =
