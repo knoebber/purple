@@ -145,7 +145,7 @@ defmodule Purple.Board do
 
   defp post_process_item(%Item{} = item) do
     item_last_active_at = set_item_last_active_at(item.id)
-    result = {:ok, _} = Purple.Tags.sync_tags(item.id, :item)
+    {:ok, _} = Purple.Tags.sync_tags(item.id, :item)
 
     if is_list(item.entries) do
       Enum.each(item.entries, &sync_entry_checkboxes(&1))
@@ -313,19 +313,6 @@ defmodule Purple.Board do
     )
   end
 
-  def get_default_user_board(user_id) do
-    case Repo.one(
-           from ub in UserBoard,
-             left_join: t in assoc(ub, :tags),
-             where: ub.user_id == ^user_id,
-             where: ub.is_default == true,
-             preload: [tags: t]
-         ) do
-      nil -> %UserBoard{}
-      board -> board
-    end
-  end
-
   def add_user_board_tag(user_board_id, tag_id) do
     Repo.insert(%UserBoardTag{
       tag_id: tag_id,
@@ -346,33 +333,13 @@ defmodule Purple.Board do
   end
 
   def create_user_board(%UserBoard{} = user_board) do
-    result = Repo.insert(user_board)
-    set_user_board_is_default(result)
-    result
+    Repo.insert(user_board)
   end
 
   def update_user_board(%UserBoard{} = user_board, params) do
-    result =
-      user_board
-      |> UserBoard.changeset(params)
-      |> Repo.update()
-
-    set_user_board_is_default(result)
-    result
-  end
-
-  defp set_user_board_is_default(%UserBoard{is_default: true} = user_board) do
-    UserBoard
-    |> where([ub], ub.user_id == ^user_board.user_id and ub.id != ^user_board.id)
-    |> Repo.update_all(set: [is_default: false])
-  end
-
-  defp set_user_board_is_default({:ok, %UserBoard{} = user_board}) do
-    set_user_board_is_default(user_board)
-  end
-
-  defp set_user_board_is_default(_) do
-    nil
+    user_board
+    |> UserBoard.changeset(params)
+    |> Repo.update()
   end
 
   def delete_user_board!(id) do

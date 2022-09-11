@@ -59,7 +59,7 @@ defmodule PurpleWeb.BoardLive.Index do
       if board_id do
         Board.get_user_board!(board_id)
       else
-        Board.get_default_user_board(socket.assigns.current_user.id)
+        %Board.UserBoard{name: "All Items", show_done: true}
       end
 
     {

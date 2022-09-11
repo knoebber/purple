@@ -173,9 +173,6 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
               <div class="mb-2">
                 Show done? <%= user_board.show_done %>
               </div>
-              <div class="mb-2">
-                Is default? <%= user_board.is_default %>
-              </div>
             </div>
           <% end %>
         </section>

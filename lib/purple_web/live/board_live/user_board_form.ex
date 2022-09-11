@@ -111,9 +111,6 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
           <%= label(f, :name) %>
           <%= text_input(f, :name, phx_hook: "AutoFocus") %>
           <%= error_tag(f, :name) %>
-          <%= label(f, :is_default) %>
-          <%= checkbox(f, :is_default) %>
-          <%= error_tag(f, :is_default) %>
           <%= label(f, :show_done) %>
           <%= checkbox(f, :show_done) %>
           <%= error_tag(f, :show_done) %>

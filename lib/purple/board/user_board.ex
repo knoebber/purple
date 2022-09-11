@@ -8,7 +8,6 @@ defmodule Purple.Board.UserBoard do
 
   schema "user_boards" do
     field :name, :string, default: ""
-    field :is_default, :boolean, default: false
     field :show_done, :boolean, default: false
 
     timestamps()
@@ -19,7 +18,7 @@ defmodule Purple.Board.UserBoard do
 
   def changeset(board, attrs) do
     board
-    |> cast(attrs, [:name, :is_default, :show_done])
+    |> cast(attrs, [:name, :show_done])
     |> validate_required([:name])
   end
 end
