@@ -8,13 +8,15 @@ defmodule Purple.BoardFixtures do
     Enum.into(attrs, %{
       description: "Test Item 🌞",
       priority: 1,
+      last_active_at: Purple.utc_now(),
       status: :TODO
     })
   end
 
   def valid_entry_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
-      content: "# Entry Fixture! 😺\n\n#tdd #purple #postgres\n+ x fixture checkbox 1\n+ x fixture checkbox2",
+      content:
+        "# Entry Fixture! 😺\n\n#tdd #purple #postgres\n+ x fixture checkbox 1\n+ x fixture checkbox2",
       is_collapsed: false
     })
   end

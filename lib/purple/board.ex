@@ -44,7 +44,7 @@ defmodule Purple.Board do
   end
 
   def create_item(params) do
-    changeset = Item.changeset(%Item{}, params)
+    changeset = Item.changeset(%Item{last_active_at: Purple.utc_now()}, params)
 
     item_transaction(fn ->
       with {:ok, item} <- Repo.insert(changeset),
