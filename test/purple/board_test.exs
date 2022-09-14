@@ -52,6 +52,13 @@ defmodule Purple.BoardTest do
                    %{content: "# invalid entry!\n\n- x create item test \n- x create item test"}
                  ]
                })
+
+      assert {:ok, item} = create_item(%{description: "info", status: :INFO})
+      assert is_nil(item.priority)
+
+      assert {:ok, item} = create_item(%{description: "create todo item", status: :TODO})
+      assert is_integer(item.priority)
+      assert item.priority > 0
     end
 
     test "update_item/2" do
@@ -59,10 +66,35 @@ defmodule Purple.BoardTest do
       assert {:error, changeset} = update_item(item, %{description: ""})
       assert !changeset.valid?
 
-      assert {:ok, updated_item} = update_item(item, %{description: "updated description"})
-      assert updated_item.description == "updated description"
-      assert updated_item.updated_at > item.updated_at
-      assert updated_item.last_active_at > item.last_active_at
+      assert {:ok, info_item} =
+               update_item(
+                 item,
+                 %{description: "info item", status: :INFO}
+               )
+
+      assert info_item.description == "info item"
+      assert info_item.updated_at > item.updated_at
+      assert info_item.last_active_at > item.last_active_at
+      assert is_nil(info_item.priority)
+
+      assert {:ok, done_item} =
+               update_item(
+                 info_item,
+                 %{description: "done item", status: :DONE}
+               )
+
+      assert is_nil(done_item.priority)
+      assert done_item.status == :DONE
+      assert done_item.description == "done item"
+
+      assert {:ok, todo_item} =
+               update_item(
+                 done_item,
+                 %{description: "todo item", status: :TODO}
+               )
+
+      assert is_integer(todo_item.priority)
+      assert todo_item.description == "todo item"
     end
 
     test "set_item_complete!/2" do
@@ -70,11 +102,14 @@ defmodule Purple.BoardTest do
       complete_item = set_item_complete!(item, true)
       assert complete_item.status == :DONE
       assert complete_item.completed_at != nil
+      assert is_nil(complete_item.priority)
 
       incomplete_item = set_item_complete!(complete_item, false)
       assert incomplete_item.status == :TODO
       assert incomplete_item.completed_at == nil
       assert incomplete_item.updated_at > item.updated_at
+      assert is_integer(incomplete_item.priority)
+      assert incomplete_item.priority > 0
     end
 
     test "pin_item!/2" do

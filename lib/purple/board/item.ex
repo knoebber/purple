@@ -35,6 +35,20 @@ defmodule Purple.Board.Item do
     end
   end
 
+  defp set_priority(changeset) do
+    case get_field(changeset, :status) do
+      :TODO ->
+        if is_nil(get_field(changeset, :priority)) do
+          put_change(changeset, :priority, 3)
+        else
+          changeset
+        end
+
+      _ ->
+        put_change(changeset, :priority, nil)
+    end
+  end
+
   def changeset(item, attrs) do
     item
     |> cast(attrs, [
@@ -43,11 +57,8 @@ defmodule Purple.Board.Item do
       :status
     ])
     |> cast_assoc(:entries, with: &Purple.Board.ItemEntry.changeset/2)
-    |> validate_required([
-      :description,
-      :priority,
-      :status
-    ])
-    |> set_completed_at
+    |> validate_required([:description, :status])
+    |> set_completed_at()
+    |> set_priority()
   end
 end

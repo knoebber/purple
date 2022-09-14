@@ -115,7 +115,7 @@ defmodule PurpleWeb.BoardLive.Index do
     <%= if @action == :edit_item do %>
       <.modal title={@page_title} return_to={index_path(@user_board.id, @params)}>
         <.live_component
-          module={PurpleWeb.BoardLive.ItemForm}
+          module={PurpleWeb.BoardLive.UpdateItem}
           id={@item.id || :new}
           action={@action}
           item={@item}

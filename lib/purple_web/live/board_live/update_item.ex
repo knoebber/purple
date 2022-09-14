@@ -1,14 +1,10 @@
-defmodule PurpleWeb.BoardLive.ItemForm do
+defmodule PurpleWeb.BoardLive.UpdateItem do
   @moduledoc """
   Form for updating rows in the user_boards database table.
   """
 
   use PurpleWeb, :live_component
-
   alias Purple.Board
-
-  defp save_item(socket, :edit_item, params), do: Board.update_item(socket.assigns.item, params)
-  defp save_item(_, :new_item, params), do: Board.create_item(params)
 
   @impl Phoenix.LiveComponent
   def update(%{item: item} = assigns, socket) do
@@ -24,12 +20,12 @@ defmodule PurpleWeb.BoardLive.ItemForm do
 
   @impl Phoenix.LiveComponent
   def handle_event("save", %{"item" => item_params}, socket) do
-    case save_item(socket, socket.assigns.action, item_params) do
+    case Board.update_item(socket.assigns.item, item_params) do
       {:ok, _} ->
         {
           :noreply,
           socket
-          |> put_flash(:info, "Item saved")
+          |> put_flash(:info, "Item updated")
           |> push_patch(to: socket.assigns.return_to)
         }
 
@@ -39,10 +35,20 @@ defmodule PurpleWeb.BoardLive.ItemForm do
   end
 
   @impl Phoenix.LiveComponent
+  def handle_event("validate", %{"item" => item_params}, socket) do
+    changeset =
+      socket.assigns.item
+      |> Board.change_item(item_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :changeset, changeset)}
+  end
+
+  @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
     <div>
-      <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
+      <.form for={@changeset} let={f} phx-submit="save" phx-change="validate" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :status) %>
           <%= select(f, :status, Board.item_status_mappings()) %>
@@ -50,9 +56,11 @@ defmodule PurpleWeb.BoardLive.ItemForm do
           <%= label(f, :description) %>
           <%= text_input(f, :description, phx_hook: "AutoFocus") %>
           <%= error_tag(f, :description) %>
-          <%= label(f, :priority) %>
-          <%= select(f, :priority, 1..5) %>
-          <%= error_tag(f, :priority) %>
+          <%= if Ecto.Changeset.get_field(@changeset, :status) == :TODO do %>
+            <%= label(f, :priority) %>
+            <%= select(f, :priority, 1..5) %>
+            <%= error_tag(f, :priority) %>
+          <% end %>
         </div>
         <%= submit("Save", phx_disable_with: "Saving...") %>
       </.form>

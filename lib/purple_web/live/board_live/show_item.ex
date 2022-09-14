@@ -296,7 +296,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <%= if @live_action == :edit_item do %>
         <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
           <.live_component
-            module={PurpleWeb.BoardLive.ItemForm}
+            module={PurpleWeb.BoardLive.UpdateItem}
             id={@item.id}
             action={@live_action}
             item={@item}

@@ -205,13 +205,15 @@ defmodule Purple.Board do
       if is_complete do
         %{
           completed_at: now,
-          status: :DONE
+          status: :DONE,
+          priority: nil
         }
       else
         %{
           completed_at: nil,
           last_active_at: now,
-          status: :TODO
+          status: :TODO,
+          priority: 3
         }
       end
 

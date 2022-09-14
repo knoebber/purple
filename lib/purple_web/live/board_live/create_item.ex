@@ -76,30 +76,40 @@ defmodule PurpleWeb.BoardLive.CreateItem do
         {:noreply,
          socket
          |> assign(:changeset, Board.change_item(%Item{}, params))
-         |> put_flash(:error, "Failed to create item")
-        }
+         |> put_flash(:error, "Failed to create item")}
     end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("validate", %{"item" => params}, socket) do
+    changeset =
+      %Item{}
+      |> Board.change_item(params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :changeset, changeset)}
   end
 
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
-    <.form for={@changeset} let={f} phx-submit="save">
+    <.form for={@changeset} let={f} phx-submit="save" phx-change="validate">
       <div class="flex flex-col mb-2 w-full xl:w-1/2">
         <%= label(f, :description) %>
         <%= text_input(f, :description, phx_hook: "AutoFocus") %>
         <%= error_tag(f, :description) %>
-        <%= label(f, :priority) %>
-        <%= select(f, :priority, 1..5) %>
-        <%= error_tag(f, :priority) %>
+        <%= if Ecto.Changeset.get_field(@changeset, :status) == :TODO do %>
+          <%= label(f, :priority) %>
+          <%= select(f, :priority, 1..5) %>
+          <%= error_tag(f, :priority) %>
+        <% end %>
         <%= label(f, :status) %>
         <%= select(f, :status, Board.item_status_mappings()) %>
         <%= error_tag(f, :status) %>
         <%= inputs_for f, :entries, fn entry -> %>
           <%= label(entry, :entry) %>
           <%= textarea(entry, :content, rows: 3) %>
-          <%= error_tag(entry, :content) %>
         <% end %>
       </div>
       <%= submit("Save", phx_disable_with: "Saving...") %>
