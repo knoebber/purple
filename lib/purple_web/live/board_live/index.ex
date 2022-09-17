@@ -124,12 +124,12 @@ defmodule PurpleWeb.BoardLive.Index do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
     <%= if @editable_item do %>
-      <.modal title={@page_title} return_to={index_path(@user_board.id, @params)}>
+      <.modal title={@page_title} return_to={index_path(@user_board.id, @query_params)}>
         <.live_component
           module={PurpleWeb.BoardLive.UpdateItem}
           id={@editable_item.id}
           item={@editable_item}
-          return_to={index_path(@user_board.id, @params)}
+          return_to={index_path(@user_board.id, @query_params)}
         />
       </.modal>
     <% end %>
