@@ -17,6 +17,7 @@ defmodule PurpleWeb.RunLive.RunForm do
       |> assign(:changeset, changeset)
       |> assign(:duration_in_seconds, run.seconds)
       |> assign(:miles, run.miles)
+      |> assign(:action, if(run.id, do: :edit, else: :new))
     }
   end
 

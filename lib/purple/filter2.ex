@@ -8,10 +8,10 @@ defmodule Purple.Filter2 do
     page: :integer
   }
 
-  def make_filter(extra_types, data, params)
-      when is_map(extra_types) and is_map(data) and is_map(params) do
+  def make_filter(params, default_params \\ %{}, extra_types \\ %{})
+      when is_map(params) and is_map(default_params) and is_map(extra_types) do
     types = Map.merge(@default_types, extra_types)
-    changeset = cast({data, types}, params, Map.keys(types))
+    changeset = cast({default_params, types}, params, Map.keys(types))
 
     changeset.data
     |> Map.merge(changeset.changes)

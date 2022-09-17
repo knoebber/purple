@@ -261,7 +261,7 @@ defmodule Purple.Tags do
       # Emacs isn't displaying an emoji in below string
       {"🏷 All tags", ""}
       | Enum.map(
-          Purple.Tags.list_tags(type, filter),
+          list_tags(type, filter),
           fn %{count: count, name: name} -> {"#{name} (#{count})", name} end
         )
     ]

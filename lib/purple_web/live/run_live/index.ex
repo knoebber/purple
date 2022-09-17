@@ -1,69 +1,68 @@
 defmodule PurpleWeb.RunLive.Index do
+  @moduledoc """
+  Index page for runs
+  """
+
   use PurpleWeb, :live_view
 
   import PurpleWeb.RunLive.RunHelpers
+  import Purple.Filter2
 
   alias Purple.Activities
   alias Purple.Activities.Run
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Run")
-    |> assign(:run, Activities.get_run!(id))
-  end
+  defp assign_data(socket) do
+    filter = make_filter(socket.assigns.query_params)
 
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Run")
-    |> assign(:run, %Run{})
-  end
-
-  defp apply_action(socket, _, _) do
     socket
     |> assign(:page_title, "Runs")
-    |> assign(:run, nil)
-  end
-
-  defp assign_runs(socket) do
-    runs = Activities.list_runs(socket.assigns.filter.changes)
-
-    socket
-    |> assign(:runs, runs)
+    |> assign(:editable_run, nil)
+    |> assign(:filter, filter)
+    |> assign(:runs, Activities.list_runs(filter))
     |> assign(:weekly_total, Activities.sum_miles_in_current_week())
-    |> assign(:total, Activities.sum_miles(runs))
-    |> assign(:tag_options, Purple.Filter.make_tag_select_options(:run))
+    |> assign(:total, Activities.sum_miles(filter))
+    |> assign(:tag_options, Purple.Tags.make_tag_choices(:run))
   end
-
-  defp get_action(%{"action" => "edit", "id" => _}), do: :edit
-  defp get_action(%{"action" => "new"}), do: :new
-  defp get_action(_), do: :index
 
   @impl Phoenix.LiveView
-  def handle_params(params, _session, socket) do
-    action = get_action(params)
-
+  def handle_params(params, _, socket) do
     {
       :noreply,
       socket
-      |> assign(:filter, Purple.Filter.make_filter(params))
-      |> assign(:params, params)
-      |> assign(:action, action)
-      |> assign_runs()
-      |> apply_action(action, params)
+      |> assign(:query_params, params)
+      |> assign_data()
     }
   end
 
   @impl Phoenix.LiveView
-  def handle_event("search", %{"filter" => params}, socket) do
-    {:noreply, push_patch(socket, to: index_path(params), replace: true)}
+  def handle_event("search", %{"filter" => filter_params}, socket) do
+    {
+      :noreply,
+      push_patch(
+        socket,
+        to: index_path(filter_params),
+        replace: true
+      )
+    }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("edit_run", %{"id" => id}, socket) do
+    {:noreply, assign(socket, :editable_run, Activities.get_run!(id))}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("create_run", _, socket) do
+    {:noreply, assign(socket, :editable_run, %Run{})}
   end
 
   @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
-    run = Activities.get_run!(id)
-    {:ok, _} = Activities.delete_run(run)
+    id
+    |> Activities.get_run!()
+    |> Activities.delete_run()
 
-    {:noreply, assign_runs(socket)}
+    {:noreply, assign_data(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -75,37 +74,53 @@ defmodule PurpleWeb.RunLive.Index do
   def render(assigns) do
     ~H"""
     <div class="mb-2 flex">
-      <h1>Runs</h1>
+      <h1><%= @page_title %></h1>
       <i class="ml-2 self-center">
         <%= @weekly_total %> this week, <%= @total %> displayed
       </i>
     </div>
 
-    <%= if @action in [:new, :edit] do %>
-      <.modal return_to={index_path(@params)} title={@page_title}>
+    <%= if @editable_run do %>
+      <.modal return_to={index_path(@query_params)} title={@page_title}>
         <.live_component
-          action={@action}
-          id={@run.id || :new}
+          id={@editable_run.id || :new}
           module={PurpleWeb.RunLive.RunForm}
-          return_to={index_path(@params)}
+          return_to={index_path(@query_params)}
           rows={3}
-          run={@run}
+          run={@editable_run}
         />
       </.modal>
     <% end %>
     <.form
       class="table-filters"
-      for={@filter}
+      for={:filter}
       let={f}
       method="get"
       phx-change="search"
       phx-submit="search"
     >
-      <%= live_patch(to: index_path(@params, :new)) do %>
+      <%= link(phx_click: "create_run", to: "#") do %>
         <button class="btn">Create</button>
       <% end %>
-      <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
-      <%= select(f, :tag, @tag_options) %>
+      <%= text_input(
+        f,
+        :query,
+        placeholder: "Search...",
+        phx_debounce: "200",
+        value: Map.get(@filter, :query, "")
+      ) %>
+      <%= select(
+        f,
+        :tag,
+        @tag_options,
+        value: Map.get(@filter, :tag, "")
+      ) %>
+      <%= if current_page(@filter) > 1 do %>
+        <%= live_patch(
+          "First page",
+          to: index_path(first_page(@filter))
+        ) %> &nbsp;
+      <% end %>
     </.form>
 
     <div class="w-full overflow-auto">
@@ -123,7 +138,7 @@ defmodule PurpleWeb.RunLive.Index do
           <%= format_date(run.date, :dayname) %>
         </:col>
         <:col let={run} label="">
-          <%= live_patch("Edit", to: index_path(@params, :edit, run.id)) %>
+          <%= link("Edit", phx_click: "edit_run", phx_value_id: run.id, to: "#") %>
         </:col>
         <:col let={run} label="">
           <%= link("Delete",
@@ -134,6 +149,16 @@ defmodule PurpleWeb.RunLive.Index do
           ) %>
         </:col>
       </.table>
+      <%= if current_page(@filter) > 1 do %>
+        <%= live_patch(
+          "First page",
+          to: index_path(first_page(@filter))
+        ) %> &nbsp;
+      <% end %>
+      <%= live_patch(
+        "Next page",
+        to: index_path(next_page(@filter))
+      ) %>
     </div>
     """
   end

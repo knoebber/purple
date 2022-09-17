@@ -4,10 +4,8 @@ defmodule PurpleWeb.BoardLive.Index do
   """
 
   use PurpleWeb, :live_view
-
   import PurpleWeb.BoardLive.BoardHelpers
   import Purple.Filter2
-
   alias Purple.Board
   alias Purple.Board.Item
 
@@ -26,11 +24,11 @@ defmodule PurpleWeb.BoardLive.Index do
 
     filter =
       make_filter(
-        @filter_types,
+        socket.assigns.query_params,
         %{
           show_done: user_board.show_done
         },
-        socket.assigns.query_params
+        @filter_types
       )
 
     filter =
@@ -55,7 +53,7 @@ defmodule PurpleWeb.BoardLive.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(params, _url, socket) do
+  def handle_params(params, _, socket) do
     board_id = Purple.int_from_map(params, "user_board_id")
 
     user_board =
@@ -76,12 +74,10 @@ defmodule PurpleWeb.BoardLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("search", %{"filter" => filter_params}, socket) do
-    dbg(socket.assigns.filter)
-    dbg(filter_params)
-
     {
       :noreply,
-      push_patch(socket,
+      push_patch(
+        socket,
         to: index_path(socket.assigns.user_board.id, filter_params),
         replace: true
       )

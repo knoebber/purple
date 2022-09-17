@@ -1,15 +1,10 @@
 defmodule PurpleWeb.BoardLive.BoardHelpers do
-  alias Purple.Board
-  alias PurpleWeb.Router.Helpers, as: Routes
-
   @moduledoc """
   Helpers for board live views
   """
 
-  @reserved_keys [
-    "action",
-    "id"
-  ]
+  alias Purple.Board
+  alias PurpleWeb.Router.Helpers, as: Routes
 
   def board_index_path(nil, params) do
     Routes.board_index_path(PurpleWeb.Endpoint, :index, params)

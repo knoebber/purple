@@ -39,12 +39,6 @@ defmodule Purple.Activities do
     |> Float.round(2)
   end
 
-  def sum_miles(runs) do
-    Enum.reduce(runs, 0, fn %{miles: miles}, acc -> miles + acc end)
-    |> float_or_0
-    |> Float.round(2)
-  end
-
   defp run_text_search(query, %{query: q}) do
     case Integer.parse(q) do
       {i, extra} when extra in ["", "."] ->
@@ -76,6 +70,14 @@ defmodule Purple.Activities do
     |> Tags.filter_by_tag(filter, :run)
     |> order_by(desc: :date)
     |> Repo.all()
+  end
+
+  def sum_miles(filter) do
+    Run
+    |> run_text_search(filter)
+    |> Tags.filter_by_tag(filter, :run)
+    |> Repo.aggregate(:sum, :miles)
+    |> float_or_0
   end
 
   @doc """
