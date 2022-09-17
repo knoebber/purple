@@ -5,7 +5,8 @@ defmodule Purple.Filter2 do
   @default_types %{
     query: :string,
     tag: :string,
-    page: :integer
+    page: :integer,
+    limit: :integer
   }
 
   def make_filter(params, default_params \\ %{}, extra_types \\ %{})
