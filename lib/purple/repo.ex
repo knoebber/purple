@@ -9,6 +9,14 @@ defmodule Purple.Repo do
     query
     |> offset(^((p - 1) * l))
     |> limit(^l)
-    |> Purple.Repo.all()
+    |> __MODULE__.all()
+  end
+
+  def paginate(query, filter) when is_map(filter) do
+    paginate(
+      query,
+      Purple.Filter2.current_page(filter),
+      Purple.Filter2.current_limit(filter)
+    )
   end
 end

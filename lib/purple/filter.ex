@@ -1,4 +1,8 @@
 defmodule Purple.Filter do
+  @moduledoc """
+  Index page for board
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -11,6 +15,7 @@ defmodule Purple.Filter do
     field :user_id, :integer
   end
 
+  @deprecated "Migrate to filter2"
   def make_filter(attrs, filter = %Purple.Filter{} \\ %Purple.Filter{}) do
     cast(filter, attrs, [
       :merchant,
@@ -21,12 +26,14 @@ defmodule Purple.Filter do
     ])
   end
 
+  @deprecated "Migrate to filter2"
   def clean_filter(changeset = %Ecto.Changeset{}) do
     changeset.data
     |> Map.merge(changeset.changes)
     |> Purple.drop_falsey_values
   end
 
+  @deprecated "Migrate to filter2"
   def make_tag_select_options(type, filter \\ %{}) when is_atom(type) do
     [
       # Emacs isn't displaying an emoji in below string

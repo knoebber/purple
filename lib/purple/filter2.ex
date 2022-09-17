@@ -1,6 +1,7 @@
 defmodule Purple.Filter2 do
   import Ecto.Changeset
 
+  @default_limit 50
   @default_types %{
     query: :string,
     tag: :string,
@@ -9,7 +10,6 @@ defmodule Purple.Filter2 do
 
   def make_filter(extra_types, data, params)
       when is_map(extra_types) and is_map(data) and is_map(params) do
-
     types = Map.merge(@default_types, extra_types)
     changeset = cast({data, types}, params, Map.keys(types))
 
@@ -24,6 +24,10 @@ defmodule Purple.Filter2 do
         val == [] or
         (key == :page and val == 1)
     end)
+  end
+
+  def current_limit(filter) when is_map(filter) do
+    Map.get(filter, :limit, @default_limit)
   end
 
   def current_page(filter) when is_map(filter) do

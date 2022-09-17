@@ -28,8 +28,7 @@ defmodule PurpleWeb.BoardLive.Index do
       make_filter(
         @filter_types,
         %{
-          show_done: user_board.show_done,
-          page: 1
+          show_done: user_board.show_done
         },
         socket.assigns.query_params
       )
@@ -159,6 +158,12 @@ defmodule PurpleWeb.BoardLive.Index do
           @tag_options,
           value: Map.get(@filter, :tag, "")
         ) %>
+      <% end %>
+      <%= if current_page(@filter) > 1 do %>
+        <%= live_patch(
+          "First page",
+          to: index_path(@user_board.id, first_page(@filter))
+        ) %> &nbsp;
       <% end %>
     </.form>
     <div class="w-full overflow-auto">

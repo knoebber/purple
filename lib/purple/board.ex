@@ -282,7 +282,7 @@ defmodule Purple.Board do
   def list_items(filter \\ %{}) do
     filter
     |> list_items_query()
-    |> Repo.all()
+    |> Repo.paginate(filter)
   end
 
   def list_user_board_items(user_board = %UserBoard{tags: tags} = user_board)
