@@ -69,7 +69,7 @@ defmodule Purple.Activities do
     |> run_text_search(filter)
     |> Tags.filter_by_tag(filter, :run)
     |> order_by(desc: :date)
-    |> Repo.all()
+    |> Repo.paginate(filter)
   end
 
   def sum_miles(filter) do
