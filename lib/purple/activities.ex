@@ -78,6 +78,7 @@ defmodule Purple.Activities do
     |> Tags.filter_by_tag(filter, :run)
     |> Repo.aggregate(:sum, :miles)
     |> float_or_0
+    |> Float.round(2)
   end
 
   @doc """

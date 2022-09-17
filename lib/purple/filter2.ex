@@ -1,7 +1,12 @@
 defmodule Purple.Filter2 do
+  @moduledoc """
+  Utilities for creating and applying filters to Ecto queries.
+  """
+
   import Ecto.Changeset
 
   @default_limit 50
+
   @default_types %{
     query: :string,
     tag: :string,
