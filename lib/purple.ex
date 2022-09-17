@@ -170,8 +170,7 @@ defmodule Purple do
   def titleize(string) do
     string
     |> String.split()
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
 
   def maybe_list(list) do
