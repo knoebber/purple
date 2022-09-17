@@ -19,21 +19,8 @@ defmodule PurpleWeb.BoardLive.BoardHelpers do
     Routes.board_index_path(PurpleWeb.Endpoint, :index, id, params)
   end
 
-  def index_path(id, params, action = :edit_item, item_id) do
-    board_index_path(
-      id,
-      Map.merge(params, %{action: action, id: item_id})
-    )
-  end
-
   def index_path(id, params) do
-    board_index_path(
-      id,
-      Map.reject(
-        params,
-        fn {key, val} -> key in @reserved_keys or val == "" end
-      )
-    )
+    board_index_path(id, Purple.drop_falsey_values(params))
   end
 
   def index_path(id) do

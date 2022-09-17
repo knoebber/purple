@@ -264,7 +264,7 @@ defmodule Purple.Board do
     where(query, [i], i.status != ^"DONE")
   end
 
-  def list_items(filter \\ %{}) do
+  def list_items_query(filter \\ %{}) do
     filter =
       if Map.has_key?(filter, :query) do
         %{query: filter.query, show_done: true}
@@ -277,6 +277,11 @@ defmodule Purple.Board do
     |> item_text_search(filter)
     |> item_done_filter(filter)
     |> Tags.filter_by_tag(filter, :item)
+  end
+
+  def list_items(filter \\ %{}) do
+    filter
+    |> list_items_query()
     |> Repo.all()
   end
 
