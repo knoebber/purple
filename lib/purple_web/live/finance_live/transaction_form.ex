@@ -30,8 +30,9 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     end
   end
 
-  defp assign_changeset(socket, params) do
+  defp assign_changeset(socket, params \\ %{}) do
     assigns = socket.assigns
+
     changeset = Finance.change_transaction(assigns.transaction, params)
     merchant_id = selected_option_id(changeset, assigns.merchant_options, :merchant_id)
 
@@ -51,7 +52,10 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       socket
       |> assign(assigns)
       |> assign(:rows, text_area_rows(assigns.transaction.notes))
-      |> assign_changeset(assigns.params)
+      |> assign(:merchant_options, Finance.merchant_mappings())
+      |> assign(:payment_method_options, Finance.payment_method_mappings())
+      |> assign(:should_leave_open, false)
+      |> assign_changeset()
     }
   end
 
@@ -68,7 +72,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
   def handle_event("save", params = %{"transaction" => tx_params}, socket) do
     case save_transaction(socket, socket.assigns.action, tx_params) do
       {:ok, transaction} ->
-        dbg("save tx")
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}

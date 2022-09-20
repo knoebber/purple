@@ -1,4 +1,4 @@
-defmodule PurpleWeb.BoardLive.CreateTransaction do
+defmodule PurpleWeb.FinanceLive.CreateTransaction do
   @moduledoc """
   Page for creating transactions
   """
@@ -29,6 +29,12 @@ defmodule PurpleWeb.BoardLive.CreateTransaction do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
+    <.live_component
+        id={:new}
+        module={PurpleWeb.FinanceLive.TransactionForm}
+        transaction={%Transaction{}}
+        action={:new_transaction}
+    />
     """
   end
 end
