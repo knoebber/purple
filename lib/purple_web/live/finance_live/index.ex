@@ -5,7 +5,6 @@ defmodule PurpleWeb.FinanceLive.Index do
   import Purple.Filter2
 
   alias Purple.Finance
-  alias Purple.Finance.{Transaction, Merchant, PaymentMethod}
 
   @filter_types %{
     merchant_id: :integer,
@@ -30,7 +29,12 @@ defmodule PurpleWeb.FinanceLive.Index do
 
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
-    {:ok, assign(socket, :side_nav, side_nav())}
+    {
+      :ok,
+      socket
+      |> assign(:side_nav, side_nav())
+      |> assign(:page_title, "Transactions")
+    }
   end
 
   @impl Phoenix.LiveView
@@ -60,7 +64,9 @@ defmodule PurpleWeb.FinanceLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
-    Finance.get_transaction!(id) |> Finance.delete_transaction!()
+    id
+    |> Finance.get_transaction!()
+    |> Finance.delete_transaction!()
 
     {:noreply, assign_data(socket)}
   end
@@ -69,7 +75,7 @@ defmodule PurpleWeb.FinanceLive.Index do
   def render(assigns) do
     ~H"""
     <div class="flex mb-2">
-      <h1>Transactions</h1>
+      <h1><%= @page_title %></h1>
     </div>
     <.form
       class="table-filters"
@@ -79,18 +85,40 @@ defmodule PurpleWeb.FinanceLive.Index do
       phx-change="search"
       phx-submit="search"
     >
-      <button type="btn" class="window pl-4 pr-4 text-lg" phx-click="import" phx-disable-with="...">🏦</button>
-      <%= text_input(f, :query, placeholder: "Search...", phx_debounce: "200") %>
-      <%= select(f, :tag, @tag_options) %>
-      <%= select(
+      <button
+        type="btn"
+        class="window pl-4 pr-4 text-lg"
+        phx-click="import"
+        title="Import transactions"
+      >
+        🏦
+      </button>
+      <%= text_input(
         f,
-        :merchant,
-        [[value: "", key: "🧟‍♀️ All merchants"]] ++ @merchant_options
+        :query,
+        value: Map.get(@filter, :query, ""),
+        placeholder: "Search...",
+        phx_debounce: "200",
+        class: "lg:w-1/4"
       ) %>
       <%= select(
         f,
-        :payment_method,
-        [[value: "", key: "💸 All payment methods"]] ++ @payment_method_options
+        :tag,
+        @tag_options,
+        value: Map.get(@filter, :tag, ""),
+        class: "lg:w-1/4"
+      ) %>
+      <%= select(
+        f,
+        :merchant_id,
+        [[value: "", key: "🧟‍♀️ All merchants"]] ++ @merchant_options,
+        value: Map.get(@filter, :merchant_id, "")
+      ) %>
+      <%= select(
+        f,
+        :payment_method_id,
+        [[value: "", key: "💸 All payment methods"]] ++ @payment_method_options,
+        value: Map.get(@filter, :payment_method_id, "")
       ) %>
     </.form>
     <div class="w-full overflow-auto">

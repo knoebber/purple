@@ -1,6 +1,14 @@
 defmodule PurpleWeb.FinanceLive.FinanceHelpers do
+  @moduledoc """
+  Helpers for finance live views
+  """
+
   def index_path(params) do
-    PurpleWeb.Router.Helpers.finance_index_path(PurpleWeb.Endpoint, :index, params)
+    PurpleWeb.Router.Helpers.finance_index_path(
+      PurpleWeb.Endpoint,
+      :index,
+      Purple.drop_falsey_values(params)
+    )
   end
 
   def index_path do
@@ -54,7 +62,7 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
         to: index_path()
       },
       %{
-        label: "Add Transactions",
+        label: "Create Transaction",
         to: create_transaction_path()
       },
       %{
