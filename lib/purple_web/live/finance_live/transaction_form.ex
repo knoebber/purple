@@ -30,6 +30,10 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     end
   end
 
+  defp should_leave_open?(params) do
+    Map.get(params, "should_leave_open") == "on"
+  end
+
   defp assign_changeset(socket, params \\ %{}) do
     assigns = socket.assigns
 
@@ -47,10 +51,13 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
 
   @impl Phoenix.LiveComponent
   def update(assigns, socket) do
+    {class, assigns} = Map.pop(assigns, :class, "")
+
     {
       :ok,
       socket
       |> assign(assigns)
+      |> assign(:class, class)
       |> assign(:rows, text_area_rows(assigns.transaction.notes))
       |> assign(:merchant_options, Finance.merchant_mappings())
       |> assign(:payment_method_options, Finance.payment_method_mappings())
@@ -65,6 +72,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       :noreply,
       socket
       |> assign_changeset(tx_params)
+      |> assign(:should_leave_open, should_leave_open?(params))
     }
   end
 
@@ -72,6 +80,14 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
   def handle_event("save", params = %{"transaction" => tx_params}, socket) do
     case save_transaction(socket, socket.assigns.action, tx_params) do
       {:ok, transaction} ->
+        Purple.Tags.sync_tags(transaction.id, :transaction)
+
+        if should_leave_open?(params) do
+          send(self(), :create_another)
+        else
+          send(self(), {:redirect, transaction})
+        end
+
         {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -82,7 +98,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <div>
+    <div class={@class}>
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
           <%= label(f, :description) %>

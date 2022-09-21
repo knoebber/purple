@@ -25,15 +25,25 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
     {:noreply, socket}
   end
 
+  def handle_info({:redirect, transaction}, socket) do
+    {:noreply, push_redirect(socket, to: show_transaction_path(transaction))}
+  end
+
+  def handle_info(:create_another, socket) do
+    {:noreply, put_flash(socket, :info, "Transaction saved")}
+  end
+
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
     <.live_component
-        id={:new}
-        module={PurpleWeb.FinanceLive.TransactionForm}
-        transaction={%Transaction{}}
-        action={:new_transaction}
+      action={:new_transaction}
+      class={"xl:w-2/3"}
+      current_user={@current_user}
+      id={:new}
+      module={PurpleWeb.FinanceLive.TransactionForm}
+      transaction={%Transaction{}}
     />
     """
   end
