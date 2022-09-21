@@ -42,7 +42,7 @@ defmodule Purple.MixProject do
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
       {:floki, ">= 0.33.1"},
       {:gettext, "~> 0.18"},
-      {:heex_formatter, github: "feliperenan/heex_formatter", runtime: Mix.env() == :dev},
+      {:heex_formatter, github: "feliperenan/heex_formatter", runtime: Mix.env() == :dev}, # TODO: delete
       {:jason, "~> 1.2"},
       {:mail, "~> 0.2"},
       {:mogrify, "~> 0.9.1"},
