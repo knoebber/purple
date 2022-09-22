@@ -25,11 +25,12 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
     {:noreply, socket}
   end
 
+  @impl Phoenix.LiveView
   def handle_info({:redirect, transaction}, socket) do
     {:noreply, push_redirect(socket, to: show_transaction_path(transaction))}
   end
 
-  def handle_info(:create_another, socket) do
+  def handle_info({:saved, _}, socket) do
     {:noreply, put_flash(socket, :info, "Transaction saved")}
   end
 

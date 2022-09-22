@@ -82,8 +82,8 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       {:ok, transaction} ->
         Purple.Tags.sync_tags(transaction.id, :transaction)
 
-        if should_leave_open?(params) do
-          send(self(), :create_another)
+        if should_leave_open?(params) or socket.assigns.action == :edit_transaction do
+          send(self(), {:saved, transaction})
         else
           send(self(), {:redirect, transaction})
         end
