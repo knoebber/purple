@@ -238,11 +238,6 @@
         @apply mb-2;
     }
 
-    .datetime-select {
-        @apply flex;
-        @apply justify-between;
-    }
-
     .table-filters {
         @apply flex;
         @apply flex-col;

@@ -105,7 +105,7 @@ defmodule PurpleWeb.LiveHelpers do
       assigns = %{b: b}
 
       ~H"""
-      <div class="datetime-select">
+      <div class="flex gap-2">
         <%= @b.(:day, []) %>
         <%= @b.(:month, []) %>
         <%= @b.(:year, []) %>

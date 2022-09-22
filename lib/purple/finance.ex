@@ -213,9 +213,9 @@ defmodule Purple.Finance do
   defp transaction_text_search(q, _), do: q
 
   defp user_filter(q, %{user_id: user_id}), do: where(q, [tx], tx.user_id == ^user_id)
-  defp merchant_filter(q, %{merchant: id}), do: where(q, [_, m], m.id == ^id)
+  defp merchant_filter(q, %{merchant_id: id}), do: where(q, [_, m], m.id == ^id)
   defp merchant_filter(q, _), do: q
-  defp payment_method_filter(q, %{payment_method: id}), do: where(q, [_, _, pm], pm.id == ^id)
+  defp payment_method_filter(q, %{payment_method_id: id}), do: where(q, [_, _, pm], pm.id == ^id)
   defp payment_method_filter(q, _), do: q
 
   defp shared_budget_filter(q, %{shared_budget_id: id}) do
@@ -242,7 +242,7 @@ defmodule Purple.Finance do
     |> user_filter(filter)
     |> order_by(desc: :timestamp)
     |> preload([_, m, pm], merchant: m, payment_method: pm)
-    |> Repo.all()
+    |> Repo.paginate(filter)
   end
 
   def list_shared_budget_adjustments(filter \\ %{}) do

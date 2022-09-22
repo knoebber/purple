@@ -1,10 +1,9 @@
 defmodule PurpleWeb.FinanceLive.TransactionForm do
-  use PurpleWeb, :live_component
+  @moduledoc """
+  LiveComponent for creating/updating a transaction.
+  """
 
-  # TODO: This component could show all shared adjustments in the SB. Then a form at top.
-  # The form should let you choose which user to add an adjustment for.
-  # Table of adjustments like:
-  # |email | amount | description | created
+  use PurpleWeb, :live_component
 
   import PurpleWeb.FinanceLive.FinanceHelpers
 
@@ -35,8 +34,9 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     Map.get(params, "should_leave_open") == "on"
   end
 
-  defp assign_changeset(socket, params) do
+  defp assign_changeset(socket, params \\ %{}) do
     assigns = socket.assigns
+
     changeset = Finance.change_transaction(assigns.transaction, params)
     merchant_id = selected_option_id(changeset, assigns.merchant_options, :merchant_id)
 
@@ -51,13 +51,18 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
 
   @impl Phoenix.LiveComponent
   def update(assigns, socket) do
+    {class, assigns} = Map.pop(assigns, :class, "")
+
     {
       :ok,
       socket
       |> assign(assigns)
+      |> assign(:class, class)
       |> assign(:rows, text_area_rows(assigns.transaction.notes))
-      |> assign_changeset(assigns.params)
+      |> assign(:merchant_options, Finance.merchant_mappings())
+      |> assign(:payment_method_options, Finance.payment_method_mappings())
       |> assign(:should_leave_open, false)
+      |> assign_changeset()
     }
   end
 
@@ -77,19 +82,13 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       {:ok, transaction} ->
         Purple.Tags.sync_tags(transaction.id, :transaction)
 
-        next_path =
-          if should_leave_open?(params) do
-            index_path(socket.assigns.params, :new_transaction)
-          else
-            index_path(socket.assigns.params)
-          end
+        if should_leave_open?(params) or socket.assigns.action == :edit_transaction do
+          send(self(), {:saved, transaction})
+        else
+          send(self(), {:redirect, transaction})
+        end
 
-        {
-          :noreply,
-          socket
-          |> put_flash(:info, "Transaction saved")
-          |> push_patch(to: next_path)
-        }
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
@@ -99,7 +98,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <div>
+    <div class={@class}>
       <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
           <%= label(f, :description) %>
@@ -112,38 +111,10 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           <%= datetime_select_group(f, :timestamp) %>
           <%= error_tag(f, :timestamp) %>
           <%= label(f, :merchant_id, "Merchant") %>
-          <div class="flex justify-between">
-            <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
-            <%= live_patch(
-              to: index_path(@params, :edit_merchant, @id, @merchant_id),
-              class: "text-xl self-center")
-            do %>
-              <button type="button" class="window p-1 bg-white">✏️</button>
-            <% end %>
-            <%= live_patch(
-              to: index_path(@params, :new_merchant, @id),
-              class: "text-xl self-center")
-            do %>
-              <button type="button" class="window p-1 bg-white">➕</button>
-            <% end %>
-          </div>
+          <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
           <%= error_tag(f, :merchant_id) %>
           <%= label(f, :payment_method_id, "Payment Method") %>
-          <div class="flex justify-between">
-            <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
-            <%= live_patch(
-              to: index_path(@params, :edit_payment_method, @id, @payment_method_id),
-              class: "text-xl self-center")
-            do %>
-              <button type="button" class="window p-1 bg-white">✏️</button>
-            <% end %>
-            <%= live_patch(
-              to: index_path(@params, :new_payment_method, @id),
-              class: "text-xl self-center")
-            do %>
-              <button type="button" class="window p-1 bg-white">➕</button>
-            <% end %>
-          </div>
+          <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
           <%= error_tag(f, :payment_method_id) %>
           <%= label(f, :notes) %>
           <%= textarea(f, :notes, rows: @rows) %>

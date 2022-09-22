@@ -15,8 +15,8 @@ defmodule Purple.Repo do
   def paginate(query, filter) when is_map(filter) do
     paginate(
       query,
-      Purple.Filter2.current_page(filter),
-      Purple.Filter2.current_limit(filter)
+      Purple.Filter.current_page(filter),
+      Purple.Filter.current_limit(filter)
     )
   end
 end

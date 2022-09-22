@@ -6,7 +6,7 @@ defmodule PurpleWeb.RunLive.Index do
   use PurpleWeb, :live_view
 
   import PurpleWeb.RunLive.RunHelpers
-  import Purple.Filter2
+  import Purple.Filter
 
   alias Purple.Activities
   alias Purple.Activities.Run
