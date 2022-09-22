@@ -63,15 +63,6 @@ defmodule PurpleWeb.FinanceLive.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("delete", %{"id" => id}, socket) do
-    id
-    |> Finance.get_transaction!()
-    |> Finance.delete_transaction!()
-
-    {:noreply, assign_data(socket)}
-  end
-
-  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="flex mb-2">
@@ -137,14 +128,6 @@ defmodule PurpleWeb.FinanceLive.Index do
         </:col>
         <:col let={transaction} label="Description">
           <%= transaction.description %>
-        </:col>
-        <:col let={transaction} label="">
-          <%= link("Delete",
-            phx_click: "delete",
-            phx_value_id: transaction.id,
-            data: [confirm: "Are you sure?"],
-            to: "#"
-          ) %>
         </:col>
       </.table>
       <%= if current_page(@filter) > 1 do %>
