@@ -2,7 +2,7 @@ defmodule PurpleWeb.FinanceLive.Index do
   use PurpleWeb, :live_view
 
   import PurpleWeb.FinanceLive.FinanceHelpers
-  import Purple.Filter2
+  import Purple.Filter
 
   alias Purple.Finance
 

@@ -5,7 +5,7 @@ defmodule PurpleWeb.BoardLive.Index do
 
   use PurpleWeb, :live_view
   import PurpleWeb.BoardLive.BoardHelpers
-  import Purple.Filter2
+  import Purple.Filter
   alias Purple.Board
   alias Purple.Board.Item
 
