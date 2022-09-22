@@ -45,10 +45,10 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
       />
     </div>
     <.table rows={@payment_methods}>
-      <:col let={payment_method} label="Name">
+      <:col :let={payment_method} label="Name">
         <%= payment_method.name %>
       </:col>
-      <:col let={payment_method} label="# Transactions">
+      <:col :let={payment_method} label="# Transactions">
         <%= length(payment_method.transactions) %>
       </:col>
     </.table>

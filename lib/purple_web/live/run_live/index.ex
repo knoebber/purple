@@ -94,7 +94,7 @@ defmodule PurpleWeb.RunLive.Index do
     <.form
       class="table-filters"
       for={:filter}
-      let={f}
+      :let={f}
       method="get"
       phx-change="search"
       phx-submit="search"
@@ -125,22 +125,22 @@ defmodule PurpleWeb.RunLive.Index do
 
     <div class="w-full overflow-auto">
       <.table rows={@runs}>
-        <:col let={run} label="Miles">
+        <:col :let={run} label="Miles">
           <%= live_redirect(run.miles, to: Routes.run_show_path(@socket, :show, run)) %>
         </:col>
-        <:col let={run} label="Duration">
+        <:col :let={run} label="Duration">
           <%= format_duration(run.hours, run.minutes, run.minute_seconds) %>
         </:col>
-        <:col let={run} label="Pace">
+        <:col :let={run} label="Pace">
           <%= format_pace(run.miles, run.seconds) %>
         </:col>
-        <:col let={run} label="Date">
+        <:col :let={run} label="Date">
           <%= format_date(run.date, :dayname) %>
         </:col>
-        <:col let={run} label="">
+        <:col :let={run} label="">
           <%= link("Edit", phx_click: "edit_run", phx_value_id: run.id, to: "#") %>
         </:col>
-        <:col let={run} label="">
+        <:col :let={run} label="">
           <%= link("Delete",
             phx_click: "delete",
             phx_value_id: run.id,

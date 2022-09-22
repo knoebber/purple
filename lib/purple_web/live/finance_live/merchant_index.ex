@@ -45,13 +45,13 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
       />
     </div>
     <.table rows={@merchants}>
-      <:col let={merchant} label="Name">
+      <:col :let={merchant} label="Name">
         <%= merchant.name %>
       </:col>
-      <:col let={merchant} label="Description">
+      <:col :let={merchant} label="Description">
         <%= merchant.description %>
       </:col>
-      <:col let={merchant} label="# Transactions">
+      <:col :let={merchant} label="# Transactions">
         <%= length(merchant.transactions) %>
       </:col>
     </.table>

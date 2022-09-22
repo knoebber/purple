@@ -24,7 +24,7 @@ defmodule Purple.FinanceTest do
       assert dollars_to_cents("420.42") == 420 * 100 + 42
       assert dollars_to_cents("4,200.42") == 4200 * 100 + 42
       assert dollars_to_cents("$4,200.42") == 4200 * 100 + 42
-      assert dollars_to_cents("$1,123,435.69") == 1123435 * 100 + 69
+      assert dollars_to_cents("$1,123,435.69") == 1_123_435 * 100 + 69
     end
 
     test "titleize/1" do

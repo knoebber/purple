@@ -100,8 +100,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
       <% else %>
         <div class="p-4">
           <p>
-            <%= @transaction.merchant.name %> for <%= @transaction.dollars %> with
-            <%= @transaction.payment_method.name %>
+            <%= @transaction.merchant.name %> for <%= @transaction.dollars %> with <%= @transaction.payment_method.name %>
           </p>
         </div>
         <div class="markdown-content">

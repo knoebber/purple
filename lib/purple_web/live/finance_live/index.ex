@@ -71,7 +71,7 @@ defmodule PurpleWeb.FinanceLive.Index do
     <.form
       class="table-filters"
       for={:filter}
-      let={f}
+      :let={f}
       method="get"
       phx-change="search"
       phx-submit="search"
@@ -114,19 +114,19 @@ defmodule PurpleWeb.FinanceLive.Index do
     </.form>
     <div class="w-full overflow-auto">
       <.table rows={@transactions}>
-        <:col let={transaction} label="Amount">
+        <:col :let={transaction} label="Amount">
           <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
         </:col>
-        <:col let={transaction} label="Date">
+        <:col :let={transaction} label="Date">
           <.timestamp model={transaction} . />
         </:col>
-        <:col let={transaction} label="Merchant">
+        <:col :let={transaction} label="Merchant">
           <%= transaction.merchant.name %>
         </:col>
-        <:col let={transaction} label="Payment Method">
+        <:col :let={transaction} label="Payment Method">
           <%= transaction.payment_method.name %>
         </:col>
-        <:col let={transaction} label="Description">
+        <:col :let={transaction} label="Description">
           <%= transaction.description %>
         </:col>
       </.table>

@@ -205,7 +205,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   defp entry_form(assigns) do
     ~H"""
-    <.form for={@changeset} let={f} phx-submit={@action} class="p-4">
+    <.form for={@changeset} :let={f} phx-submit={@action} class="p-4">
       <div class="flex flex-col mb-2">
         <%= hidden_input(f, :item_id, value: @item_id) %>
         <%= hidden_input(f, :is_collapsed, value: false) %>
@@ -260,8 +260,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def render(assigns) do
     ~H"""
     <h1>
-      <%= live_patch("Board", to: Routes.board_index_path(@socket, :index)) %> /
-      <%= "Item #{@item.id}" %>
+      <%= live_patch("Board", to: Routes.board_index_path(@socket, :index)) %> / <%= "Item #{@item.id}" %>
     </h1>
     <section class="mt-2 mb-2 window">
       <div class="flex justify-between bg-purple-300 p-1">

@@ -99,7 +99,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
   def render(assigns) do
     ~H"""
     <div class={@class}>
-      <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself} phx-change="validate">
+      <.form for={@changeset} :let={f} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
           <%= label(f, :description) %>
           <%= text_input(f, :description, rows: @rows, phx_hook: "AutoFocus") %>

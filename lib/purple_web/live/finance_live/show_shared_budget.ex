@@ -144,8 +144,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         <option value="0"><%= @current_user.email %>'s transactions</option>
         <%= for tx <- @user_transactions do %>
           <option value={tx.id}>
-            <%= tx.dollars %> on <%= format_date(tx.timestamp) %> for <%= tx.merchant.name %> with
-            <%= tx.payment_method.name %>
+            <%= tx.dollars %> on <%= format_date(tx.timestamp) %> for <%= tx.merchant.name %> with <%= tx.payment_method.name %>
           </option>
         <% end %>
       </select>
@@ -178,16 +177,16 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         <%= for user <- @users do %>
           <div class="p-1">
             <.table rows={user.adjustments}>
-              <:col let={row} label="Amount">
+              <:col :let={row} label="Amount">
                 <%= row.dollars %>
               </:col>
-              <:col let={row} label="Type">
+              <:col :let={row} label="Type">
                 <%= row.type %>
               </:col>
-              <:col let={row} label="Description">
+              <:col :let={row} label="Description">
                 <%= row.description %>
               </:col>
-              <:col let={row} label="">
+              <:col :let={row} label="">
                 <%= live_patch("Edit",
                   to:
                     Routes.finance_show_shared_budget_path(
@@ -198,7 +197,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
                     )
                 ) %>
               </:col>
-              <:col let={row} label="">
+              <:col :let={row} label="">
                 <%= link("Delete",
                   phx_click: "delete_adjustment",
                   phx_value_id: row.id,
@@ -212,16 +211,16 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       <%= for user <- @users do %>
         <div class="p-1">
           <.table rows={user.transactions}>
-            <:col let={transaction} label="Amount">
+            <:col :let={transaction} label="Amount">
               <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
             </:col>
-            <:col let={transaction} label="Date">
+            <:col :let={transaction} label="Date">
               <%= format_date(transaction.timestamp) %>
             </:col>
-            <:col let={transaction} label="Merchant">
+            <:col :let={transaction} label="Merchant">
               <%= transaction.merchant.name %>
             </:col>
-            <:col let={transaction} label="">
+            <:col :let={transaction} label="">
               <%= link("Remove",
                 phx_click: "remove_transaction",
                 phx_value_id: transaction.id,

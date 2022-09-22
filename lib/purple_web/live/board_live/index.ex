@@ -131,7 +131,7 @@ defmodule PurpleWeb.BoardLive.Index do
     <.form
       class="table-filters"
       for={:filter}
-      let={f}
+      :let={f}
       method="get"
       phx-change="search"
       phx-submit="search"
@@ -163,20 +163,20 @@ defmodule PurpleWeb.BoardLive.Index do
     </.form>
     <div class="w-full overflow-auto">
       <.table rows={@items}>
-        <:col let={item} label="Item">
+        <:col :let={item} label="Item">
           <%= live_redirect(item.id,
             to: Routes.board_show_item_path(@socket, :show, item)
           ) %>
         </:col>
-        <:col let={item} label="Description">
+        <:col :let={item} label="Description">
           <%= live_redirect(item.description,
             to: Routes.board_show_item_path(@socket, :show, item)
           ) %>
         </:col>
-        <:col let={item} label="Priority">
+        <:col :let={item} label="Priority">
           <%= item.priority %>
         </:col>
-        <:col let={item} label="Status">
+        <:col :let={item} label="Status">
           <%= if item.status == :INFO  do %>
             INFO
           <% else %>
@@ -188,10 +188,10 @@ defmodule PurpleWeb.BoardLive.Index do
             />
           <% end %>
         </:col>
-        <:col let={item} label="Created">
+        <:col :let={item} label="Created">
           <.timestamp model={item} . />
         </:col>
-        <:col let={item} label="">
+        <:col :let={item} label="">
           <%= link("📌",
             class: if(!item.is_pinned, do: "opacity-30"),
             phx_click: "toggle_pin",
@@ -199,10 +199,10 @@ defmodule PurpleWeb.BoardLive.Index do
             to: "#"
           ) %>
         </:col>
-        <:col let={item} label="">
+        <:col :let={item} label="">
           <%= link("Edit", phx_click: "edit_item", phx_value_id: item.id, to: "#") %>
         </:col>
-        <:col let={item} label="">
+        <:col :let={item} label="">
           <%= link("Delete",
             phx_click: "delete",
             phx_value_id: item.id,

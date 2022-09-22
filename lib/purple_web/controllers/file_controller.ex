@@ -32,7 +32,6 @@ defmodule PurpleWeb.FileController do
     end
   end
 
-
   def show(conn, %{"id" => id}) do
     with {:ok, path} <- get_file_path(id) do
       Plug.Conn.send_file(conn, 200, path)

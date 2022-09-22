@@ -39,7 +39,7 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
     <h1 class="mb-2"><%= @page_title %></h1>
     <.live_component
       action={:new_transaction}
-      class={"xl:w-2/3"}
+      class="xl:w-2/3"
       current_user={@current_user}
       id={:new}
       module={PurpleWeb.FinanceLive.TransactionForm}

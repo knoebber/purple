@@ -106,7 +106,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
         </ul>
       <% end %>
 
-      <.form for={@changeset} let={f} phx-submit="save" phx-target={@myself}>
+      <.form for={@changeset} :let={f} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :name) %>
           <%= text_input(f, :name, phx_hook: "AutoFocus") %>

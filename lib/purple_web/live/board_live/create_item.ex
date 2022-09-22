@@ -94,7 +94,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
-    <.form for={@changeset} let={f} phx-submit="save" phx-change="validate">
+    <.form for={@changeset} :let={f} phx-submit="save" phx-change="validate">
       <div class="flex flex-col mb-2 w-full xl:w-1/2">
         <%= label(f, :description) %>
         <%= text_input(f, :description, phx_hook: "AutoFocus") %>
