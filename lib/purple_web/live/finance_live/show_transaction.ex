@@ -30,6 +30,18 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("delete", _, socket) do
+    Finance.delete_transaction!(socket.assigns.transaction)
+
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Transaction deleted")
+      |> push_redirect(to: index_path())
+    }
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1><%= @page_title %></h1>
@@ -40,9 +52,11 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
             Edit
           </strong>
           <span>|</span>
-          <strong>
-            Delete
-          </strong>
+          <%= link("Delete",
+            phx_click: "delete",
+            data: [confirm: "Are you sure?"],
+            to: "#"
+          ) %>
         </div>
         <.timestamp model={@transaction} />
       </div>
