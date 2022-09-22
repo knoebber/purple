@@ -53,8 +53,6 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
 
   @impl Phoenix.LiveView
   def handle_info({:saved, transaction}, socket) do
-    dbg(transaction)
-
     {
       :noreply,
       socket
