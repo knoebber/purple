@@ -34,14 +34,23 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
     ~H"""
     <h1><%= @page_title %></h1>
     <section class="mt-2 mb-2 window">
-      <div class="p-4">
-        <%= @transaction.merchant.name %>
-        <br />
-        <%= @transaction.payment_method.name %>
-        <br />
-        <%= @transaction.dollars %>
-        <br />
+      <div class="flex justify-between bg-purple-300 p-1">
+        <div class="inline-links">
+          <strong>
+            Edit
+          </strong>
+          <span>|</span>
+          <strong>
+            Delete
+          </strong>
+        </div>
         <.timestamp model={@transaction} />
+      </div>
+      <div class="p-4">
+        <p>
+          <%= @transaction.merchant.name %> for <%= @transaction.dollars %> with
+          <%= @transaction.payment_method.name %>
+        </p>
       </div>
       <div class="markdown-content">
         <%= markdown(@transaction.notes, :finance) %>

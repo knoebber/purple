@@ -111,18 +111,10 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           <%= datetime_select_group(f, :timestamp) %>
           <%= error_tag(f, :timestamp) %>
           <%= label(f, :merchant_id, "Merchant") %>
-          <div class="flex justify-between">
-            <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
-            <button type="button" class="window text-xl self-center p-1 bg-white">✏️</button>
-            <button type="button" class="window text-xl self-center p-1 bg-white">➕</button>
-          </div>
+          <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
           <%= error_tag(f, :merchant_id) %>
           <%= label(f, :payment_method_id, "Payment Method") %>
-          <div class="flex justify-between">
-            <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
-            <button type="button" class="window text-xl self-center p-1 bg-white">✏️</button>
-            <button type="button" class="window text-xl self-center p-1 bg-white">➕</button>
-          </div>
+          <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
           <%= error_tag(f, :payment_method_id) %>
           <%= label(f, :notes) %>
           <%= textarea(f, :notes, rows: @rows) %>
