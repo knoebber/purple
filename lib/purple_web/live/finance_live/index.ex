@@ -147,6 +147,16 @@ defmodule PurpleWeb.FinanceLive.Index do
           ) %>
         </:col>
       </.table>
+      <%= if current_page(@filter) > 1 do %>
+        <%= live_patch(
+          "First page",
+          to: index_path(first_page(@filter))
+        ) %> &nbsp;
+      <% end %>
+      <%= live_patch(
+        "Next page",
+        to: index_path(next_page(@filter))
+      ) %>
     </div>
     """
   end

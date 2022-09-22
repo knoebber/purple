@@ -242,7 +242,7 @@ defmodule Purple.Finance do
     |> user_filter(filter)
     |> order_by(desc: :timestamp)
     |> preload([_, m, pm], merchant: m, payment_method: pm)
-    |> Repo.all()
+    |> Repo.paginate(filter)
   end
 
   def list_shared_budget_adjustments(filter \\ %{}) do
