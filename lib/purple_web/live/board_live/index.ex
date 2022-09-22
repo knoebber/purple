@@ -7,7 +7,6 @@ defmodule PurpleWeb.BoardLive.Index do
   import PurpleWeb.BoardLive.BoardHelpers
   import Purple.Filter
   alias Purple.Board
-  alias Purple.Board.Item
 
   @filter_types %{
     show_done: :boolean

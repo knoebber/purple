@@ -7,8 +7,7 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
 
   import PurpleWeb.FinanceLive.FinanceHelpers
 
-  alias Purple.Finance
-  alias Purple.Finance.{Transaction, Merchant, PaymentMethod}
+  alias Purple.Finance.Transaction
 
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
@@ -21,7 +20,7 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(params, _url, socket) do
+  def handle_params(_, _, socket) do
     {:noreply, socket}
   end
 
