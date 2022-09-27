@@ -18,15 +18,17 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
   def render(assigns) do
     ~H"""
     <h1>
-      Board / <%= live_patch("Item #{@item_id}",
-        to: Routes.board_show_item_path(@socket, :show, @item_id)
-      ) %> / Gallery
+      Board /
+      <.link redirect={Routes.board_show_item_path(@socket, :show, @item_id)}>
+        Item <%= @item_id %>
+      </.link>
+      / Gallery
     </h1>
     <%= for ref <- @image_refs do %>
-      <%= live_patch(
-        to: Routes.board_show_item_file_path(@socket, :show, @item_id, ref.id),
-        class: "no-underline"
-    ) do %>
+      <.link
+        redirect={Routes.board_show_item_file_path(@socket, :show, @item_id, ref.id)}
+        class="no-underline"
+      >
         <img
           class="border border-purple-500 mb-2 mt-2"
           height={ref.image_height}
@@ -34,7 +36,7 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
           src={Routes.file_path(@socket, :show, ref)}
           width={ref.image_width}
         />
-      <% end %>
+      </.link>
     <% end %>
     """
   end

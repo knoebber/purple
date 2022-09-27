@@ -35,7 +35,8 @@ defmodule PurpleWeb.RunLive.Show do
   def render(assigns) do
     ~H"""
     <h1>
-      <%= live_patch("Runs", to: Routes.run_index_path(@socket, :index)) %> / <%= "#{@run.id}" %>
+      <.link patch={Routes.run_index_path(@socket, :index)}>Runs</.link>
+      / <%= "#{@run.id}" %>
     </h1>
     <section class="mt-2 mb-2 window">
       <div class="flex justify-between bg-purple-300 p-1">
@@ -47,14 +48,13 @@ defmodule PurpleWeb.RunLive.Show do
           <%= if @live_action == :edit do %>
             <strong>Edit Item</strong>
             <span>|</span>
-            <%= live_patch("Cancel",
-              to: Routes.run_show_path(@socket, :show, @run)
-            ) %>
+            <.link patch={Routes.run_show_path(@socket, :show, @run)}>
+              Cancel
+            </.link>
           <% else %>
-            <%= live_patch(
-              "Edit",
-              to: Routes.run_show_path(@socket, :edit, @run)
-            ) %>
+            <.link patch={Routes.run_show_path(@socket, :edit, @run)}>
+              Edit
+            </.link>
           <% end %>
         </div>
         <i>

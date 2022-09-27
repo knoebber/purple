@@ -129,9 +129,9 @@ defmodule PurpleWeb.BoardLive.Index do
       </.modal>
     <% end %>
     <.form
+      :let={f}
       class="table-filters"
       for={:filter}
-      :let={f}
       method="get"
       phx-change="search"
       phx-submit="search"
@@ -154,12 +154,11 @@ defmodule PurpleWeb.BoardLive.Index do
           value: Map.get(@filter, :tag, "")
         ) %>
       <% end %>
-      <%= if current_page(@filter) > 1 do %>
-        <%= live_patch(
-          "First page",
-          to: index_path(@user_board.id, first_page(@filter))
-        ) %> &nbsp;
-      <% end %>
+      <.page_links
+        filter={@filter}
+        first_page={index_path(@user_board.id, first_page(@filter))}
+        next_page={index_path(@user_board.id, next_page(@filter))}
+      />
     </.form>
     <div class="w-full overflow-auto">
       <.table rows={@items}>
@@ -192,35 +191,29 @@ defmodule PurpleWeb.BoardLive.Index do
           <.timestamp model={item} . />
         </:col>
         <:col :let={item} label="">
-          <%= link("📌",
-            class: if(!item.is_pinned, do: "opacity-30"),
-            phx_click: "toggle_pin",
-            phx_value_id: item.id,
-            to: "#"
-          ) %>
+          <.link
+            class={if(!item.is_pinned, do: "opacity-30")}
+            phx-click="toggle_pin"
+            phx-value-id={@item.id}
+            href="#"
+          >
+            📌
+          </.link>
         </:col>
         <:col :let={item} label="">
-          <%= link("Edit", phx_click: "edit_item", phx_value_id: item.id, to: "#") %>
+          <.link href="#" phx-click="edit_item" phx-value-id={item.id}>Edit</.link>
         </:col>
         <:col :let={item} label="">
-          <%= link("Delete",
-            phx_click: "delete",
-            phx_value_id: item.id,
-            data: [confirm: "Are you sure?"],
-            to: "#"
-          ) %>
+          <.link href="#" phx-click="delete" phx-value-id={item.id} data={[confirm: "Are you sure?"]}>
+            Delete
+          </.link>
         </:col>
       </.table>
-      <%= if current_page(@filter) > 1 do %>
-        <%= live_patch(
-          "First page",
-          to: index_path(@user_board.id, first_page(@filter))
-        ) %> &nbsp;
-      <% end %>
-      <%= live_patch(
-        "Next page",
-        to: index_path(@user_board.id, next_page(@filter))
-      ) %>
+      <.page_links
+        filter={@filter}
+        first_page={index_path(first_page(@filter))}
+        next_page={index_path(next_page(@filter))}
+      />
     </div>
     """
   end

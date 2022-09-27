@@ -95,18 +95,15 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
           <%= for tag <- @user_board.tags do %>
             <li>
               <code class="inline">#<%= tag.name %></code>
-              <%= link("Remove",
-                phx_click: "remove_tag",
-                phx_target: @myself,
-                phx_value_id: tag.id,
-                to: "#"
-              ) %>
+              <.link href="#" phx-click="remove_tag" phx-target={@myself} phx-value-id={tag.id}>
+                Remove
+              </.link>
             </li>
           <% end %>
         </ul>
       <% end %>
 
-      <.form for={@changeset} :let={f} phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :name) %>
           <%= text_input(f, :name, phx_hook: "AutoFocus") %>

@@ -48,7 +48,7 @@ defmodule PurpleWeb.BoardLive.UpdateItem do
   def render(assigns) do
     ~H"""
     <div>
-      <.form for={@changeset} :let={f} phx-submit="save" phx-change="validate" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :status) %>
           <%= select(f, :status, Board.item_status_mappings()) %>

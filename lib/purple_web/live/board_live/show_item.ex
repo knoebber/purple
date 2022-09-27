@@ -197,15 +197,13 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   defp cancel_link(assigns) do
     ~H"""
-    <%= live_patch("Cancel",
-      to: Routes.board_show_item_path(@socket, :show, @item.id)
-    ) %>
+    <.link patch={Routes.board_show_item_path(@socket, :show, @item.id)}>Cancel</.link>
     """
   end
 
   defp entry_form(assigns) do
     ~H"""
-    <.form for={@changeset} :let={f} phx-submit={@action} class="p-4">
+    <.form :let={f} for={@changeset} phx-submit={@action} class="p-4">
       <div class="flex flex-col mb-2">
         <%= hidden_input(f, :item_id, value: @item_id) %>
         <%= hidden_input(f, :is_collapsed, value: false) %>
@@ -228,22 +226,27 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <span>|</span>
           <.cancel_link item={@item} socket={@socket} />
         <% else %>
-          <%= link(if(@entry.is_collapsed, do: "[+]", else: "[-]"),
-            phx_click: "toggle_entry_collapse",
-            phx_value_id: @entry.id,
-            to: "#",
-            class: "no-underline font-mono"
-          ) %>
-          <%= live_patch("Edit",
-            to: Routes.board_show_item_path(@socket, :edit_entry, @item.id, @entry.id)
-          ) %>
+          <.link
+            href="#"
+            phx-click="toggle_entry_collapse"
+            ,
+            phx-value-id={@entry.id}
+            class="no-underline font-mono"
+          >
+            <%= if(@entry.is_collapsed, do: "[+]", else: "[-]") %>
+          </.link>
+          <.link patch={Routes.board_show_item_path(@socket, :edit_entry, @item.id, @entry.id)}>
+            Edit
+          </.link>
           <span>|</span>
-          <%= link("Delete",
-            phx_click: "delete_entry",
-            phx_value_id: @entry.id,
-            data: [confirm: "Are you sure?"],
-            to: "#"
-          ) %>
+          <.link
+            href="#"
+            phx-click="delete_entry"
+            phx-value-id={@entry.id}
+            data={[confirm: "Are you sure?"]}
+          >
+            Delete
+          </.link>
         <% end %>
       </div>
       <%= if @entry.is_collapsed do %>
@@ -260,7 +263,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def render(assigns) do
     ~H"""
     <h1>
-      <%= live_patch("Board", to: Routes.board_index_path(@socket, :index)) %> / <%= "Item #{@item.id}" %>
+      <.link patch={index_path()}>
+        Board
+      </.link>
+      / <%= "Item #{@item.id}" %>
     </h1>
     <section class="mt-2 mb-2 window">
       <div class="flex justify-between bg-purple-300 p-1">
@@ -272,23 +278,18 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <% else %>
             <strong><%= @item.status %></strong>
             <span>|</span>
-            <%= live_patch(
-              "Edit",
-              to: Routes.board_show_item_path(@socket, :edit_item, @item)
-            ) %>
+            <.link patch={Routes.board_show_item_path(@socket, :edit_item, @item)}>
+              Edit
+            </.link>
           <% end %>
           <span>|</span>
-          <%= link("Delete",
-            phx_click: "delete",
-            phx_value_id: @item.id,
-            data: [confirm: "Are you sure?"],
-            to: "#"
-          ) %>
+          <.link href="#" phx-click="delete" phx-value-id={@item.id} data={[confirm: "Are you sure?"]}>
+            Delete
+          </.link>
           <span>|</span>
-          <%= live_patch(
-            "Create Entry",
-            to: Routes.board_show_item_path(@socket, :create_entry, @item)
-          ) %>
+          <.link patch={Routes.board_show_item_path(@socket, :create_entry, @item)}>
+            Create Entry
+          </.link>
         </div>
         <.timestamp model={@item} />
       </div>
@@ -309,15 +310,13 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <% end %>
       <div>
         <span>
-          <%= link(if(!@item.show_files, do: "[+]", else: "[-]"),
-            phx_click: "toggle_files_collapsed",
-            to: "#",
-            class: "ml-1 no-underline font-mono"
-          ) %>
+          <.link href="#" phx-click="toggle_files_collapsed" class="ml-1 no-underline font-mono">
+            <%= if(!@item.show_files, do: "[+]", else: "[-]") %>
+          </.link>
           <%= if @total_files > 0 do %>
-            <%= live_redirect to: Routes.board_item_gallery_path(@socket, :index, @item) do %>
+            <.link redirect={Routes.board_item_gallery_path(@socket, :index, @item)}>
               <%= @total_files %> file<%= if length(@image_refs) != 1, do: "s" %>
-            <% end %>
+            </.link>
           <% else %>
             No files
           <% end %>
@@ -347,10 +346,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
                 >
                   🔗
                 </div>
-                <%= live_redirect(
-                  to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
-                  class: "no-underline"
-                ) do %>
+                <.link
+                  class="no-underline"
+                  redirect={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}
+                >
                   <img
                     id={"thumbnail-#{ref.id}"}
                     class="inline border border-purple-500 m-1"
@@ -358,17 +357,17 @@ defmodule PurpleWeb.BoardLive.ShowItem do
                     height="150"
                     src={Routes.file_path(@socket, :show_thumbnail, ref)}
                   />
-                <% end %>
+                </.link>
               </div>
             </div>
           <% end %>
           <ul class="ml-8">
             <%= for ref <- @file_refs do %>
-              <li }>
-                <%= live_patch(Uploads.file_title(ref),
-                  to: Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id),
-                  id: "file-#{ref.id}"
-                ) %>
+              <li>
+                <.link patch={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}>
+                  id={"file-#{ref.id}"}
+                  > <%= Uploads.file_title(ref) %>
+                </.link>
               </li>
             <% end %>
           </ul>

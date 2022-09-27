@@ -4,6 +4,7 @@ defmodule PurpleWeb.LiveMount do
   """
 
   import Phoenix.LiveView
+  import Phoenix.Component
   alias Purple.Accounts
 
   def on_mount(:default, _, %{"user_token" => user_token} = _session, socket) do

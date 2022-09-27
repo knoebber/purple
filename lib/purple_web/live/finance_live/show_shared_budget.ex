@@ -151,16 +151,14 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       <button class="ml-3" type="submit">Add</button>
     </form>
     <div class="p-1 mb-2 flex">
-      <%= link(if(@shared_budget.show_adjustments, do: "Hide Adjustments", else: "Show Adjustments"),
-        phx_click: "toggle_show_adjustments",
-        to: "#",
-        class: "font-mono"
-      ) %>
+      <.link href="#" phx-click="toggle_show_adjustments" class="font-mono">
+        <%= if(@shared_budget.show_adjustments, do: "Hide Adjustments", else: "Show Adjustments") %>
+      </.link>
     </div>
     <%= if @shared_budget.show_adjustments do %>
-      <%= live_patch(to: show_shared_budget_path(@shared_budget.id, :new_adjustment)) do %>
+      <.link patch={show_shared_budget_path(@shared_budget.id, :new_adjustment)}>
         <button class="btn mb-2">New Adjustment</button>
-      <% end %>
+      </.link>
     <% end %>
     <div class="grid grid-cols-1 md:grid-cols-2 w-full overflow-auto">
       <%= for user <- @users do %>
@@ -187,22 +185,21 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
                 <%= row.description %>
               </:col>
               <:col :let={row} label="">
-                <%= live_patch("Edit",
-                  to:
-                    Routes.finance_show_shared_budget_path(
-                      @socket,
-                      :edit_adjustment,
-                      @shared_budget.id,
-                      row.id
-                    )
-                ) %>
+                <.link patch={
+                  Routes.finance_show_shared_budget_path(
+                    @socket,
+                    :edit_adjustment,
+                    @shared_budget.id,
+                    row.id
+                  )
+                }>
+                  Edit
+                </.link>
               </:col>
               <:col :let={row} label="">
-                <%= link("Delete",
-                  phx_click: "delete_adjustment",
-                  phx_value_id: row.id,
-                  to: "#"
-                ) %>
+                <.link href="#" phx-click="delete_adjustment" phx-value_id={row.id}>
+                  Delete
+                </.link>
               </:col>
             </.table>
           </div>
@@ -221,11 +218,9 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
               <%= transaction.merchant.name %>
             </:col>
             <:col :let={transaction} label="">
-              <%= link("Remove",
-                phx_click: "remove_transaction",
-                phx_value_id: transaction.id,
-                to: "#"
-              ) %>
+              <.link href="#" phx-click="remove_transaction" phx-value-id={transaction.id}>
+                Remove
+              </.link>
             </:col>
           </.table>
         </div>

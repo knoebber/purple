@@ -5,7 +5,7 @@
       <%= if Map.has_key?(link, :children) do %>
         <div class="side-link-group">
           <%= for child <- link.children do %>
-            <%= live_redirect(child.label, to: child.to, class: "") %>
+            <.link navigate={child.to}><%= child.label %></.link>
           <% end %>
         </div>
       <% end %>

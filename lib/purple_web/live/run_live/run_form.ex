@@ -63,9 +63,9 @@ defmodule PurpleWeb.RunLive.RunForm do
     ~H"""
     <section>
       <.form
+        :let={f}
         for={@changeset}
         id="run-form"
-        :let={f}
         phx-submit="save"
         phx-change="calculate_pace"
         phx-target={@myself}

@@ -7,8 +7,8 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
     Finance.update_merchant(socket.assigns.merchant, params)
   end
 
-  defp save_merchant(_, :new_merchant, params) do
-    Finance.create_merchant(params)
+  defp save_merchant(_, :new_merchant, _) do
+    Finance.remove_shared_transaction()
   end
 
   @impl Phoenix.LiveComponent
@@ -39,7 +39,7 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
   def render(assigns) do
     ~H"""
     <div>
-      <.form for={@changeset} :let={f} phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :name) %>
           <%= text_input(f, :name, phx_hook: "AutoFocus") %>

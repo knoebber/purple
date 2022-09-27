@@ -68,23 +68,17 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
     <section class="mt-2 mb-2 window">
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
-          <%= if @is_editing do %>
-            <%= link("Cancel",
-              phx_click: "toggle_edit",
-              to: "#"
-            ) %>
-          <% else %>
-            <%= link("Edit",
-              phx_click: "toggle_edit",
-              to: "#"
-            ) %>
-          <% end %>
+          <.link href="#" phx-click="toggle_edit">
+            <%= if @is_editing do %>
+              Cancel
+            <% else %>
+              Edit
+            <% end %>
+          </.link>
           <span>|</span>
-          <%= link("Delete",
-            phx_click: "delete",
-            data: [confirm: "Are you sure?"],
-            to: "#"
-          ) %>
+          <.link href="#" phx-click="delete" data={[confirm: "Are you sure?"]}>
+            Delete
+          </.link>
         </div>
         <.timestamp model={@transaction} />
       </div>

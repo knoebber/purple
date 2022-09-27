@@ -1,8 +1,8 @@
 defmodule PurpleWeb.LiveHelpers do
   import Phoenix.HTML.Form
-  import Phoenix.LiveView
-  import Phoenix.LiveView.Helpers
+  import Phoenix.Component
   import PurpleWeb.Formatters
+  import Purple.Filter
 
   alias Phoenix.LiveView.JS
 
@@ -14,25 +14,6 @@ defmodule PurpleWeb.LiveHelpers do
     """
   end
 
-  @doc """
-  Renders a live component inside a modal.
-
-  The rendered modal receives a `:return_to` option to properly update
-  the URL when the modal is closed.
-
-  ## Examples
-
-      <.modal return_to={Routes.run_index_path(@socket, :index)}>
-        <.live_component
-          module={PurpleWeb.RunLive.FormComponent}
-          id={@run.id || :new}
-          title={@page_title}
-          action={@live_action}
-          return_to={Routes.run_index_path(@socket, :index)}
-          run: @run
-        />
-      </.modal>
-  """
   def modal(assigns) do
     assigns = assign_new(assigns, :return_to, fn -> nil end)
 
@@ -47,12 +28,13 @@ defmodule PurpleWeb.LiveHelpers do
       <div class="flex justify-between bg-purple-300 p-2">
         <h2><%= @title %></h2>
         <%= if @return_to do %>
-          <%= live_patch("❌",
-            class: "phx-modal-close no-underline",
-            id: "close",
-            phx_click: hide_modal(),
-            to: @return_to
-          ) %>
+          <.link patch={@return_to}>
+            class="phx-modal-close no-underline"
+            id="close"
+            phx-click="hide_modal()"
+            >
+            ❌
+          </.link>
         <% else %>
           <a id="close" href="#" class="phx-modal-close no-underline" phx-click={hide_modal()}>❌</a>
         <% end %>
@@ -86,6 +68,16 @@ defmodule PurpleWeb.LiveHelpers do
         </tr>
       <% end %>
     </table>
+    """
+  end
+
+  def page_links(assigns) do
+    ~H"""
+    <%= if current_page(@filter) > 1 do %>
+      <.link patch={@first_page}>First page</.link>
+      &nbsp;
+    <% end %>
+    <.link patch={@next_page}>Next page</.link>
     """
   end
 

@@ -92,9 +92,9 @@ defmodule PurpleWeb.RunLive.Index do
       </.modal>
     <% end %>
     <.form
+      :let={f}
       class="table-filters"
       for={:filter}
-      :let={f}
       method="get"
       phx-change="search"
       phx-submit="search"
@@ -115,12 +115,11 @@ defmodule PurpleWeb.RunLive.Index do
         @tag_options,
         value: Map.get(@filter, :tag, "")
       ) %>
-      <%= if current_page(@filter) > 1 do %>
-        <%= live_patch(
-          "First page",
-          to: index_path(first_page(@filter))
-        ) %> &nbsp;
-      <% end %>
+      <.page_links
+        filter={@filter}
+        first_page={index_path(first_page(@filter))}
+        next_page={index_path(next_page(@filter))}
+      />
     </.form>
 
     <div class="w-full overflow-auto">
@@ -149,16 +148,11 @@ defmodule PurpleWeb.RunLive.Index do
           ) %>
         </:col>
       </.table>
-      <%= if current_page(@filter) > 1 do %>
-        <%= live_patch(
-          "First page",
-          to: index_path(first_page(@filter))
-        ) %> &nbsp;
-      <% end %>
-      <%= live_patch(
-        "Next page",
-        to: index_path(next_page(@filter))
-      ) %>
+      <.page_links
+        filter={@filter}
+        first_page={index_path(first_page(@filter))}
+        next_page={index_path(next_page(@filter))}
+      />
     </div>
     """
   end

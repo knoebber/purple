@@ -43,8 +43,8 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
     </h1>
 
     <div class="flex bg-purple-300 inline-links p-1 border rounded border-purple-500">
-      <%= link("Download", to: Routes.file_path(@socket, :download, @file_ref)) %>
-      <%= link("Delete", to: "#", phx_click: "delete") %>
+      <.link href={Routes.file_path(@socket, :download, @file_ref)}>Download</.link>
+      <.link href="#" phx-click="delete">Delete</.link>
     </div>
     <%= if Uploads.image?(@file_ref) do %>
       <img

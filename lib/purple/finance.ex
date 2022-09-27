@@ -110,7 +110,7 @@ defmodule Purple.Finance do
   end
 
   def get_user_import_task(user_id) do
-    Repo.one(from it in TransactionImportTask, where: it.user_id == ^user_id)
+    Repo.one(from(it in TransactionImportTask, where: it.user_id == ^user_id))
   end
 
   def get_shared_budget(id) do
@@ -118,7 +118,7 @@ defmodule Purple.Finance do
   end
 
   def get_merchant(name) when is_binary(name) do
-    Repo.one(from m in Merchant, where: m.name == ^name)
+    Repo.one(from(m in Merchant, where: m.name == ^name))
   end
 
   def get_merchant!(id) do
@@ -127,15 +127,16 @@ defmodule Purple.Finance do
 
   def get_merchant!(id, :tags) do
     Repo.one!(
-      from m in Merchant,
+      from(m in Merchant,
         left_join: t in assoc(m, :tags),
         where: m.id == ^id,
         preload: [tags: t]
+      )
     )
   end
 
   def get_payment_method(name) when is_binary(name) do
-    Repo.one(from pm in PaymentMethod, where: pm.name == ^name)
+    Repo.one(from(pm in PaymentMethod, where: pm.name == ^name))
   end
 
   def get_payment_method!(id) do
@@ -144,40 +145,44 @@ defmodule Purple.Finance do
 
   def get_transaction!(id) do
     Repo.one!(
-      from tx in Transaction,
+      from(tx in Transaction,
         select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         join: m in assoc(tx, :merchant),
         join: pm in assoc(tx, :payment_method),
         where: tx.id == ^id,
         preload: [merchant: m, payment_method: pm]
+      )
     )
   end
 
   def get_transaction!(id, :tags) do
     Repo.one!(
-      from tx in Transaction,
+      from(tx in Transaction,
         select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         left_join: t in assoc(tx, :tags),
         where: tx.id == ^id,
         preload: [tags: t]
+      )
     )
   end
 
   def get_shared_budget_adjustment!(id) do
     Repo.one!(
-      from adjustment in SharedBudgetAdjustment,
+      from(adjustment in SharedBudgetAdjustment,
         select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         where: adjustment.id == ^id
+      )
     )
   end
 
   def get_shared_budget_adjustment!(id, :tags) do
     Repo.one!(
-      from adjustment in SharedBudgetAdjustment,
+      from(adjustment in SharedBudgetAdjustment,
         select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         left_join: t in assoc(adjustment, :tags),
         where: adjustment.id == ^id,
         preload: [tags: t]
+      )
     )
   end
 
@@ -329,7 +334,7 @@ defmodule Purple.Finance do
 
   def get_shared_budget_user_totals(shared_budget_id) do
     adjustment_query =
-      from shared_budget in SharedBudget,
+      from(shared_budget in SharedBudget,
         join: adjustment in assoc(shared_budget, :adjustments),
         join: user in assoc(adjustment, :user),
         where: shared_budget.id == ^shared_budget_id,
@@ -341,9 +346,10 @@ defmodule Purple.Finance do
           shared_budget_id: shared_budget.id,
           user_id: user.id
         }
+      )
 
     union_query =
-      from shared_budget in SharedBudget,
+      from(shared_budget in SharedBudget,
         join: shared_transaction in assoc(shared_budget, :shared_transactions),
         join: transaction in assoc(shared_transaction, :transaction),
         join: user in assoc(transaction, :user),
@@ -357,9 +363,10 @@ defmodule Purple.Finance do
           user_id: user.id
         },
         union_all: ^adjustment_query
+      )
 
     Repo.all(
-      from r in subquery(union_query),
+      from(r in subquery(union_query),
         group_by: [r.shared_budget_id, r.email, r.user_id],
         select: %{
           credit_cents: type(sum(r.credit_cents), :integer),
@@ -368,6 +375,7 @@ defmodule Purple.Finance do
           shared_budget_id: r.shared_budget_id,
           user_id: r.user_id
         }
+      )
     )
   end
 
@@ -426,9 +434,10 @@ defmodule Purple.Finance do
   def remove_shared_transaction!(shared_budget_id, transaction_id) do
     Repo.delete!(
       Repo.one(
-        from stx in SharedTransaction,
+        from(stx in SharedTransaction,
           where:
             stx.shared_budget_id == ^shared_budget_id and stx.transaction_id == ^transaction_id
+        )
       )
     )
   end
