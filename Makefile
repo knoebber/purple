@@ -5,6 +5,9 @@ endif
 
 all: deps create_db js compile assets migrate
 
+warnings:
+	MIX_ENV=test mix do compile --warnings-as-errors + test --warnings-as-errors
+
 test:
 	mix test
 
@@ -35,4 +38,4 @@ migrate:
 deploy: test
 	fly deploy
 
-.PHONY: all test hex rebar deps create_db js compile assets migrate deploy
+.PHONY: all test hex rebar deps create_db js compile assets migrate deploy warnings
