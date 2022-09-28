@@ -204,7 +204,7 @@ defmodule PurpleWeb.BoardLive.Index do
           <.link href="#" phx-click="edit_item" phx-value-id={item.id}>Edit</.link>
         </:col>
         <:col :let={item} label="">
-          <.link href="#" phx-click="delete" phx-value-id={item.id} data={[confirm: "Are you sure?"]}>
+          <.link href="#" phx-click="delete" phx-value-id={item.id} data-confirm="Are you sure?">
             Delete
           </.link>
         </:col>

@@ -1,7 +1,7 @@
 <div class="content-flex">
   <nav>
     <%= for link <- @side_nav || [] do %>
-      <%= live_redirect(link.label, to: link.to, class: "") %>
+    <.link navigate={link.to}><%= link.label %></.link>
       <%= if Map.has_key?(link, :children) do %>
         <div class="side-link-group">
           <%= for child <- link.children do %>

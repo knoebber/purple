@@ -76,7 +76,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
             <% end %>
           </.link>
           <span>|</span>
-          <.link href="#" phx-click="delete" data={[confirm: "Are you sure?"]}>
+          <.link href="#" phx-click="delete" data-confirm="Are you sure?">
             Delete
           </.link>
         </div>

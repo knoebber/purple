@@ -46,6 +46,8 @@ defmodule PurpleWeb do
       use Phoenix.LiveView,
         layout: {PurpleWeb.LayoutView, "live.html"}
 
+      import Phoenix.Component
+
       unquote(view_helpers())
     end
   end
@@ -87,8 +89,8 @@ defmodule PurpleWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import Phoenix.LiveView.Component
-      import PurpleWeb.LiveHelpers
+      import Phoenix.Component
+      import PurpleWeb.LiveComponents
 
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View

@@ -226,27 +226,21 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <span>|</span>
           <.cancel_link item={@item} socket={@socket} />
         <% else %>
-          <.link
+          <a
             href="#"
             phx-click="toggle_entry_collapse"
-            ,
             phx-value-id={@entry.id}
             class="no-underline font-mono"
           >
             <%= if(@entry.is_collapsed, do: "[+]", else: "[-]") %>
-          </.link>
+          </a>
           <.link patch={Routes.board_show_item_path(@socket, :edit_entry, @item.id, @entry.id)}>
             Edit
           </.link>
           <span>|</span>
-          <.link
-            href="#"
-            phx-click="delete_entry"
-            phx-value-id={@entry.id}
-            data={[confirm: "Are you sure?"]}
-          >
+          <a href="#" phx-click="delete_entry" phx-value-id={@entry.id} data-confirm="Are you sure?">
             Delete
-          </.link>
+          </a>
         <% end %>
       </div>
       <%= if @entry.is_collapsed do %>
@@ -283,9 +277,9 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             </.link>
           <% end %>
           <span>|</span>
-          <.link href="#" phx-click="delete" phx-value-id={@item.id} data={[confirm: "Are you sure?"]}>
+          <a href="#" phx-click="delete" phx-value-id={@item.id} data-confirm="Are you sure?">
             Delete
-          </.link>
+          </a>
           <span>|</span>
           <.link patch={Routes.board_show_item_path(@socket, :create_entry, @item)}>
             Create Entry
@@ -314,7 +308,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <%= if(!@item.show_files, do: "[+]", else: "[-]") %>
           </.link>
           <%= if @total_files > 0 do %>
-            <.link redirect={Routes.board_item_gallery_path(@socket, :index, @item)}>
+            <.link navigate={Routes.board_item_gallery_path(@socket, :index, @item)}>
               <%= @total_files %> file<%= if length(@image_refs) != 1, do: "s" %>
             </.link>
           <% else %>
@@ -348,7 +342,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
                 </div>
                 <.link
                   class="no-underline"
-                  redirect={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}
+                  navigate={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}
                 >
                   <img
                     id={"thumbnail-#{ref.id}"}

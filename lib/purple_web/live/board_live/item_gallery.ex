@@ -19,14 +19,14 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
     ~H"""
     <h1>
       Board /
-      <.link redirect={Routes.board_show_item_path(@socket, :show, @item_id)}>
+      <.link navigate={Routes.board_show_item_path(@socket, :show, @item_id)}>
         Item <%= @item_id %>
       </.link>
       / Gallery
     </h1>
     <%= for ref <- @image_refs do %>
       <.link
-        redirect={Routes.board_show_item_file_path(@socket, :show, @item_id, ref.id)}
+        navigate={Routes.board_show_item_file_path(@socket, :show, @item_id, ref.id)}
         class="no-underline"
       >
         <img

@@ -34,7 +34,7 @@ defmodule PurpleWeb.UserSettingsController do
 
   def edit(conn, params) do
     google_code = Map.get(params, "code")
-    oauth_redirect_uri(conn) |> IO.inspect()
+    oauth_redirect_uri(conn)
 
     if google_code && not conn.assigns.has_google_token do
       case Gmail.make_token(oauth_redirect_uri(conn), google_code) do

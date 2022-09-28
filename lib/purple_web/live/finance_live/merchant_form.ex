@@ -7,8 +7,8 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
     Finance.update_merchant(socket.assigns.merchant, params)
   end
 
-  defp save_merchant(_, :new_merchant, _) do
-    Finance.remove_shared_transaction()
+  defp save_merchant(_, :new_merchant, params) do
+    Finance.create_merchant(params)
   end
 
   @impl Phoenix.LiveComponent

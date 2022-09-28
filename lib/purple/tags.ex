@@ -258,7 +258,6 @@ defmodule Purple.Tags do
 
   def make_tag_choices(type, filter \\ %{}) when is_atom(type) do
     [
-      # Emacs isn't displaying an emoji in below string
       {"🏷 All tags", ""}
       | Enum.map(
           list_tags(type, filter),
