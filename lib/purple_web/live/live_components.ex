@@ -1,4 +1,4 @@
-defmodule PurpleWeb.LiveHelpers do
+defmodule PurpleWeb.LiveComponents do
   import Phoenix.HTML.Form
   import Phoenix.Component
   import PurpleWeb.Formatters
