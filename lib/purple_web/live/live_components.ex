@@ -26,13 +26,16 @@ defmodule PurpleWeb.LiveComponents do
       phx-remove={hide_modal()}
     >
       <div class="flex justify-between bg-purple-300 p-2">
-        <h2><%= @title %></h2>
+        <h2>
+          <%= @title %>
+        </h2>
         <%= if @return_to do %>
-          <.link patch={@return_to}>
+          <.link
+            patch={@return_to}
             class="phx-modal-close no-underline"
             id="close"
             phx-click="hide_modal()"
-            >
+          >
             ❌
           </.link>
         <% else %>
@@ -94,14 +97,14 @@ defmodule PurpleWeb.LiveComponents do
       )
 
     builder = fn b ->
-      assigns = %{b: b}
+      assigns = %{b: b, hours: hours}
 
       ~H"""
       <div class="flex gap-2">
         <%= @b.(:day, []) %>
         <%= @b.(:month, []) %>
         <%= @b.(:year, []) %>
-        <%= @b.(:hour, options: hours) %>
+        <%= @b.(:hour, options: @hours) %>
       </div>
       """
     end
