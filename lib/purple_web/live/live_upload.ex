@@ -139,12 +139,12 @@ defmodule PurpleWeb.LiveUpload do
   def render(assigns) do
     ~H"""
     <div phx-drop-target={@uploads.files.ref} phx-target={@myself}>
-      <form id="upload-form" phx-change="validate" phx-submit="upload" phx-target={@myself}>
+      <form phx-change="validate" phx-submit="upload" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <%= live_file_input(@uploads.files) %>
+          <.live_file_input upload={@uploads.files} />
         </div>
         <%= if Enum.count(@uploads.files.entries) > 0 do %>
-          <button type="submit">Upload</button>
+          <button type="submit" phx-disable-with="Uploading...">Upload</button>
         <% end %>
       </form>
       <%= if Enum.count(@uploads.files.entries) > 0 do %>
@@ -161,7 +161,7 @@ defmodule PurpleWeb.LiveUpload do
               >
                 Cancel
               </a>
-              <%= live_img_preview(entry) %>
+              <.live_img_preview entry={entry} />
               <form
                 class="w-5/6 self-start flex items-end"
                 phx-change="update_client_name"
