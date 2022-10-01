@@ -1,10 +1,10 @@
 defmodule Purple.Uploads do
-  import Ecto.Query
-
   alias Purple.Board.Item
   alias Purple.Repo
   alias Purple.Uploads.FileRef
   alias Purple.Uploads.ItemFile
+  import Ecto.Query
+  require Logger
 
   defp remove_extname(s), do: String.replace_suffix(s, Path.extname(s), "")
   defp remove_repeating_underscore(s), do: Regex.replace(~r/__+/, s, "_")
@@ -155,11 +155,16 @@ defmodule Purple.Uploads do
     end
   end
 
+  defp delete_file(path) do
+    Logger.info("rm " <> path)
+    File.rm(path)
+  end
+
   def delete_file_upload!(%FileRef{} = file_ref) do
-    File.rm(get_full_upload_path(file_ref))
+    delete_file(get_full_upload_path(file_ref))
 
     if image?(file_ref) do
-      File.rm(get_full_thumbnail_path(file_ref))
+      delete_file(get_full_thumbnail_path(file_ref))
     end
 
     Repo.delete!(file_ref)

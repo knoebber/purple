@@ -1,4 +1,6 @@
 defmodule Purple.TransactionParser.BOAEmail do
+  require Logger
+
   @behaviour Purple.TransactionParser
 
   @impl true
@@ -45,6 +47,7 @@ defmodule Purple.TransactionParser.BOAEmail do
         )
 
       _ ->
+        Logger.error("#{__MODULE__}: failed to parse date string \"#{date_string}\"")
         nil
     end
   end

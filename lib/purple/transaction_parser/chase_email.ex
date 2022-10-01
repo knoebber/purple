@@ -1,4 +1,6 @@
 defmodule Purple.TransactionParser.ChaseEmail do
+  require Logger
+
   @behaviour Purple.TransactionParser
 
   @impl true
@@ -54,6 +56,10 @@ defmodule Purple.TransactionParser.ChaseEmail do
         ),
         Purple.get_tzname(tz_string)
       )
+    else
+      _ ->
+        Logger.error("#{__MODULE__}: failed to parse date_string \"#{date_string}\"")
+        nil
     end
   end
 
