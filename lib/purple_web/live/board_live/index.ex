@@ -194,7 +194,7 @@ defmodule PurpleWeb.BoardLive.Index do
           <.link
             class={if(!item.is_pinned, do: "opacity-30")}
             phx-click="toggle_pin"
-            phx-value-id={@item.id}
+            phx-value-id={item.id}
             href="#"
           >
             📌
@@ -211,8 +211,8 @@ defmodule PurpleWeb.BoardLive.Index do
       </.table>
       <.page_links
         filter={@filter}
-        first_page={index_path(first_page(@filter))}
-        next_page={index_path(next_page(@filter))}
+        first_page={index_path(@user_board.id, first_page(@filter))}
+        next_page={index_path(@user_board.id, next_page(@filter))}
       />
     </div>
     """
