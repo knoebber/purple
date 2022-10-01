@@ -16,6 +16,7 @@
   <h2>Change password</h2>
   <.form
     let={f}
+    method="put"
     for={@password_changeset}
     action={Routes.user_settings_path(@conn, :update)}
     id="update_password"
