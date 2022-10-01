@@ -327,7 +327,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             return_to={Routes.board_show_item_path(@socket, :show, @item.id)}
           />
         </div>
-        <%= if length(@image_refs) > 0 do %>
+        <%= if length(@image_refs) + length(@file_refs) > 0 do %>
           <%= for ref <- @image_refs do %>
             <div class="inline">
               <div class="inline-flex flex-col">
@@ -359,8 +359,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <%= for ref <- @file_refs do %>
               <li>
                 <.link patch={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}>
-                  id={"file-#{ref.id}"}
-                  > <%= Uploads.file_title(ref) %>
+                  <%= Uploads.file_title(ref) %>
                 </.link>
               </li>
             <% end %>

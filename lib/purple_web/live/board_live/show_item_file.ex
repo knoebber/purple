@@ -1,6 +1,6 @@
 defmodule PurpleWeb.BoardLive.ShowItemFile do
   use PurpleWeb, :live_view
-
+  import PurpleWeb.BoardLive.BoardHelpers
   alias Purple.Uploads
 
   @impl Phoenix.LiveView
@@ -24,9 +24,7 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
       :noreply,
       socket
       |> put_flash(:info, "Deleted file")
-      |> push_redirect(
-        to: Routes.board_show_item_path(socket, :show_item, socket.assigns.item_id)
-      )
+      |> push_redirect(to: show_item_path(socket.assigns.item_id))
     }
   end
 
@@ -44,7 +42,7 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
 
     <div class="flex bg-purple-300 inline-links p-1 border rounded border-purple-500">
       <.link href={Routes.file_path(@socket, :download, @file_ref)}>Download</.link>
-      <.link href="#" phx-click="delete">Delete</.link>
+      <.link href="#" phx-click="delete" data-confirm="Are you sure?">Delete</.link>
     </div>
     <%= if Uploads.image?(@file_ref) do %>
       <img
