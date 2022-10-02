@@ -73,8 +73,8 @@ defmodule Purple.BoardTest do
                )
 
       assert info_item.description == "info item"
-      assert info_item.updated_at > item.updated_at
-      assert info_item.last_active_at > item.last_active_at
+      assert NaiveDateTime.compare(info_item.updated_at, item.updated_at) == :gt
+      assert NaiveDateTime.compare(info_item.last_active_at, item.last_active_at) == :gt
       assert is_nil(info_item.priority)
 
       assert {:ok, done_item} =
@@ -107,7 +107,7 @@ defmodule Purple.BoardTest do
       incomplete_item = set_item_complete!(complete_item, false)
       assert incomplete_item.status == :TODO
       assert incomplete_item.completed_at == nil
-      assert incomplete_item.updated_at > item.updated_at
+      assert NaiveDateTime.compare(incomplete_item.updated_at, item.updated_at) == :gt
       assert is_integer(incomplete_item.priority)
       assert incomplete_item.priority > 0
     end
@@ -120,7 +120,7 @@ defmodule Purple.BoardTest do
 
       unpinned_item = pin_item!(pinned_item, false)
       assert unpinned_item.is_pinned == false
-      assert unpinned_item.updated_at > item.updated_at
+      assert NaiveDateTime.compare(unpinned_item.updated_at, item.updated_at) == :gt
     end
 
     test "toggle_show_item_files!/2" do
@@ -131,7 +131,7 @@ defmodule Purple.BoardTest do
 
       updated_item = toggle_show_item_files!(item, true)
       assert updated_item.show_files == true
-      assert updated_item.updated_at > item.updated_at
+      assert NaiveDateTime.compare(updated_item.updated_at, item.updated_at)
     end
 
     test "create_item_entry/2" do
