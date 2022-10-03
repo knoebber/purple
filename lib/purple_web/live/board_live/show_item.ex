@@ -358,7 +358,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <ul class="ml-8">
             <%= for ref <- @file_refs do %>
               <li>
-                <.link patch={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}>
+                <.link navigate={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}>
                   <%= Uploads.file_title(ref) %>
                 </.link>
               </li>
