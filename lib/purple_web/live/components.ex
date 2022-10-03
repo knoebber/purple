@@ -1,8 +1,9 @@
-defmodule PurpleWeb.LiveComponents do
+defmodule PurpleWeb.Components do
+  @doc false
   import Phoenix.HTML.Form
-  import Phoenix.Component
-  import PurpleWeb.Formatters
   import Purple.Filter
+  import PurpleWeb.Formatters
+  use Phoenix.Component
 
   alias Phoenix.LiveView.JS
 
@@ -74,13 +75,20 @@ defmodule PurpleWeb.LiveComponents do
     """
   end
 
+  attr :filter, :any, required: true
+  attr :num_rows, :integer, required: true
+  attr :first_page, :string, default: nil
+  attr :next_page, :string, default: nil
+
   def page_links(assigns) do
     ~H"""
-    <%= if current_page(@filter) > 1 do %>
+    <%= if current_page(@filter) > 1 && @first_page do %>
       <.link patch={@first_page}>First page</.link>
       &nbsp;
     <% end %>
-    <.link patch={@next_page}>Next page</.link>
+    <%= if @num_rows >= current_limit(@filter) && @next_page do %>
+      <.link patch={@next_page}>Next page</.link>
+    <% end %>
     """
   end
 
