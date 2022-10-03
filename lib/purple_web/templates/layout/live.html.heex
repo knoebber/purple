@@ -2,7 +2,7 @@
   <nav>
     <%= for link <- @side_nav || [] do %>
     <.link navigate={link.to}><%= link.label %></.link>
-      <%= if Map.has_key?(link, :children) do %>
+      <%= if Map.has_key?(link, :children) and length(link.children) > 0 do %>
         <div class="side-link-group">
           <%= for child <- link.children do %>
             <.link navigate={child.to}><%= child.label %></.link>
