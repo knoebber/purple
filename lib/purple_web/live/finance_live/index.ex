@@ -131,6 +131,7 @@ defmodule PurpleWeb.FinanceLive.Index do
         </:col>
       </.table>
       <.page_links
+        num_rows={length(@transactions)}
         filter={@filter}
         first_page={index_path(first_page(@filter))}
         next_page={index_path(next_page(@filter))}

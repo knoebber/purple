@@ -119,6 +119,7 @@ defmodule PurpleWeb.RunLive.Index do
         filter={@filter}
         first_page={index_path(first_page(@filter))}
         next_page={index_path(next_page(@filter))}
+        num_rows={length(@runs)}
       />
     </.form>
 
@@ -152,6 +153,7 @@ defmodule PurpleWeb.RunLive.Index do
         filter={@filter}
         first_page={index_path(first_page(@filter))}
         next_page={index_path(next_page(@filter))}
+        num_rows={length(@runs)}
       />
     </div>
     """

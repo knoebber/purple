@@ -157,7 +157,7 @@ defmodule PurpleWeb.BoardLive.Index do
       <.page_links
         filter={@filter}
         first_page={index_path(@user_board.id, first_page(@filter))}
-        next_page={index_path(@user_board.id, next_page(@filter))}
+        num_rows={length(@items)}
       />
     </.form>
     <div class="w-full overflow-auto">
@@ -213,6 +213,7 @@ defmodule PurpleWeb.BoardLive.Index do
         filter={@filter}
         first_page={index_path(@user_board.id, first_page(@filter))}
         next_page={index_path(@user_board.id, next_page(@filter))}
+        num_rows={length(@items)}
       />
     </div>
     """
