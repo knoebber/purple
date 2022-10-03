@@ -239,6 +239,7 @@
     }
 
     .table-filters {
+        /* TODO: remove */
         @apply flex;
         @apply flex-col;
         @apply md:flex-row;

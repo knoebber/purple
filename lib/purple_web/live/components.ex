@@ -75,6 +75,21 @@ defmodule PurpleWeb.Components do
     """
   end
 
+  def filter_form(assigns) do
+    ~H"""
+    <.form
+      :let={f}
+      class="flex flex-col md:flex-row gap-1 mb-2"
+      for={:filter}
+      method="get"
+      phx-change="search"
+      phx-submit="search"
+    >
+      <%= render_slot(@inner_block, f) %>
+    </.form>
+    """
+  end
+
   attr :filter, :any, required: true
   attr :num_rows, :integer, required: true
   attr :first_page, :string, default: nil

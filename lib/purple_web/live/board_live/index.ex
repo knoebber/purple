@@ -47,7 +47,10 @@ defmodule PurpleWeb.BoardLive.Index do
     |> assign(:editable_item, nil)
     |> assign(:filter, filter)
     |> assign(:items, Board.list_items(filter))
-    |> assign(:page_title, if(user_board.name == "", do: "Default Board", else: user_board.name))
+    |> assign(
+      :page_title,
+      if(user_board.name == "", do: "Default Board", else: user_board.name)
+    )
     |> assign(:tag_options, tag_options)
   end
 
@@ -128,14 +131,7 @@ defmodule PurpleWeb.BoardLive.Index do
         />
       </.modal>
     <% end %>
-    <.form
-      :let={f}
-      class="table-filters"
-      for={:filter}
-      method="get"
-      phx-change="search"
-      phx-submit="search"
-    >
+    <.filter_form :let={f}>
       <%= live_redirect(to: item_create_path(@user_board.id)) do %>
         <button class="btn">Create</button>
       <% end %>
@@ -159,7 +155,7 @@ defmodule PurpleWeb.BoardLive.Index do
         first_page={index_path(@user_board.id, first_page(@filter))}
         num_rows={length(@items)}
       />
-    </.form>
+    </.filter_form>
     <div class="w-full overflow-auto">
       <.table rows={@items}>
         <:col :let={item} label="Item">
