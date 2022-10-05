@@ -68,14 +68,7 @@ defmodule PurpleWeb.FinanceLive.Index do
     <div class="flex mb-2">
       <h1><%= @page_title %></h1>
     </div>
-    <.form
-      :let={f}
-      class="table-filters"
-      for={:filter}
-      method="get"
-      phx-change="search"
-      phx-submit="search"
-    >
+    <.filter_form :let={f}>
       <button
         type="btn"
         class="window pl-4 pr-4 text-lg"
@@ -111,7 +104,7 @@ defmodule PurpleWeb.FinanceLive.Index do
         [[value: "", key: "💸 All payment methods"]] ++ @payment_method_options,
         value: Map.get(@filter, :payment_method_id, "")
       ) %>
-    </.form>
+    </.filter_form>
     <div class="w-full overflow-auto">
       <.table rows={@transactions}>
         <:col :let={transaction} label="Amount">

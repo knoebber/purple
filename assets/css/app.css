@@ -237,15 +237,6 @@
     .markdown-content h1, .markdown-content h2, .markdown-content h3 {
         @apply mb-2;
     }
-
-    .table-filters {
-        /* TODO: remove */
-        @apply flex;
-        @apply flex-col;
-        @apply md:flex-row;
-        @apply gap-1;
-        @apply mb-2;
-    }
 }
 
 /*

@@ -91,14 +91,7 @@ defmodule PurpleWeb.RunLive.Index do
         />
       </.modal>
     <% end %>
-    <.form
-      :let={f}
-      class="table-filters"
-      for={:filter}
-      method="get"
-      phx-change="search"
-      phx-submit="search"
-    >
+    <.filter_form :let={f}>
       <%= link(phx_click: "create_run", to: "#") do %>
         <button class="btn">Create</button>
       <% end %>
@@ -121,7 +114,7 @@ defmodule PurpleWeb.RunLive.Index do
         next_page={index_path(next_page(@filter))}
         num_rows={length(@runs)}
       />
-    </.form>
+    </.filter_form>
 
     <div class="w-full overflow-auto">
       <.table rows={@runs}>
