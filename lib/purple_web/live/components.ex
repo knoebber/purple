@@ -54,13 +54,32 @@ defmodule PurpleWeb.Components do
     JS.hide(js, to: "#dialog")
   end
 
+  attr :filter, :map, required: true
+
+  slot(:inner_block, required: true)
+
+  def th(assigns) do
+    ~H"""
+    <th>
+      <%= render_slot(@inner_block) %>
+    </th>
+    """
+  end
+
+  attr :filter, :map, default: %{}
+  attr :rows, :list, required: true
+
+  slot :col do
+    attr :label, :string, required: true
+  end
+
   def table(assigns) do
     ~H"""
     <table class="window">
       <thead class="bg-purple-300">
         <tr>
           <%= for col <- @col do %>
-            <th><%= col.label %></th>
+            <.th filter={@filter}><%= col.label %></.th>
           <% end %>
         </tr>
       </thead>
@@ -90,7 +109,7 @@ defmodule PurpleWeb.Components do
     """
   end
 
-  attr :filter, :any, required: true
+  attr :filter, :map, required: true
   attr :num_rows, :integer, required: true
   attr :first_page, :string, default: nil
   attr :next_page, :string, default: nil
