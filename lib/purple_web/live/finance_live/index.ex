@@ -106,7 +106,7 @@ defmodule PurpleWeb.FinanceLive.Index do
       ) %>
     </.filter_form>
     <div class="w-full overflow-auto">
-      <.table rows={@transactions}>
+      <.table rows={@transactions} filter={@filter}>
         <:col :let={transaction} label="Amount">
           <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
         </:col>

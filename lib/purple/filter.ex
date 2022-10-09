@@ -11,7 +11,9 @@ defmodule Purple.Filter do
     query: :string,
     tag: :string,
     page: :integer,
-    limit: :integer
+    limit: :integer,
+    order: :string,
+    order_by: :string
   }
 
   def make_filter(params, default_params \\ %{}, extra_types \\ %{})
@@ -50,5 +52,43 @@ defmodule Purple.Filter do
 
   def next_page(filter) when is_map(filter) do
     update_page(filter, current_page(filter) + 1)
+  end
+
+  def current_order_by(filter) when is_map(filter) do
+    Map.get(filter, :order_by, "")
+  end
+
+  def current_order(filter) when is_map(filter) do
+    Map.get(filter, :order, "none")
+  end
+
+  def current_order(_, nil), do: nil
+
+  def current_order(filter, order_col) when is_map(filter) and is_binary(order_col) do
+    dbg(order_col)
+    dbg(current_order_by(filter))
+    dbg(filter)
+
+    if current_order_by(filter) == order_col do
+      current_order(filter)
+    else
+      "none"
+    end
+    |> dbg
+  end
+
+  def apply_sort(_, nil), do: %{}
+
+  def apply_sort(filter, order_col) when is_map(filter) and is_binary(order_col) do
+    filter
+    |> Map.put(:order_by, order_col)
+    |> Map.put(
+      :order,
+      case current_order(filter, order_col) do
+        "none" -> "desc"
+        "desc" -> "asc"
+        "asc" -> "none"
+      end
+    )
   end
 end

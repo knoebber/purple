@@ -54,23 +54,49 @@ defmodule PurpleWeb.Components do
     JS.hide(js, to: "#dialog")
   end
 
-  attr :filter, :map, required: true
+  defp order_icon(order) when is_binary(order) do
+    case order do
+      "none" -> ""
+      "desc" -> "👇"
+      "asc" -> "👆"
+    end
+  end
+
+  defp get_next_sort_link(nil, _, _), do: nil
+
+  defp get_next_sort_link(get_route, filter, order_col) do
+    filter
+    |> apply_sort(order_col)
+    |> get_route.()
+  end
+
+  attr :order, :atom, default: nil
+  attr :next_sort_link, :string, default: nil
 
   slot(:inner_block, required: true)
 
   def th(assigns) do
     ~H"""
     <th>
-      <%= render_slot(@inner_block) %>
+      <%= if @next_sort_link && @order do %>
+        <.link patch={@next_sort_link}>
+          <%= render_slot(@inner_block) %>
+        </.link>
+        <%= order_icon(@order) %>
+      <% else %>
+        <%= render_slot(@inner_block) %>
+      <% end %>
     </th>
     """
   end
 
   attr :filter, :map, default: %{}
   attr :rows, :list, required: true
+  attr :get_route, :any, default: nil
 
   slot :col do
     attr :label, :string, required: true
+    attr :order_col, :string
   end
 
   def table(assigns) do
@@ -79,7 +105,18 @@ defmodule PurpleWeb.Components do
       <thead class="bg-purple-300">
         <tr>
           <%= for col <- @col do %>
-            <.th filter={@filter}><%= col.label %></.th>
+            <.th
+              order={current_order(@filter, Map.get(col, :order_col, nil))}
+              next_sort_link={
+                get_next_sort_link(
+                  @get_route,
+                  @filter,
+                  Map.get(col, :order_col, nil)
+                )
+              }
+            >
+              <%= col.label %>
+            </.th>
           <% end %>
         </tr>
       </thead>
@@ -95,6 +132,7 @@ defmodule PurpleWeb.Components do
   end
 
   def filter_form(assigns) do
+    # TODO: add as table slot
     ~H"""
     <.form
       :let={f}

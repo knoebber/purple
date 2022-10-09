@@ -157,13 +157,17 @@ defmodule PurpleWeb.BoardLive.Index do
       />
     </.filter_form>
     <div class="w-full overflow-auto">
-      <.table rows={@items}>
-        <:col :let={item} label="Item">
+      <.table
+        filter={@filter}
+        get_route={fn filter -> index_path(@user_board.id, filter) end}
+        rows={@items}
+      >
+        <:col :let={item} label="Item" order_col="id">
           <%= live_redirect(item.id,
             to: Routes.board_show_item_path(@socket, :show, item)
           ) %>
         </:col>
-        <:col :let={item} label="Description">
+        <:col :let={item} label="Description" order_col="description">
           <%= live_redirect(item.description,
             to: Routes.board_show_item_path(@socket, :show, item)
           ) %>
