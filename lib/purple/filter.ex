@@ -16,13 +16,8 @@ defmodule Purple.Filter do
     order_by: :string
   }
 
-  def make_filter(params, default_params \\ %{}, extra_types \\ %{})
-      when is_map(params) and is_map(default_params) and is_map(extra_types) do
-    types = Map.merge(@default_types, extra_types)
-    changeset = cast({default_params, types}, params, Map.keys(types))
-
-    changeset.data
-    |> Map.merge(changeset.changes)
+  defp clean_filter(filter) do
+    filter
     |> Purple.drop_falsey_values()
     |> Map.reject(fn {key, val} ->
       is_nil(val) or
@@ -30,8 +25,20 @@ defmodule Purple.Filter do
         val == 0 or
         val == false or
         val == [] or
-        (key == :page and val == 1)
+        (key == :page and val == 1) or
+        (key == :order_by and Map.get(filter, :order) == "none") or
+        (key == :order and val == "none")
     end)
+  end
+
+  def make_filter(params, default_params \\ %{}, extra_types \\ %{})
+      when is_map(params) and is_map(default_params) and is_map(extra_types) do
+    types = Map.merge(@default_types, extra_types)
+    changeset = cast({default_params, types}, params, Map.keys(types))
+
+    changeset.data
+    |> Map.merge(changeset.changes)
+    |> clean_filter()
   end
 
   def current_limit(filter) when is_map(filter) do
@@ -43,7 +50,9 @@ defmodule Purple.Filter do
   end
 
   def update_page(filter, p) when is_map(filter) and is_integer(p) do
-    Map.put(filter, :page, p)
+    filter
+    |> Map.put(:page, p)
+    |> clean_filter()
   end
 
   def first_page(filter) when is_map(filter) do
@@ -65,16 +74,11 @@ defmodule Purple.Filter do
   def current_order(_, nil), do: nil
 
   def current_order(filter, order_col) when is_map(filter) and is_binary(order_col) do
-    dbg(order_col)
-    dbg(current_order_by(filter))
-    dbg(filter)
-
     if current_order_by(filter) == order_col do
       current_order(filter)
     else
       "none"
     end
-    |> dbg
   end
 
   def apply_sort(_, nil), do: %{}
@@ -90,5 +94,6 @@ defmodule Purple.Filter do
         "asc" -> "none"
       end
     )
+    |> clean_filter()
   end
 end
