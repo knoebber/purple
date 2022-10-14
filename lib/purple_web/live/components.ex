@@ -156,12 +156,14 @@ defmodule PurpleWeb.Components do
 
   def page_links(assigns) do
     ~H"""
-    <%= if current_page(@filter) > 1 && @first_page do %>
-      <.link patch={@first_page}>First page</.link>
-      &nbsp;
-    <% end %>
-    <%= if @num_rows >= current_limit(@filter) && @next_page do %>
-      <.link patch={@next_page}>Next page</.link>
+    <%= if not Map.has_key?(@filter, :query) do %>
+      <%= if current_page(@filter) > 1 && @first_page do %>
+        <.link patch={@first_page}>First page</.link>
+        &nbsp;
+      <% end %>
+      <%= if @num_rows >= current_limit(@filter) && @next_page do %>
+        <.link patch={@next_page}>Next page</.link>
+      <% end %>
     <% end %>
     """
   end

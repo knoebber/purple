@@ -41,6 +41,10 @@ defmodule Purple.Filter do
     |> clean_filter()
   end
 
+  def set_default_limit(filter) when is_map(filter) do
+    Map.put(filter, :limit, @default_limit)
+  end
+
   def current_limit(filter) when is_map(filter) do
     Map.get(filter, :limit, @default_limit)
   end

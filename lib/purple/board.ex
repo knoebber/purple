@@ -279,7 +279,14 @@ defmodule Purple.Board do
   def list_items_query(filter \\ %{}) do
     filter =
       if Map.has_key?(filter, :query) do
-        %{query: filter.query, show_done: true}
+        filter
+        |> Map.merge(%{
+          query: filter.query,
+          show_done: true,
+          tag: ""
+        })
+        |> Filter.first_page()
+        |> Filter.set_default_limit()
       else
         filter
       end
