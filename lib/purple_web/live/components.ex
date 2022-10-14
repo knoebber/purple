@@ -54,11 +54,11 @@ defmodule PurpleWeb.Components do
     JS.hide(js, to: "#dialog")
   end
 
-  defp order_icon(order) when is_binary(order) do
+  defp order_icon(order) when is_atom(order) do
     case order do
-      "none" -> ""
-      "desc" -> "👇"
-      "asc" -> "👆"
+      :none -> ""
+      :desc -> "👇"
+      :asc -> "👆"
     end
   end
 

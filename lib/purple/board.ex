@@ -8,6 +8,7 @@ defmodule Purple.Board do
   alias Purple.Repo
   alias Purple.Tags
   alias Purple.Tags.{UserBoardTag}
+  alias Purple.Filter
 
   import Ecto.Query
 
@@ -264,6 +265,17 @@ defmodule Purple.Board do
     where(query, [i], i.status != ^"DONE")
   end
 
+  defp order_items_by(filter \\ %{}) do
+    order_by = Filter.current_order_by(filter)
+    order_by = if is_binary(order_by), do: String.to_atom(order_by)
+
+    if order_by in Item.__schema__(:fields) do
+      [{Filter.current_order(filter), order_by}]
+    else
+      [desc: :is_pinned, asc: :priority, desc: :last_active_at]
+    end
+  end
+
   def list_items_query(filter \\ %{}) do
     filter =
       if Map.has_key?(filter, :query) do
@@ -272,8 +284,10 @@ defmodule Purple.Board do
         filter
       end
 
+    order_by = order_items_by(filter)
+
     Item
-    |> order_by(desc: :is_pinned, asc: :priority, desc: :last_active_at)
+    |> order_by(^order_by)
     |> item_text_search(filter)
     |> item_done_filter(filter)
     |> Tags.filter_by_tag(filter, :item)

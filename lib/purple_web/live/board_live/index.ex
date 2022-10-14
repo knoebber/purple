@@ -172,10 +172,10 @@ defmodule PurpleWeb.BoardLive.Index do
             to: Routes.board_show_item_path(@socket, :show, item)
           ) %>
         </:col>
-        <:col :let={item} label="Priority">
+        <:col :let={item} label="Priority" order_col="priority">
           <%= item.priority %>
         </:col>
-        <:col :let={item} label="Status">
+        <:col :let={item} label="Status" order_col="status">
           <%= if item.status == :INFO  do %>
             INFO
           <% else %>
@@ -187,8 +187,8 @@ defmodule PurpleWeb.BoardLive.Index do
             />
           <% end %>
         </:col>
-        <:col :let={item} label="Created">
-          <.timestamp model={item} . />
+        <:col :let={item} label="Last Activity" order_col="last_active_at">
+          <%= format_date(item.last_active_at) %>
         </:col>
         <:col :let={item} label="">
           <.link

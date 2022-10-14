@@ -64,11 +64,15 @@ defmodule Purple.Filter do
   end
 
   def current_order_by(filter) when is_map(filter) do
-    Map.get(filter, :order_by, "")
+    Map.get(filter, :order_by)
   end
 
   def current_order(filter) when is_map(filter) do
-    Map.get(filter, :order, "none")
+    case Map.get(filter, :order) do
+      "desc" -> :desc
+      "asc" -> :asc
+      _ -> :none
+    end
   end
 
   def current_order(_, nil), do: nil
@@ -77,7 +81,7 @@ defmodule Purple.Filter do
     if current_order_by(filter) == order_col do
       current_order(filter)
     else
-      "none"
+      :none
     end
   end
 
@@ -89,11 +93,12 @@ defmodule Purple.Filter do
     |> Map.put(
       :order,
       case current_order(filter, order_col) do
-        "none" -> "desc"
-        "desc" -> "asc"
-        "asc" -> "none"
+        :none -> "desc"
+        :desc -> "asc"
+        :asc -> "none"
       end
     )
+    |> first_page()
     |> clean_filter()
   end
 end
