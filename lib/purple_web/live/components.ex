@@ -79,10 +79,12 @@ defmodule PurpleWeb.Components do
     ~H"""
     <th>
       <%= if @next_sort_link && @order do %>
-        <.link patch={@next_sort_link}>
-          <%= render_slot(@inner_block) %>
-        </.link>
-        <%= order_icon(@order) %>
+        <span class="flex">
+          <.link patch={@next_sort_link}>
+            <%= render_slot(@inner_block) %>
+          </.link>
+          <%= order_icon(@order) %>
+        </span>
       <% else %>
         <%= render_slot(@inner_block) %>
       <% end %>
