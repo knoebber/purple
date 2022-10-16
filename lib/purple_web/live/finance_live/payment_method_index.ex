@@ -6,6 +6,10 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
   alias Purple.Finance
   alias Purple.Finance.PaymentMethod
 
+  defp assign_data(socket) do
+    assign(socket, :payment_methods, Finance.list_payment_methods(:transactions))
+  end
+
   @impl true
   def handle_info({:saved_payment_method, _id}, socket) do
     {
@@ -22,14 +26,23 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
       :ok,
       socket
       |> assign(:page_title, "Payment Methods")
-      |> assign(:payment_methods, Finance.list_payment_methods(:transactions))
       |> assign(:side_nav, side_nav())
+      |> assign_data()
     }
   end
 
   @impl Phoenix.LiveView
   def handle_params(_, _url, socket) do
     {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("delete", %{"id" => id}, socket) do
+    id
+    |> Finance.get_payment_method!()
+    |> Finance.delete_payment_method!()
+
+    {:noreply, assign_data(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -45,11 +58,24 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
       />
     </div>
     <.table rows={@payment_methods}>
-      <:col :let={payment_method} label="Name">
-        <%= payment_method.name %>
+      <:col :let={row} label="Name">
+        <%= row.name %>
       </:col>
-      <:col :let={payment_method} label="# Transactions">
-        <%= length(payment_method.transactions) %>
+      <:col :let={row} label="# Transactions">
+        <%= if length(row.transactions) > 0 do %>
+          <.link navigate={index_path(%{payment_method_id: row.id})}>
+            <%= length(row.transactions) %>
+          </.link>
+        <% else %>
+          0
+        <% end %>
+      </:col>
+      <:col :let={row} label="">
+        <%= if length(row.transactions) == 0 do %>
+          <.link href="#" phx-click="delete" phx-value-id={row.id}>
+            Delete
+          </.link>
+        <% end %>
       </:col>
     </.table>
     """
