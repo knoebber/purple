@@ -95,7 +95,7 @@ defmodule PurpleWeb.FinanceLive.Index do
       <%= select(
         f,
         :merchant_id,
-        [[value: "", key: "🧟‍♀️ All merchants"]] ++ @merchant_options,
+        [[value: "", key: "🧟 All merchants"]] ++ @merchant_options,
         value: Map.get(@filter, :merchant_id, "")
       ) %>
       <%= select(
