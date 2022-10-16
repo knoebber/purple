@@ -266,10 +266,15 @@ defmodule Purple.Board do
   end
 
   defp order_items_by(filter \\ %{}) do
-    order_by = Filter.current_order_by(filter)
-    order_by = if is_binary(order_by), do: String.to_atom(order_by)
+    order_by_string = Filter.current_order_by(filter)
 
-    if order_by in Item.__schema__(:fields) do
+    order_by =
+      Enum.find(
+        Item.__schema__(:fields),
+        &(Atom.to_string(&1) == order_by_string)
+      )
+
+    if order_by do
       [{Filter.current_order(filter), order_by}]
     else
       [desc: :is_pinned, asc: :priority, desc: :last_active_at]
