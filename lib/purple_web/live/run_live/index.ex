@@ -132,17 +132,17 @@ defmodule PurpleWeb.RunLive.Index do
     </.filter_form>
 
     <div class="w-full overflow-auto">
-      <.table rows={@runs}>
-        <:col :let={run} label="Miles">
+      <.table rows={@runs} get_route={&index_path/1} filter={@filter}>
+        <:col :let={run} label="Miles" order_col="miles">
           <%= live_redirect(run.miles, to: Routes.run_show_path(@socket, :show, run)) %>
         </:col>
-        <:col :let={run} label="Duration">
+        <:col :let={run} label="Duration" order_col="seconds">
           <%= format_duration(run.hours, run.minutes, run.minute_seconds) %>
         </:col>
         <:col :let={run} label="Pace">
           <%= format_pace(run.miles, run.seconds) %>
         </:col>
-        <:col :let={run} label="Date">
+        <:col :let={run} label="Date" order_col="date">
           <%= format_date(run.date, :dayname) %>
         </:col>
         <:col :let={run} label="">

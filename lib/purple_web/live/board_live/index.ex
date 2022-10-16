@@ -159,7 +159,7 @@ defmodule PurpleWeb.BoardLive.Index do
     <div class="w-full overflow-auto">
       <.table
         filter={@filter}
-        get_route={fn filter -> index_path(@user_board.id, filter) end}
+        get_route={fn new_filter -> index_path(@user_board.id, new_filter) end}
         rows={@items}
       >
         <:col :let={item} label="Item" order_col="id">

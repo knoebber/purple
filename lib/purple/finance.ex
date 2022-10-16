@@ -18,6 +18,7 @@ defmodule Purple.Finance do
     TransactionImportTask
   }
 
+  alias Purple.Filter
   alias Purple.Gmail
   alias Purple.Repo
   alias Purple.Tags
@@ -233,7 +234,25 @@ defmodule Purple.Finance do
 
   defp shared_budget_filter(q, _), do: q
 
+  defp order_transactions_by(filter \\ %{}) do
+    order_by_string = Filter.current_order_by(filter)
+
+    order_by =
+      Enum.find(
+        Transaction.__schema__(:fields),
+        &(Atom.to_string(&1) == order_by_string)
+      )
+
+    if order_by do
+      [{Filter.current_order(filter), order_by}]
+    else
+      [desc: :timestamp]
+    end
+  end
+
   def list_transactions(filter \\ %{}) do
+    order_by = order_transactions_by(filter)
+
     Transaction
     |> select_merge(%{dollars: fragment(@dollar_amount_fragment)})
     |> join(:inner, [tx], m in assoc(tx, :merchant))
@@ -245,7 +264,7 @@ defmodule Purple.Finance do
     |> shared_budget_filter(filter)
     |> transaction_text_search(filter)
     |> user_filter(filter)
-    |> order_by(desc: :timestamp)
+    |> order_by(^order_by)
     |> preload([_, m, pm], merchant: m, payment_method: pm)
     |> Repo.paginate(filter)
   end

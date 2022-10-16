@@ -4,9 +4,10 @@ defmodule Purple.Activities do
   """
   import Ecto.Query
 
+  alias Purple.Activities.Run
+  alias Purple.Filter
   alias Purple.Repo
   alias Purple.Tags
-  alias Purple.Activities.Run
 
   defp run_select(query) do
     select_merge(
@@ -54,6 +55,22 @@ defmodule Purple.Activities do
 
   defp run_text_search(query, _), do: query
 
+  defp order_runs_by(filter \\ %{}) do
+    order_by_string = Filter.current_order_by(filter)
+
+    order_by =
+      Enum.find(
+        Run.__schema__(:fields),
+        &(Atom.to_string(&1) == order_by_string)
+      )
+
+    if order_by do
+      [{Filter.current_order(filter), order_by}]
+    else
+      [desc: :date]
+    end
+  end
+
   @doc """
   Returns the list of runs.
 
@@ -64,11 +81,13 @@ defmodule Purple.Activities do
 
   """
   def list_runs(filter \\ %{}) do
+    order_by = order_runs_by(filter)
+
     Run
     |> run_select
     |> run_text_search(filter)
     |> Tags.filter_by_tag(filter, :run)
-    |> order_by(desc: :date)
+    |> order_by(^order_by)
     |> Repo.paginate(filter)
   end
 

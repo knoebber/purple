@@ -106,12 +106,12 @@ defmodule PurpleWeb.FinanceLive.Index do
       ) %>
     </.filter_form>
     <div class="w-full overflow-auto">
-      <.table rows={@transactions} filter={@filter}>
-        <:col :let={transaction} label="Amount">
+      <.table rows={@transactions} filter={@filter} get_route={&index_path/1}>
+        <:col :let={transaction} label="Amount" order_col="cents">
           <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
         </:col>
-        <:col :let={transaction} label="Date">
-          <.timestamp model={transaction} . />
+        <:col :let={transaction} label="Timestamp" order_col="timestamp">
+          <%= format_date(transaction.timestamp) %>
         </:col>
         <:col :let={transaction} label="Merchant">
           <%= transaction.merchant.name %>
