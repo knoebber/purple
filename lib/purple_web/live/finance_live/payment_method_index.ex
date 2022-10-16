@@ -7,7 +7,11 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
   alias Purple.Finance.PaymentMethod
 
   defp assign_data(socket) do
-    assign(socket, :payment_methods, Finance.list_payment_methods(:transactions))
+    assign(
+      socket,
+      :payment_methods,
+      Finance.list_payment_methods(socket.assigns.current_user.id)
+    )
   end
 
   @impl true
@@ -16,7 +20,7 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
       :noreply,
       socket
       |> put_flash(:info, "Payment method saved")
-      |> assign(:payment_methods, Finance.list_payment_methods(:transactions))
+      |> assign_data()
     }
   end
 

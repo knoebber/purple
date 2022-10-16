@@ -218,10 +218,20 @@ defmodule Purple.Finance do
 
   defp transaction_text_search(q, _), do: q
 
-  defp user_filter(q, %{user_id: user_id}), do: where(q, [tx], tx.user_id == ^user_id)
-  defp merchant_filter(q, %{merchant_id: id}), do: where(q, [_, m], m.id == ^id)
+  defp user_filter(q, %{user_id: user_id}) do
+    where(q, [tx], tx.user_id == ^user_id)
+  end
+
+  defp merchant_filter(q, %{merchant_id: id}) do
+    where(q, [_, m], m.id == ^id)
+  end
+
   defp merchant_filter(q, _), do: q
-  defp payment_method_filter(q, %{payment_method_id: id}), do: where(q, [_, _, pm], pm.id == ^id)
+
+  defp payment_method_filter(q, %{payment_method_id: id}) do
+    where(q, [_, _, pm], pm.id == ^id)
+  end
+
   defp payment_method_filter(q, _), do: q
 
   defp shared_budget_filter(q, %{shared_budget_id: id}) do
@@ -234,7 +244,7 @@ defmodule Purple.Finance do
 
   defp shared_budget_filter(q, _), do: q
 
-  defp order_transactions_by(filter \\ %{}) do
+  defp order_transactions_by(filter) do
     order_by_string = Filter.current_order_by(filter)
 
     order_by =
@@ -285,29 +295,26 @@ defmodule Purple.Finance do
     |> Repo.all()
   end
 
-  def list_payment_methods do
-    PaymentMethod
-    |> order_by(:name)
-    |> Repo.all()
-  end
-
-  def list_payment_methods(:transactions) do
+  defp payment_method_query(user_id) when is_integer(user_id) do
     PaymentMethod
     |> join(:left, [pm], tx in assoc(pm, :transactions))
+    |> where([pm, tx], tx.user_id == ^user_id)
+    |> order_by(:name)
+  end
+
+  def list_payment_methods(user_id) when is_integer(user_id) do
+    PaymentMethod
+    |> join(:left, [pm], tx in assoc(pm, :transactions))
+    |> where([pm, tx], tx.user_id == ^user_id)
     |> order_by(:name)
     |> preload([_, tx], transactions: tx)
     |> Repo.all()
   end
 
-  def list_merchants() do
-    Merchant
-    |> order_by(:name)
-    |> Repo.all()
-  end
-
-  def list_merchants(:transactions) do
+  def list_merchants(user_id) when is_integer(user_id) do
     Merchant
     |> join(:left, [m], tx in assoc(m, :transactions))
+    |> where([m, tx], tx.user_id == ^user_id)
     |> order_by(:name)
     |> preload([_, tx], transactions: tx)
     |> Repo.all()
@@ -337,16 +344,16 @@ defmodule Purple.Finance do
     |> Repo.all()
   end
 
-  def merchant_mappings do
+  def merchant_mappings(user_id) do
     Enum.map(
-      list_merchants(),
+      list_merchants(user_id),
       fn %{id: id, name: name} -> [value: id, key: name] end
     )
   end
 
-  def payment_method_mappings do
+  def payment_method_mappings(user_id) do
     Enum.map(
-      list_payment_methods(),
+      list_payment_methods(user_id),
       fn %{id: id, name: name} -> [value: id, key: name] end
     )
   end

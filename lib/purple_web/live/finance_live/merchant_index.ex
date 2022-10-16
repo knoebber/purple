@@ -7,7 +7,11 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
   alias Purple.Finance.Merchant
 
   defp assign_data(socket) do
-    assign(socket, :merchants, Finance.list_merchants(:transactions))
+    assign(
+      socket,
+      :merchants,
+      Finance.list_merchants(socket.assigns.current_user.id)
+    )
   end
 
   @impl true
@@ -16,7 +20,7 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
       :noreply,
       socket
       |> put_flash(:info, "Merchant saved")
-      |> assign(:merchants, Finance.list_merchants(:transactions))
+      |> assign_data()
     }
   end
 

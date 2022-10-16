@@ -12,17 +12,19 @@ defmodule PurpleWeb.FinanceLive.Index do
   }
 
   defp assign_data(socket) do
+    user_id = socket.assigns.current_user.id
+
     filter =
       make_filter(
         socket.assigns.query_params,
-        %{user_id: socket.assigns.current_user.id},
+        %{user_id: user_id},
         @filter_types
       )
 
     socket
     |> assign(:filter, filter)
-    |> assign(:merchant_options, Finance.merchant_mappings())
-    |> assign(:payment_method_options, Finance.payment_method_mappings())
+    |> assign(:merchant_options, Finance.merchant_mappings(user_id))
+    |> assign(:payment_method_options, Finance.payment_method_mappings(user_id))
     |> assign(:tag_options, Purple.Tags.make_tag_choices(:transaction, filter))
     |> assign(:transactions, Finance.list_transactions(filter))
   end

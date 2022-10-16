@@ -49,6 +49,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
 
   @impl Phoenix.LiveComponent
   def update(assigns, socket) do
+    user_id = assigns.current_user.id
     {class, assigns} = Map.pop(assigns, :class, "")
 
     {
@@ -57,8 +58,8 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       |> assign(assigns)
       |> assign(:class, class)
       |> assign(:rows, text_area_rows(assigns.transaction.notes))
-      |> assign(:merchant_options, Finance.merchant_mappings())
-      |> assign(:payment_method_options, Finance.payment_method_mappings())
+      |> assign(:merchant_options, Finance.merchant_mappings(user_id))
+      |> assign(:payment_method_options, Finance.payment_method_mappings(user_id))
       |> assign(:should_leave_open, false)
       |> assign_changeset()
     }
