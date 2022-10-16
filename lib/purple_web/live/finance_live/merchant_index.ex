@@ -63,7 +63,9 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
     </div>
     <.table rows={@merchants}>
       <:col :let={row} label="Name">
-        <%= row.name %>
+        <.link navigate={show_merchant_path(row)}>
+          <%= row.name %>
+        </.link>
       </:col>
       <:col :let={row} label="Description">
         <%= row.description %>

@@ -67,6 +67,7 @@ defmodule PurpleWeb.Router do
       live "/finance/transactions/create", FinanceLive.CreateTransaction, :create
       live "/finance/transactions/:id", FinanceLive.ShowTransaction, :show
       live "/finance/merchants", FinanceLive.MerchantIndex, :index
+      live "/finance/merchants/:id", FinanceLive.ShowMerchant, :show
       live "/finance/payment_methods", FinanceLive.PaymentMethodIndex, :index
       live "/finance/shared_budgets", FinanceLive.SharedBudgetIndex, :index
       live "/finance/shared_budgets/:id", FinanceLive.ShowSharedBudget, :show

@@ -47,6 +47,10 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     PurpleWeb.Router.Helpers.finance_merchant_index_path(PurpleWeb.Endpoint, :index)
   end
 
+  def show_merchant_path(params) do
+    PurpleWeb.Router.Helpers.finance_show_merchant_path(PurpleWeb.Endpoint, :show, params)
+  end
+
   def payment_method_index_path do
     PurpleWeb.Router.Helpers.finance_payment_method_index_path(PurpleWeb.Endpoint, :index)
   end
