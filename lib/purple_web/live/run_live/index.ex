@@ -53,11 +53,13 @@ defmodule PurpleWeb.RunLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("create_run", _, socket) do
-    last_tags =
+    last_run =
       case socket.assigns.runs do
-        [last_run | _] -> Purple.Tags.extract_tags(last_run)
-        _ -> []
+        [last_run | _] -> last_run
+        _ -> %Run{miles: 0, description: ""}
       end
+
+    last_tags = Purple.Tags.extract_tags(last_run)
 
     {
       :noreply,
@@ -65,6 +67,7 @@ defmodule PurpleWeb.RunLive.Index do
         socket,
         :editable_run,
         %Run{
+          miles: last_run.miles,
           description: Enum.map_join(last_tags, " ", &("#" <> &1))
         }
       )
