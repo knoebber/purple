@@ -38,7 +38,7 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <div>
+    <div class={@class}>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <%= label(f, :name) %>

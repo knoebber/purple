@@ -295,13 +295,6 @@ defmodule Purple.Finance do
     |> Repo.all()
   end
 
-  defp payment_method_query(user_id) when is_integer(user_id) do
-    PaymentMethod
-    |> join(:left, [pm], tx in assoc(pm, :transactions))
-    |> where([pm, tx], tx.user_id == ^user_id)
-    |> order_by(:name)
-  end
-
   def list_payment_methods(user_id) when is_integer(user_id) do
     PaymentMethod
     |> join(:left, [pm], tx in assoc(pm, :transactions))
@@ -314,7 +307,7 @@ defmodule Purple.Finance do
   def list_merchants(user_id) when is_integer(user_id) do
     Merchant
     |> join(:left, [m], tx in assoc(m, :transactions))
-    |> where([m, tx], tx.user_id == ^user_id)
+    |> where([m, tx], tx.user_id == ^user_id or is_nil(tx.user_id))
     |> order_by(:name)
     |> preload([_, tx], transactions: tx)
     |> Repo.all()

@@ -55,7 +55,7 @@ defmodule Purple.Activities do
 
   defp run_text_search(query, _), do: query
 
-  defp order_runs_by(filter \\ %{}) do
+  defp order_runs_by(filter) do
     order_by_string = Filter.current_order_by(filter)
 
     order_by =

@@ -58,6 +58,7 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
         action={:new_merchant}
         id={:new}
         module={PurpleWeb.FinanceLive.MerchantForm}
+        class=""
         merchant={%Merchant{}}
       />
     </div>
