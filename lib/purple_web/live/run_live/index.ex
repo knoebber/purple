@@ -97,18 +97,15 @@ defmodule PurpleWeb.RunLive.Index do
         <%= @weekly_total %> this week, <%= @total %> displayed
       </i>
     </div>
-
-    <%= if @editable_run do %>
-      <.modal return_to={index_path(@query_params)} title={@page_title}>
-        <.live_component
-          id={@editable_run.id || :new}
-          module={PurpleWeb.RunLive.RunForm}
-          return_to={index_path(@query_params)}
-          rows={3}
-          run={@editable_run}
-        />
-      </.modal>
-    <% end %>
+    <.modal :if={@editable_run} return_to={index_path(@query_params)} title={@page_title}>
+      <.live_component
+        id={@editable_run.id || :new}
+        module={PurpleWeb.RunLive.RunForm}
+        return_to={index_path(@query_params)}
+        rows={3}
+        run={@editable_run}
+      />
+    </.modal>
     <.filter_form :let={f}>
       <%= link(phx_click: "create_run", to: "#") do %>
         <button class="btn">Create</button>

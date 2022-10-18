@@ -367,20 +367,16 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         <% end %>
       <% end %>
     </section>
-
-    <%= if @live_action == :create_entry do %>
-      <section class="window mt-2 mb-2">
-        <div class="flex justify-between bg-purple-300 p-1">
-          <div class="inline-links">
-            <strong>New Entry</strong>
-            <span>|</span>
-            <.cancel_link item={@item} socket={@socket} />
-          </div>
+    <section :if={@live_action == :create_entry} class="window mt-2 mb-2">
+      <div class="flex justify-between bg-purple-300 p-1">
+        <div class="inline-links">
+          <strong>New Entry</strong>
+          <span>|</span>
+          <.cancel_link item={@item} socket={@socket} />
         </div>
-        <.entry_form rows={5} action="save_entry" changeset={@new_entry_changeset} item_id={@item.id} />
-      </section>
-    <% end %>
-
+      </div>
+      <.entry_form rows={5} action="save_entry" changeset={@new_entry_changeset} item_id={@item.id} />
+    </section>
     <div id="entry-container" phx-hook="Sortable">
       <%= for entry <- @entries do %>
         <section class="window mt-2 mb-2 js-sortable-item" id={Integer.to_string(entry.id)}>
