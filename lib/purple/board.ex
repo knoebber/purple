@@ -265,7 +265,7 @@ defmodule Purple.Board do
     where(query, [i], i.status != ^"DONE")
   end
 
-  defp order_items_by(filter \\ %{}) do
+  defp order_items_by(filter) do
     order_by_string = Filter.current_order_by(filter)
 
     order_by =
