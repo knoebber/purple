@@ -104,4 +104,8 @@ defmodule PurpleWeb.Formatters do
     |> Purple.Markdown.markdown_to_html(extension_data)
     |> Phoenix.HTML.raw()
   end
+
+  def get_num_textarea_rows(content) do
+    max(3, length(String.split(content, "\n")) + 1)
+  end
 end

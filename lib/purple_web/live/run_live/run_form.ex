@@ -17,6 +17,7 @@ defmodule PurpleWeb.RunLive.RunForm do
       |> assign(:changeset, changeset)
       |> assign(:duration_in_seconds, run.seconds)
       |> assign(:miles, run.miles)
+      |> assign(:description, run.description)
       |> assign(:action, if(run.id, do: :edit, else: :new))
     }
   end
@@ -48,11 +49,14 @@ defmodule PurpleWeb.RunLive.RunForm do
       duration_in_seconds = Ecto.Changeset.get_field(changeset, :seconds)
       miles = Ecto.Changeset.get_field(changeset, :miles)
 
-      {:noreply,
-       socket
-       |> assign(:changeset, changeset)
-       |> assign(:duration_in_seconds, duration_in_seconds)
-       |> assign(:miles, miles)}
+      {
+        :noreply,
+        socket
+        |> assign(:changeset, changeset)
+        |> assign(:duration_in_seconds, duration_in_seconds)
+        |> assign(:miles, miles)
+        |> assign(:description, Ecto.Changeset.get_field(changeset, :description))
+      }
     else
       {:noreply, assign(socket, :changeset, changeset)}
     end
@@ -90,7 +94,7 @@ defmodule PurpleWeb.RunLive.RunForm do
             <%= number_input(f, :minute_seconds, class: "w-1/3") %>
           </div>
           <%= label(f, :description) %>
-          <%= textarea(f, :description, rows: @rows) %>
+          <%= textarea(f, :description, rows: get_num_textarea_rows(@description)) %>
           <p class="mt-2">
             <%= if @changeset.valid? do %>
               Pace:

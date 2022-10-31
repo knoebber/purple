@@ -35,14 +35,8 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
     editable_entry = get_entry(socket, entry_id)
 
-    entry_rows =
-      editable_entry.content
-      |> String.split("\n")
-      |> length()
-
     socket
     |> assign(:editable_entry, editable_entry)
-    |> assign(:entry_rows, entry_rows + 1)
     |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))
   end
 
@@ -383,7 +377,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <%= if @live_action == :edit_entry and @editable_entry.id == entry.id do %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
             <.entry_form
-              rows={@entry_rows}
+              rows={get_num_textarea_rows(entry.content)}
               action="save_entry"
               changeset={@entry_update_changeset}
               item_id={@item.id}
