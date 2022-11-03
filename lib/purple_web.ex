@@ -44,7 +44,7 @@ defmodule PurpleWeb do
   def live_view do
     quote do
       use Phoenix.LiveView,
-        layout: {PurpleWeb.LayoutView, "live.html"}
+        layout: {PurpleWeb.LayoutView, :live}
 
       use Phoenix.Component
 
