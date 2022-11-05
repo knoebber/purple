@@ -1,4 +1,4 @@
-defmodule Purple.FinanceTest do
+defmodule Purple.PurpleTest do
   use Purple.DataCase
   import Purple
 
