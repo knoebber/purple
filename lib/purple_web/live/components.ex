@@ -2,7 +2,7 @@ defmodule PurpleWeb.Components do
   @doc false
   import Phoenix.HTML.Form
   import Purple.Filter
-  import PurpleWeb.Formatters
+  import PurpleWeb.WebHelpers
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS

@@ -1,6 +1,6 @@
-defmodule PurpleWeb.Formatters do
+defmodule PurpleWeb.WebHelpers do
   @moduledoc """
-  Formatters that are available to all purple web views
+  Functions that are available to all purple web views
   """
   alias PurpleWeb.Endpoint
   alias PurpleWeb.Router.Helpers, as: Routes

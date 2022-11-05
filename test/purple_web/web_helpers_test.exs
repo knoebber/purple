@@ -1,11 +1,9 @@
-defmodule PurpleWeb.FormattersTest do
+defmodule PurpleWeb.WebHelperTest do
   use Purple.DataCase
-  import PurpleWeb.Formatters
+  import PurpleWeb.WebHelpers
 
-  describe "formatters" do
+  describe "web helpers" do
     test "extract_routes_from_markdown\1" do
-      # TODO: assert url and delete me
-      IO.inspect(Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host])
       assert extract_routes_from_markdown("") == []
       assert extract_routes_from_markdown("# wee") == []
       assert extract_routes_from_markdown("#wee") == []
