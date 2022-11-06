@@ -11,7 +11,7 @@ defmodule PurpleWeb.FancyLink do
   def extract_routes_from_markdown(md) do
     host = Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host]
 
-    "(^|\\s)(https?://#{host}[^/]+)(/\\S+)"
+    "(^|\\s)(https?://#{host}[^/]*)(/\\S+)"
     |> Regex.compile!()
     |> Regex.scan(md)
     |> Enum.map(fn [_, _, basename, path] ->
