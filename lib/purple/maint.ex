@@ -18,4 +18,14 @@ defmodule Purple.Maint do
       end
     )
   end
+
+
+  def sync_item_tags() do
+    Enum.each(
+      Repo.all(Purple.Board.Item),
+      fn item ->
+        Purple.Tags.sync_tags(item.id, :item)
+      end
+    )
+  end
 end

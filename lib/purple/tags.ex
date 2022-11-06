@@ -120,10 +120,16 @@ defmodule Purple.Tags do
     )
   end
 
-  defp delete_tag_refs(_, []), do: {0, nil}
+  defp delete_tag_refs(_, [], _), do: {0, nil}
 
-  defp delete_tag_refs(module, tags) do
-    Repo.delete_all(from(m in module, where: m.tag_id in ^for(t <- tags, do: t.id)))
+  defp delete_tag_refs(module, tags, ref_params) do
+    ref_filter = [{hd(Map.keys(ref_params)), hd(Map.values(ref_params))}]
+    Repo.delete_all(
+      from(m in module,
+        where: m.tag_id in ^for(t <- tags, do: t.id),
+        where: ^ref_filter
+      )
+    )
   end
 
   defp update_tag_refs(_, [add: [], remove: []], _), do: {:ok, [add: {0, nil}, remove: {0, nil}]}
@@ -135,7 +141,7 @@ defmodule Purple.Tags do
     Repo.transaction(fn ->
       [
         add: insert_tag_refs(module, tag_diff[:add], ref_params),
-        remove: delete_tag_refs(module, tag_diff[:remove])
+        remove: delete_tag_refs(module, tag_diff[:remove], ref_params)
       ]
     end)
   end
