@@ -1,8 +1,8 @@
-defmodule PurpleWeb.WebHelperTest do
+defmodule PurpleWeb.FancyLinkTest do
   use Purple.DataCase
-  import PurpleWeb.WebHelpers
+  import PurpleWeb.FancyLink
 
-  describe "web helpers" do
+  describe "fancy link" do
     test "extract_routes_from_markdown\1" do
       assert extract_routes_from_markdown("") == []
       assert extract_routes_from_markdown("# wee") == []
@@ -20,6 +20,7 @@ defmodule PurpleWeb.WebHelperTest do
 
       assert extract_routes_from_markdown("http://localhost:4000/board") == [
                {
+                 "http://localhost:4000/board",
                  PurpleWeb.BoardLive.Index,
                  %{}
                }
@@ -27,10 +28,28 @@ defmodule PurpleWeb.WebHelperTest do
 
       assert extract_routes_from_markdown(" http://localhost:4000/finance ") == [
                {
+                 "http://localhost:4000/finance",
                  PurpleWeb.FinanceLive.Index,
                  %{}
                }
              ]
+
+      assert(
+        extract_routes_from_markdown(
+          "# Fancy Links\n\n* http://localhost:4000/board/item/105\n* http://localhost:4000/finance/transactions/538"
+        ) == [
+          {
+            "http://localhost:4000/board/item/105",
+            PurpleWeb.BoardLive.ShowItem,
+            %{"id" => "105"}
+          },
+          {
+            "http://localhost:4000/finance/transactions/538",
+            PurpleWeb.FinanceLive.ShowTransaction,
+            %{"id" => "538"}
+          }
+        ]
+      )
 
       assert extract_routes_from_markdown(~s"""
              # Test header
@@ -39,12 +58,26 @@ defmodule PurpleWeb.WebHelperTest do
              stuff, whatever
              [not fancy](http://localhost:4000/board/1
              http://localhost:4000/board/3 (fancy 2)
-             http://localhost:4000/board/item/10 (fancy 3)
-             https://example.com/not/fancy
+
+             * https://example.com/not/fancy
+             * http://localhost:4000/board/item/10 (fancy 3)
+             * https://example.com/not/fancy
              """) == [
-               {PurpleWeb.RunLive.Show, %{"id" => "1"}},
-               {PurpleWeb.BoardLive.Index, %{"user_board_id" => "3"}},
-               {PurpleWeb.BoardLive.ShowItem, %{"id" => "10"}}
+               {
+                 "http://localhost:4000/runs/1",
+                 PurpleWeb.RunLive.Show,
+                 %{"id" => "1"}
+               },
+               {
+                 "http://localhost:4000/board/3",
+                 PurpleWeb.BoardLive.Index,
+                 %{"user_board_id" => "3"}
+               },
+               {
+                 "http://localhost:4000/board/item/10",
+                 PurpleWeb.BoardLive.ShowItem,
+                 %{"id" => "10"}
+               }
              ]
     end
   end

@@ -113,6 +113,14 @@ defmodule Purple.Markdown do
      ], ["#" <> tagname], %{}}
   end
 
+  def make_fancy_link_node(href, content) do
+    {"a",
+     [
+       {"class", "fancy-link"},
+       {"href", href}
+     ], [content], %{}}
+  end
+
   def render_tag_links(text_leaf, %{get_tag_link: get_tag_link}) when is_binary(text_leaf) do
     Enum.map(
       Regex.split(
@@ -147,13 +155,20 @@ defmodule Purple.Markdown do
     )
   end
 
-  def make_link(node) do
-    case Earmark.AstTools.find_att_in_node(node, "href") do
-      <<?/, _::binary>> ->
-        Earmark.AstTools.merge_atts_in_node(node, class: "internal")
+  def make_link(node, %{fancy_link_map: fancy_link_map}) do
+    href = Earmark.AstTools.find_att_in_node(node, "href")
+    fancy_link_content = Map.get(fancy_link_map, href)
 
-      _ ->
-        Earmark.AstTools.merge_atts_in_node(node, class: "external", target: "_blank")
+    if fancy_link_content do
+      make_fancy_link_node(href, fancy_link_content)
+    else
+      case href do
+        <<?/, _::binary>> ->
+          Earmark.AstTools.merge_atts_in_node(node, class: "internal")
+
+        _ ->
+          Earmark.AstTools.merge_atts_in_node(node, class: "external", target: "_blank")
+      end
     end
   end
 
@@ -187,7 +202,7 @@ defmodule Purple.Markdown do
   def map_purple_ast(ast, extension_data, valid_extensions) do
     Enum.map(ast, fn
       {"a", _, _, _} = node ->
-        make_link(node)
+        make_link(node, extension_data)
 
       {html_tag, atts, children, m} ->
         new_tag = change_html_tag(html_tag)
@@ -225,7 +240,8 @@ defmodule Purple.Markdown do
     Map.merge(
       %{
         get_tag_link: &("/?tag=" <> &1),
-        checkbox_map: %{}
+        checkbox_map: %{},
+        fancy_link_map: %{}
       },
       extension_data
     )

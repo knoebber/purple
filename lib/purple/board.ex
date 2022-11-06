@@ -161,6 +161,10 @@ defmodule Purple.Board do
     sync_entry_checkboxes(entry)
   end
 
+  def get_item(id) do
+    Repo.get(Item, id)
+  end
+
   def get_item!(id) do
     Repo.get!(Item, id)
   end

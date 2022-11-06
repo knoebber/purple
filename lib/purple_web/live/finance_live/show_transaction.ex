@@ -1,22 +1,34 @@
 defmodule PurpleWeb.FinanceLive.ShowTransaction do
   use PurpleWeb, :live_view
-
   import PurpleWeb.FinanceLive.FinanceHelpers
-
   alias Purple.Finance
 
-  defp assign_transaction(socket, transaction) do
-    page_title =
-      if transaction.description == "" do
-        "Transaction #{transaction.id}"
-      else
-        transaction.description
-      end
+  @behaviour PurpleWeb.FancyLink
 
+  defp transaction_to_string(transaction) do
+    transaction.dollars <>
+      " to " <> transaction.merchant.name <> " on " <> format_date(transaction.timestamp)
+  end
+
+  defp assign_transaction(socket, transaction) do
     socket
-    |> assign(:page_title, page_title)
+    |> assign(:page_title, transaction_to_string(transaction))
     |> assign(:transaction, transaction)
     |> assign(:is_editing, false)
+  end
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_type do
+    "Transaction"
+  end
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_title(%{"id" => tx_id}) do
+    transaction = Finance.get_transaction(tx_id)
+
+    if transaction do
+      transaction_to_string(transaction)
+    end
   end
 
   @impl Phoenix.LiveView
@@ -64,9 +76,9 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1><%= @page_title %></h1>
-    <section class="mt-2 mb-2 window">
-      <div class="flex justify-between bg-purple-300 p-1">
+    <h1 class="mb-2"><%= @page_title %></h1>
+    <section class="mb-2 window">
+      <div class="flex justify-between bg-purple-300 p-1 mb-2">
         <div class="inline-links">
           <.link href="#" phx-click="toggle_edit">
             <%= if @is_editing do %>
@@ -92,13 +104,17 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
           transaction={@transaction}
         />
       <% else %>
-        <div class="p-4">
-          <p>
-            <%= @transaction.merchant.name %> for <%= @transaction.dollars %> with <%= @transaction.payment_method.name %>
+        <div class="pl-4">
+          <p>Paid with: <%= @transaction.payment_method.name %></p>
+          <p :if={@transaction.description != ""}>
+            Description: <%= @transaction.description %>
+          </p>
+          <p :if={@transaction.notes != ""}>
+            Notes 👇
           </p>
         </div>
-        <div class="markdown-content">
-          <%= markdown(@transaction.notes, :finance) %>
+        <div class="markdown-content mt-2">
+          <%= markdown(@transaction.notes, link_type: :finance) %>
         </div>
       <% end %>
     </section>

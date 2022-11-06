@@ -46,7 +46,7 @@ defmodule PurpleWeb.RunLive.Show do
           </strong>
           <span>|</span>
           <%= if @live_action == :edit do %>
-            <strong>Edit Item</strong>
+            <strong>Edit Run</strong>
             <span>|</span>
             <.link patch={Routes.run_show_path(@socket, :show, @run)}>
               Cancel
@@ -74,7 +74,7 @@ defmodule PurpleWeb.RunLive.Show do
         </div>
       <% else %>
         <div class="markdown-content">
-          <%= markdown(@run.description, :run) %>
+          <%= markdown(@run.description, link_type: :run) %>
         </div>
       <% end %>
     </section>

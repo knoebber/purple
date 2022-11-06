@@ -94,30 +94,14 @@ defmodule PurpleWeb.WebHelpers do
   def get_tag_link(tag, :finance), do: Routes.finance_index_path(Endpoint, :index, tag: tag)
   def get_tag_link(tag, _), do: "?tag=#{tag}"
 
-  def extract_routes_from_markdown(md) do
-    host = Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host]
 
-    Regex.scan(
-      Regex.compile!("(^|\\s)https?://#{host}[^/]+(/[[:^blank:]]+)"),
-      md
-    )
-    |> Enum.map(fn [_, _, path] ->
-      case Phoenix.Router.route_info(PurpleWeb.Router, "GET", path, host) do
-        %{phoenix_live_view: {module, _, _, _}, path_params: params} -> {module, params}
-        _ -> nil
-      end
-    end)
-    |> Enum.filter(& &1)
-  end
-
-  def markdown(md, link_type, checkbox_map \\ %{}) when is_binary(md) and is_atom(link_type) do
-    extension_data = %{
-      checkbox_map: checkbox_map,
-      get_tag_link: &get_tag_link(&1, link_type)
-    }
-
+  def markdown(md, options \\ []) when is_binary(md) and is_list(options) do
     md
-    |> Purple.Markdown.markdown_to_html(extension_data)
+    |> Purple.Markdown.markdown_to_html(%{
+      checkbox_map: Keyword.get(options, :checkbox_map, %{}),
+      get_tag_link: &get_tag_link(&1, Keyword.get(options, :link_type)),
+      fancy_link_map: Keyword.get(options, :fancy_link_map, %{})
+    })
     |> Phoenix.HTML.raw()
   end
 

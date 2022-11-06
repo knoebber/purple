@@ -7,6 +7,8 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   alias Purple.Board.ItemEntry
   alias Purple.Uploads
 
+  @behaviour PurpleWeb.FancyLink
+
   defp assign_uploads(socket, item_id) do
     files = Uploads.get_files_by_item(item_id)
 
@@ -17,7 +19,18 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   end
 
   defp assign_entries(socket) do
-    assign(socket, :entries, Board.list_item_entries(socket.assigns.item.id, :checkboxes))
+    entries = Board.list_item_entries(socket.assigns.item.id, :checkboxes)
+
+    fancy_link_map =
+      entries
+      |> Enum.reduce([], fn entry, route_info ->
+        PurpleWeb.FancyLink.extract_routes_from_markdown(entry.content) ++ route_info
+      end)
+      |> PurpleWeb.FancyLink.build_fancy_link_map()
+
+    socket
+    |> assign(:entries, entries)
+    |> assign(:fancy_link_map, fancy_link_map)
   end
 
   defp assign_default_params(socket, item_id) do
@@ -70,6 +83,20 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       %{},
       fn checkbox, acc -> Map.put(acc, checkbox.description, checkbox) end
     )
+  end
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_type do
+    "Item"
+  end
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_title(%{"id" => item_id}) do
+    item = Board.get_item(item_id)
+
+    if item do
+      item.description
+    end
   end
 
   @impl Phoenix.LiveView
@@ -293,7 +320,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         </div>
       <% else %>
         <div class="markdown-content">
-          <%= markdown("# #{@item.description}", :board) %>
+          <%= markdown("# #{@item.description}", link_type: :board) %>
         </div>
       <% end %>
       <div>
@@ -386,7 +413,11 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
             <%= unless entry.is_collapsed do %>
               <div class="markdown-content">
-                <%= markdown(entry.content, :board, make_checkbox_map(entry)) %>
+                <%= markdown(entry.content,
+                  link_type: :board,
+                  checkbox_map: make_checkbox_map(entry),
+                  fancy_link_map: @fancy_link_map
+                ) %>
               </div>
             <% end %>
           <% end %>

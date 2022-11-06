@@ -144,16 +144,22 @@ defmodule Purple.Finance do
     Repo.get!(PaymentMethod, id)
   end
 
-  def get_transaction!(id) do
-    Repo.one!(
-      from(tx in Transaction,
-        select_merge: %{dollars: fragment(@dollar_amount_fragment)},
-        join: m in assoc(tx, :merchant),
-        join: pm in assoc(tx, :payment_method),
-        where: tx.id == ^id,
-        preload: [merchant: m, payment_method: pm]
-      )
+  defp get_transaction_query(id) do
+    from(tx in Transaction,
+      select_merge: %{dollars: fragment(@dollar_amount_fragment)},
+      join: m in assoc(tx, :merchant),
+      join: pm in assoc(tx, :payment_method),
+      where: tx.id == ^id,
+      preload: [merchant: m, payment_method: pm]
     )
+  end
+
+  def get_transaction(id) do
+    Repo.one(get_transaction_query(id))
+  end
+
+  def get_transaction!(id) do
+    Repo.one!(get_transaction_query(id))
   end
 
   def get_transaction!(id, :tags) do

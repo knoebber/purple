@@ -70,7 +70,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
         />
       <% else %>
         <div class="markdown-content">
-          <%= markdown(@merchant.description, :finance) %>
+          <%= markdown(@merchant.description, link_type: :finance) %>
         </div>
       <% end %>
     </section>
