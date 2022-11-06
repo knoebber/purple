@@ -150,7 +150,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           :noreply,
           socket
           |> put_flash(:info, "Entry saved")
-          |> push_patch(to: Routes.board_show_item_path(socket, :show, entry.item_id))
+          |> push_patch(to: Routes.board_show_item_path(socket, :show, entry.item_id), replace: true)
         }
 
       {:error, changeset} ->
@@ -218,7 +218,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   defp cancel_link(assigns) do
     ~H"""
-    <.link patch={Routes.board_show_item_path(@socket, :show, @item.id)}>Cancel</.link>
+    <.link patch={Routes.board_show_item_path(@socket, :show, @item.id)} replace={true}>Cancel</.link>
     """
   end
 
@@ -255,7 +255,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           >
             <%= if(@entry.is_collapsed, do: "[+]", else: "[-]") %>
           </a>
-          <.link patch={Routes.board_show_item_path(@socket, :edit_entry, @item.id, @entry.id)}>
+          <.link
+            patch={Routes.board_show_item_path(@socket, :edit_entry, @item.id, @entry.id)}
+            replace={true}
+          >
             Edit
           </.link>
           <span>|</span>
@@ -293,7 +296,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <% else %>
             <strong><%= @item.status %></strong>
             <span>|</span>
-            <.link patch={Routes.board_show_item_path(@socket, :edit_item, @item)}>
+            <.link patch={Routes.board_show_item_path(@socket, :edit_item, @item)} replace={true}>
               Edit
             </.link>
           <% end %>
@@ -302,7 +305,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             Delete
           </a>
           <span>|</span>
-          <.link patch={Routes.board_show_item_path(@socket, :create_entry, @item)}>
+          <.link patch={Routes.board_show_item_path(@socket, :create_entry, @item)} replace={true}>
             Create Entry
           </.link>
         </div>

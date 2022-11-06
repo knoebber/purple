@@ -1,6 +1,6 @@
 defmodule PurpleWeb.BoardLive.UpdateItem do
   @moduledoc """
-  Form for updating rows in the user_boards database table.
+  Form for updating items
   """
 
   use PurpleWeb, :live_component
@@ -26,7 +26,7 @@ defmodule PurpleWeb.BoardLive.UpdateItem do
           :noreply,
           socket
           |> put_flash(:info, "Item updated")
-          |> push_patch(to: socket.assigns.return_to)
+          |> push_patch(to: socket.assigns.return_to, replace: true)
         }
 
       {:error, %Ecto.Changeset{} = changeset} ->
