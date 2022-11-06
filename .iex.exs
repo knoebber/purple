@@ -1,7 +1,6 @@
 alias Purple.{
   Accounts,
   Activities,
-  Application,
   Board,
   Filter,
   Finance,
