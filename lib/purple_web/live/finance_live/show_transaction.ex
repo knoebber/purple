@@ -7,7 +7,8 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
 
   defp transaction_to_string(transaction) do
     transaction.dollars <>
-      " to " <> transaction.merchant.name <> " on " <> format_date(transaction.timestamp)
+      " " <>
+      transaction.merchant.name <> " " <> format_date(transaction.timestamp)
   end
 
   defp assign_transaction(socket, transaction) do

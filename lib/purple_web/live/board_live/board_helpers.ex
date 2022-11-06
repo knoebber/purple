@@ -68,10 +68,6 @@ defmodule PurpleWeb.BoardLive.BoardHelpers do
           )
       },
       %{
-        label: "Create item",
-        to: item_create_path()
-      },
-      %{
         label: "Board settings",
         to: board_settings_path()
       }

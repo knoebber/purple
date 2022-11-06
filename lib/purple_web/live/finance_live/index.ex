@@ -71,6 +71,9 @@ defmodule PurpleWeb.FinanceLive.Index do
       <h1><%= @page_title %></h1>
     </div>
     <.filter_form :let={f}>
+      <%= live_redirect(to: create_transaction_path()) do %>
+        <button class="btn" type="button">Create</button>
+      <% end %>
       <button
         type="btn"
         class="window pl-4 pr-4 text-lg"
@@ -93,18 +96,6 @@ defmodule PurpleWeb.FinanceLive.Index do
         @tag_options,
         value: Map.get(@filter, :tag, ""),
         class: "lg:w-1/4"
-      ) %>
-      <%= select(
-        f,
-        :merchant_id,
-        [[value: "", key: "🧟 All merchants"]] ++ @merchant_options,
-        value: Map.get(@filter, :merchant_id, "")
-      ) %>
-      <%= select(
-        f,
-        :payment_method_id,
-        [[value: "", key: "💸 All payment methods"]] ++ @payment_method_options,
-        value: Map.get(@filter, :payment_method_id, "")
       ) %>
     </.filter_form>
     <div class="w-full overflow-auto">

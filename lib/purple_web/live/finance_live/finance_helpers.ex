@@ -63,19 +63,17 @@ defmodule PurpleWeb.FinanceLive.FinanceHelpers do
     [
       %{
         label: "Transactions",
-        to: index_path()
-      },
-      %{
-        label: "Create Transaction",
-        to: create_transaction_path()
-      },
-      %{
-        label: "Merchants",
-        to: merchant_index_path()
-      },
-      %{
-        label: "Payment Methods",
-        to: payment_method_index_path()
+        to: index_path(),
+        children: [
+          %{
+            label: "Merchants",
+            to: merchant_index_path()
+          },
+          %{
+            label: "Payment Methods",
+            to: payment_method_index_path()
+          }
+        ]
       },
       %{
         label: "Shared Budgets",
