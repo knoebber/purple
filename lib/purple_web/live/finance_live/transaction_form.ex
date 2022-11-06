@@ -72,6 +72,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       socket
       |> assign_changeset(tx_params)
       |> assign(:should_leave_open, should_leave_open?(params))
+      |> assign(:rows, text_area_rows(socket.assigns.transaction.notes))
     }
   end
 
