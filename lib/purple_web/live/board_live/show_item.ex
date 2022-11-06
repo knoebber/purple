@@ -94,8 +94,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def get_fancy_link_title(%{"id" => item_id}) do
     item = Board.get_item(item_id)
 
-    if item do
-      item.description
+    case item do
+      nil -> nil
+      %{status: :INFO} -> item.description
+      _ -> item.description <> " (#{item.status})"
     end
   end
 
