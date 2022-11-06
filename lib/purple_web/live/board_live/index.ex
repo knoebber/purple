@@ -133,7 +133,7 @@ defmodule PurpleWeb.BoardLive.Index do
     <% end %>
     <.filter_form :let={f}>
       <%= live_redirect(to: item_create_path(@user_board.id)) do %>
-        <button class="btn">Create</button>
+        <button class="btn" type="button">Create</button>
       <% end %>
       <%= text_input(
         f,
