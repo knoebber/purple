@@ -4,9 +4,7 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
   """
 
   use PurpleWeb, :live_view
-
   import PurpleWeb.FinanceLive.FinanceHelpers
-
   alias Purple.Finance.Transaction
 
   @impl Phoenix.LiveView

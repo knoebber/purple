@@ -1,31 +1,10 @@
 defmodule Purple.TransactionParser do
-  alias Purple.Repo
-  alias Purple.Finance
-  alias Purple.Finance.Transaction
-
   @callback label() :: String.t()
   @callback parse_dollars([Map.t()]) :: String.t()
   @callback parse_merchant([Map.t()]) :: String.t()
   @callback parse_last_4([Map.t()]) :: String.t()
   @callback parse_datetime([Map.t()]) :: DateTime.t() | nil
 
-  # REMOVE ME
-  def save(tx_map, user_id) do
-    Repo.transaction(fn ->
-      merchant = Finance.get_or_create_merchant!(tx_map.merchant)
-      payment_method = Finance.get_or_create_payment_method!(tx_map.payment_method)
-
-      Repo.insert!(%Transaction{
-        cents: tx_map.cents,
-        description: tx_map.description,
-        merchant_id: merchant.id,
-        notes: tx_map.notes,
-        payment_method_id: payment_method.id,
-        timestamp: tx_map.timestamp,
-        user_id: user_id
-      })
-    end)
-  end
 
   def get_cents(doc, impl) do
     doc
