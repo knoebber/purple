@@ -146,10 +146,10 @@ defmodule PurpleWeb.RunLive.Index do
           <%= format_date(run.date, :dayname) %>
         </:col>
         <:col :let={run} label="">
-          <%= link("Edit", phx_click: "edit_run", phx_value_id: run.id, to: "#") %>
+          <%= link("✏️", phx_click: "edit_run", phx_value_id: run.id, to: "#") %>
         </:col>
         <:col :let={run} label="">
-          <%= link("Delete",
+          <%= link("❌",
             phx_click: "delete",
             phx_value_id: run.id,
             data: [confirm: "Are you sure?"],

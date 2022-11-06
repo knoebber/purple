@@ -77,7 +77,7 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
       <:col :let={row} label="">
         <%= if length(row.transactions) == 0 do %>
           <.link href="#" phx-click="delete" phx-value-id={row.id}>
-            Delete
+            ❌
           </.link>
         <% end %>
       </:col>

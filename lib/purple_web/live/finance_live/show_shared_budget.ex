@@ -219,7 +219,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
             </:col>
             <:col :let={transaction} label="">
               <.link href="#" phx-click="remove_transaction" phx-value-id={transaction.id}>
-                Remove
+                ❌
               </.link>
             </:col>
           </.table>

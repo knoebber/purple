@@ -96,7 +96,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
             <li>
               <code class="inline">#<%= tag.name %></code>
               <.link href="#" phx-click="remove_tag" phx-target={@myself} phx-value-id={tag.id}>
-                Remove
+                ❌
               </.link>
             </li>
           <% end %>
