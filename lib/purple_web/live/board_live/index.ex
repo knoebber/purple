@@ -96,20 +96,23 @@ defmodule PurpleWeb.BoardLive.Index do
   @impl Phoenix.LiveView
   def handle_event("toggle_complete", %{"id" => id}, socket) do
     item = Board.get_item!(id)
-    Board.set_item_complete!(item, item.completed_at == nil)
-    {:noreply, assign_data(socket)}
+    item = Board.set_item_complete!(item, item.completed_at == nil)
+
+    index = Enum.find_index(socket.assigns.items, &(&1.id == item.id))
+
+    {
+      :noreply,
+      assign(
+        socket,
+        :items,
+        List.replace_at(socket.assigns.items, index, item)
+      )
+    }
   end
 
   @impl Phoenix.LiveView
   def handle_event("edit_item", %{"id" => id}, socket) do
     {:noreply, assign(socket, :editable_item, Board.get_item!(id))}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("delete", %{"id" => id}, socket) do
-    Board.delete_item!(Board.get_item!(id))
-
-    {:noreply, assign_data(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -201,12 +204,7 @@ defmodule PurpleWeb.BoardLive.Index do
           </.link>
         </:col>
         <:col :let={item} label="">
-          <.link href="#" phx-click="edit_item" phx-value-id={item.id}>Edit</.link>
-        </:col>
-        <:col :let={item} label="">
-          <.link href="#" phx-click="delete" phx-value-id={item.id} data-confirm="Are you sure?">
-            Delete
-          </.link>
+          <.link href="#" phx-click="edit_item" phx-value-id={item.id}>✏️</.link>
         </:col>
       </.table>
       <.page_links
