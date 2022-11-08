@@ -1,8 +1,6 @@
 defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   use PurpleWeb, :live_view
-
   import PurpleWeb.FinanceLive.FinanceHelpers
-
   alias Purple.Finance
 
   defp assign_data(socket, shared_budget_id, adjustment_id \\ nil) do
@@ -11,13 +9,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       |> Finance.get_shared_budget_user_totals()
       |> Finance.make_shared_budget_user_data()
 
-    user_transactions =
-      Finance.list_transactions(%{
-        not_shared_budget_id: shared_budget_id,
-        user_id: socket.assigns.current_user.id
-      })
-
-    shared_budget = Finance.get_shared_budget(shared_budget_id)
+    user_transactions = shared_budget = Finance.get_shared_budget(shared_budget_id)
 
     adjustment =
       if adjustment_id do
@@ -61,21 +53,6 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("share_transaction", params, socket) do
-    shared_budget_id = socket.assigns.shared_budget.id
-
-    transaction_id = Purple.int_from_map(params, "transaction_id")
-
-    if transaction_id do
-      Finance.create_shared_transaction!(shared_budget_id, transaction_id)
-
-      {:noreply, assign_data(socket, shared_budget_id)}
-    else
-      {:noreply, socket}
-    end
-  end
-
-  @impl Phoenix.LiveView
   def handle_event("remove_transaction", params, socket) do
     shared_budget_id = socket.assigns.shared_budget.id
 
@@ -116,40 +93,46 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   end
 
   @impl Phoenix.LiveView
+  def handle_info(:new_shared_transaction, socket) do
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Shared transaction")
+      |> assign_data(socket.assigns.shared_budget.id)
+    }
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
-    <%= if @live_action in [:edit_adjustment, :new_adjustment] do %>
-      <.modal
-        title="Adjust Shared Budget"
-        return_to={show_shared_budget_path(@shared_budget.id, :show)}
-      >
-        <.live_component
-          action={@live_action}
-          adjustment={@adjustment}
-          current_user={@current_user}
-          id={@adjustment.id || :new}
-          module={PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm}
-          params={%{}}
-          shared_budget_id={@shared_budget.id}
-          user_mappings={@user_mappings}
-        />
-      </.modal>
-    <% end %>
+    <.modal
+      :if={@live_action in [:edit_adjustment, :new_adjustment]}
+      title="Adjust Shared Budget"
+      return_to={show_shared_budget_path(@shared_budget.id, :show)}
+    >
+      <.live_component
+        action={@live_action}
+        adjustment={@adjustment}
+        current_user={@current_user}
+        id={@adjustment.id || :new}
+        module={PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm}
+        params={%{}}
+        shared_budget_id={@shared_budget.id}
+        user_mappings={@user_mappings}
+      />
+    </.modal>
     <%= if length(@users) == 0 do %>
       <button type="button" class="btn mb-2" phx-click="delete">Delete</button>
     <% end %>
-    <form class="flex flex-row mb-2" phx-submit="share_transaction">
-      <select name="transaction_id">
-        <option value="0"><%= @current_user.email %>'s transactions</option>
-        <%= for tx <- @user_transactions do %>
-          <option value={tx.id}>
-            <%= tx.dollars %> on <%= format_date(tx.timestamp) %> for <%= tx.merchant.name %> with <%= tx.payment_method.name %>
-          </option>
-        <% end %>
-      </select>
-      <button class="ml-3" type="submit">Add</button>
-    </form>
+    <.live_component
+      action={:new}
+      current_user={@current_user}
+      shared_transaction={%Finance.SharedTransaction{}}
+      id={:new_shared_transaction}
+      module={PurpleWeb.FinanceLive.SharedTransactionForm}
+      shared_budget_id={@shared_budget.id}
+    />
     <div class="p-1 mb-2 flex">
       <.link href="#" phx-click="toggle_show_adjustments" class="font-mono">
         <%= if(@shared_budget.show_adjustments, do: "Hide Adjustments", else: "Show Adjustments") %>
@@ -208,14 +191,11 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       <%= for user <- @users do %>
         <div class="p-1">
           <.table rows={user.transactions}>
-            <:col :let={transaction} label="Amount">
-              <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
+            <:col :let={transaction} label="Transaction">
+              <%= live_redirect(PurpleWeb.FinanceLive.ShowTransaction.transaction_to_string(transaction), to: show_transaction_path(transaction)) %>
             </:col>
-            <:col :let={transaction} label="Date">
-              <%= format_date(transaction.timestamp) %>
-            </:col>
-            <:col :let={transaction} label="Merchant">
-              <%= transaction.merchant.name %>
+            <:col :let={transaction} label="Type">
+              <%= transaction.shared_transaction.type %>
             </:col>
             <:col :let={transaction} label="">
               <.link href="#" phx-click="remove_transaction" phx-value-id={transaction.id}>

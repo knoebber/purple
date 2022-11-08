@@ -94,7 +94,7 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
           <%= text_input(f, :dollars) %>
           <%= error_tag(f, :cents) %>
           <%= label(f, :type) %>
-          <%= select(f, :type, Finance.adjustment_type_mappings()) %>
+          <%= select(f, :type, Finance.share_type_mappings()) %>
           <%= error_tag(f, :type) %>
           <%= label(f, :user_id, "User") %>
           <%= select(f, :user_id, @user_mappings) %>

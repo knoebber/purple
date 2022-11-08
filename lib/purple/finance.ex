@@ -42,6 +42,10 @@ defmodule Purple.Finance do
     SharedBudgetAdjustment.changeset(adjustment, attrs)
   end
 
+  def change_shared_transaction(%SharedTransaction{} = stx, attrs \\ %{}) do
+    SharedTransaction.changeset(stx, attrs)
+  end
+
   def create_merchant(params) do
     %Merchant{}
     |> Merchant.changeset(params)
@@ -63,6 +67,12 @@ defmodule Purple.Finance do
   def create_shared_budget_adjustment(shared_budget_id, params) do
     %SharedBudgetAdjustment{shared_budget_id: shared_budget_id}
     |> SharedBudgetAdjustment.changeset(params)
+    |> Repo.insert()
+  end
+
+  def create_shared_transaction(shared_budget_id, params) do
+    %SharedTransaction{shared_budget_id: shared_budget_id}
+    |> SharedTransaction.changeset(params)
     |> Repo.insert()
   end
 
@@ -101,6 +111,12 @@ defmodule Purple.Finance do
   def update_shared_budget_adjustment(%SharedBudgetAdjustment{} = adjustment, params) do
     adjustment
     |> SharedBudgetAdjustment.changeset(params)
+    |> Repo.update()
+  end
+
+  def update_shared_transaction(%SharedTransaction{} = stx, params) do
+    stx
+    |> SharedTransaction.changeset(params)
     |> Repo.update()
   end
 
@@ -266,7 +282,7 @@ defmodule Purple.Finance do
     end
   end
 
-  def list_transactions(filter \\ %{}) do
+  def list_transactions(filter) do
     order_by = order_transactions_by(filter)
 
     Transaction
@@ -281,11 +297,11 @@ defmodule Purple.Finance do
     |> transaction_text_search(filter)
     |> user_filter(filter)
     |> order_by(^order_by)
-    |> preload([_, m, pm], merchant: m, payment_method: pm)
+    |> preload([_, m, pm, stx], merchant: m, payment_method: pm, shared_transaction: stx)
     |> Repo.paginate(filter)
   end
 
-  def list_shared_budget_adjustments(filter \\ %{}) do
+  def list_shared_budget_adjustments(filter) do
     sb_filter = fn
       q, %{shared_budget_id: id} -> where(q, [sb], sb.shared_budget_id == ^id)
       q, _ -> q
@@ -381,8 +397,8 @@ defmodule Purple.Finance do
         where: shared_budget.id == ^shared_budget_id,
         group_by: [shared_budget.id, user.email, user.id],
         select: %{
-          credit_cents: 0,
-          shared_cents: sum(transaction.cents),
+          credit_cents: fragment("SUM(CASE WHEN type = 'CREDIT' THEN cents ELSE 0 END)"),
+          shared_cents: fragment("SUM(CASE WHEN type = 'SHARE' THEN cents ELSE 0 END)"),
           email: user.email,
           shared_budget_id: shared_budget.id,
           user_id: user.id
@@ -449,13 +465,6 @@ defmodule Purple.Finance do
     Repo.delete!(%SharedBudget{id: id})
   end
 
-  def create_shared_transaction!(shared_budget_id, transaction_id) do
-    Repo.insert!(%SharedTransaction{
-      shared_budget_id: shared_budget_id,
-      transaction_id: transaction_id
-    })
-  end
-
   def remove_shared_transaction!(shared_budget_id, transaction_id) do
     Repo.delete!(
       Repo.one(
@@ -467,8 +476,8 @@ defmodule Purple.Finance do
     )
   end
 
-  def adjustment_type_mappings do
-    Ecto.Enum.mappings(SharedBudgetAdjustment, :type)
+  def share_type_mappings do
+    Ecto.Enum.mappings(SharedTransaction, :type)
   end
 
   def get_messages_for_import(%TransactionImportTask{user: user} = tit) do

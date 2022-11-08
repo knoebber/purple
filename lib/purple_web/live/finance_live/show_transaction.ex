@@ -5,7 +5,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
 
   @behaviour PurpleWeb.FancyLink
 
-  defp transaction_to_string(transaction) do
+  def transaction_to_string(transaction) do
     transaction.dollars <>
       " " <>
       transaction.merchant.name <> " " <> format_date(transaction.timestamp)
