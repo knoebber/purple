@@ -3,6 +3,18 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   import PurpleWeb.FinanceLive.FinanceHelpers
   alias Purple.Finance
 
+  defp map_user_transactions(user_id, shared_budget_id) do
+    Enum.map(
+      Finance.list_transactions(%{
+        not_shared_budget_id: shared_budget_id,
+        user_id: user_id
+      }),
+      fn tx ->
+        [value: tx.id, key: PurpleWeb.FinanceLive.ShowTransaction.transaction_to_string(tx)]
+      end
+    )
+  end
+ 
   defp assign_data(socket, shared_budget_id, adjustment_id \\ nil) do
     user_data =
       shared_budget_id
@@ -26,6 +38,10 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
     |> assign(:user_transactions, user_transactions)
     |> assign(:users, user_data.users)
     |> assign(:user_mappings, user_data.user_mappings)
+    |> assign(
+      :user_transaction_mappings,
+      map_user_transactions(socket.assigns.current_user.id, shared_budget_id)
+    )
   end
 
   @impl Phoenix.LiveView
@@ -132,6 +148,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       id={:new_shared_transaction}
       module={PurpleWeb.FinanceLive.SharedTransactionForm}
       shared_budget_id={@shared_budget.id}
+      user_transaction_mappings={@user_transaction_mappings}
     />
     <div class="p-1 mb-2 flex">
       <.link href="#" phx-click="toggle_show_adjustments" class="font-mono">

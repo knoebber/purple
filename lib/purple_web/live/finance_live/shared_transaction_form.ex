@@ -13,25 +13,8 @@ defmodule PurpleWeb.FinanceLive.SharedTransactionForm do
     )
   end
 
-  defp map_user_transactions(user_id, shared_budget_id) do
-    Enum.map(
-      Finance.list_transactions(%{
-        not_shared_budget_id: shared_budget_id,
-        user_id: user_id
-      }),
-      fn tx ->
-        [value: tx.id, key: PurpleWeb.FinanceLive.ShowTransaction.transaction_to_string(tx)]
-      end
-    )
-  end
-
-  defp assign_data(socket) do
-    socket
-    |> assign(:changeset, Finance.change_shared_transaction(socket.assigns.shared_transaction))
-    |> assign(
-      :user_transaction_mappings,
-      map_user_transactions(socket.assigns.current_user.id, socket.assigns.shared_budget_id)
-    )
+ defp assign_data(socket) do
+    assign(socket, :changeset, Finance.change_shared_transaction(socket.assigns.shared_transaction))
   end
 
   @impl Phoenix.LiveComponent
