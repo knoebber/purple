@@ -13,8 +13,12 @@ defmodule PurpleWeb.FinanceLive.SharedTransactionForm do
     )
   end
 
- defp assign_data(socket) do
-    assign(socket, :changeset, Finance.change_shared_transaction(socket.assigns.shared_transaction))
+  defp assign_data(socket) do
+    assign(
+      socket,
+      :changeset,
+      Finance.change_shared_transaction(socket.assigns.shared_transaction)
+    )
   end
 
   @impl Phoenix.LiveComponent
@@ -43,13 +47,7 @@ defmodule PurpleWeb.FinanceLive.SharedTransactionForm do
   def render(assigns) do
     ~H"""
     <div class="mb-2">
-      <.form
-        :let={f}
-        for={@changeset}
-        class="flex flex-row"
-        phx-submit="save"
-        phx-target={@myself}
-      >
+      <.form :let={f} for={@changeset} class="flex flex-row" phx-submit="save" phx-target={@myself}>
         <%= select(f, :transaction_id, @user_transaction_mappings, class: "w-5/6") %>
         <%= select(f, :type, Finance.share_type_mappings(), class: "w-5/6") %>
         <button class="ml-3" type="submit">Add</button>

@@ -14,7 +14,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       end
     )
   end
- 
+
   defp assign_data(socket, shared_budget_id, adjustment_id \\ nil) do
     user_data =
       shared_budget_id
@@ -209,10 +209,13 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         <div class="p-1">
           <.table rows={user.transactions}>
             <:col :let={transaction} label="Transaction">
-              <%= live_redirect(PurpleWeb.FinanceLive.ShowTransaction.transaction_to_string(transaction), to: show_transaction_path(transaction)) %>
+              <%= live_redirect(
+                PurpleWeb.FinanceLive.ShowTransaction.transaction_to_string(transaction),
+                to: show_transaction_path(transaction)
+              ) %>
             </:col>
             <:col :let={transaction} label="Type">
-              <%= transaction.shared_transaction.type %>
+              <%= hd(transaction.shared_transaction).type %>
             </:col>
             <:col :let={transaction} label="">
               <.link href="#" phx-click="remove_transaction" phx-value-id={transaction.id}>
