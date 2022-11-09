@@ -15,7 +15,7 @@ defmodule Purple.Finance.Transaction do
     belongs_to :merchant, Purple.Finance.Merchant
     belongs_to :payment_method, Purple.Finance.PaymentMethod
     belongs_to :user, Purple.Accounts.User
-    has_one :shared_transaction, Purple.Finance.SharedTransaction
+    has_many :shared_transaction, Purple.Finance.SharedTransaction
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.TransactionTag
   end
 
