@@ -43,3 +43,5 @@ npm-debug.log
 creds.txt
 
 example_html/
+*.sublime-project
+*.sublime-workspace
