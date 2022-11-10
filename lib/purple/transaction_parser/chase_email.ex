@@ -46,15 +46,15 @@ defmodule Purple.TransactionParser.ChaseEmail do
       DateTime.new!(
         Date.new!(
           Purple.parse_int(year_string),
-          Purple.month_name_to_number(month_string),
+          Purple.Date.month_name_to_number(month_string),
           Purple.parse_int(day_string)
         ),
         Time.new!(
-          Purple.hour_to_number(hour_string, pm_string),
+          Purple.Date.hour_to_number(hour_string, pm_string),
           Purple.parse_int(minute_string),
           0
         ),
-        Purple.get_tzname(tz_string)
+        Purple.Date.get_tzname(tz_string)
       )
     else
       _ ->

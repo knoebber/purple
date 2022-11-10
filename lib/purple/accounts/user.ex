@@ -107,7 +107,7 @@ defmodule Purple.Accounts.User do
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do
-    change(user, confirmed_at: Purple.utc_now())
+    change(user, confirmed_at: Purple.Date.utc_now())
   end
 
   @doc """

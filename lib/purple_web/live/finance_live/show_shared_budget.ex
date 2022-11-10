@@ -10,7 +10,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         user_id: user_id
       }),
       fn tx ->
-        [value: tx.id, key: PurpleWeb.FinanceLive.ShowTransaction.transaction_to_string(tx)]
+        [value: tx.id, key: Finance.Transaction.to_string(tx)]
       end
     )
   end
@@ -166,7 +166,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
           <%= user.email %>
           <%= if user.balance_cents < @max_balance_cents do %>
             <span class="text-red-500">
-              - <%= format_cents(@max_balance_cents - user.balance_cents) %>
+              - <%= Finance.Transaction.format_cents(@max_balance_cents - user.balance_cents) %>
             </span>
           <% end %>
         </h2>
@@ -210,7 +210,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
           <.table rows={user.transactions}>
             <:col :let={transaction} label="Transaction">
               <%= live_redirect(
-                PurpleWeb.FinanceLive.ShowTransaction.transaction_to_string(transaction),
+                Finance.Transaction.to_string(transaction),
                 to: show_transaction_path(transaction)
               ) %>
             </:col>

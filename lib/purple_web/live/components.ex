@@ -1,16 +1,14 @@
 defmodule PurpleWeb.Components do
-  @doc false
   import Phoenix.HTML.Form
   import Purple.Filter
-  import PurpleWeb.WebHelpers
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
 
   def timestamp(assigns) do
     ~H"""
-    <span title={"updated: #{format_date(@model.updated_at)}"}>
-      <%= format_date(@model.inserted_at) %>
+    <span title={"updated: #{Purple.Date.format(@model.updated_at)}"}>
+      <%= Purple.Date.format(@model.inserted_at) %>
     </span>
     """
   end
@@ -197,9 +195,9 @@ defmodule PurpleWeb.Components do
 
     value =
       if datetime do
-        Purple.to_local_datetime(datetime)
+        Purple.Date.to_local_datetime(datetime)
       else
-        Purple.local_now()
+        Purple.Date.local_now()
       end
 
     datetime_select(

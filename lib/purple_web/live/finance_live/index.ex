@@ -104,7 +104,7 @@ defmodule PurpleWeb.FinanceLive.Index do
           <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
         </:col>
         <:col :let={transaction} label="Timestamp" order_col="timestamp">
-          <%= format_date(transaction.timestamp) %>
+          <%= Purple.Date.format(transaction.timestamp) %>
         </:col>
         <:col :let={transaction} label="Merchant">
           <%= transaction.merchant.name %>

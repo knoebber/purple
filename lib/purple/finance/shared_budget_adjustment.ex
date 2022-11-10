@@ -21,7 +21,7 @@ defmodule Purple.Finance.SharedBudgetAdjustment do
     put_change(
       changeset,
       :cents,
-      Purple.dollars_to_cents(get_field(changeset, :dollars))
+      Purple.Finance.Transaction.dollars_to_cents(get_field(changeset, :dollars))
     )
   end
 

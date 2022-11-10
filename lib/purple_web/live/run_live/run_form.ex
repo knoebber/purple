@@ -2,6 +2,7 @@ defmodule PurpleWeb.RunLive.RunForm do
   use PurpleWeb, :live_component
 
   alias Purple.Activities
+  alias Purple.Activities.Run
 
   defp save_run(socket, :edit, params), do: Activities.update_run(socket.assigns.run, params)
   defp save_run(_socket, :new, params), do: Activities.create_run(params)
@@ -99,7 +100,7 @@ defmodule PurpleWeb.RunLive.RunForm do
             <%= if @changeset.valid? do %>
               Pace:
               <strong>
-                <%= format_pace(@miles, @duration_in_seconds) %>
+                <%= Run.format_pace(@miles, @duration_in_seconds) %>
               </strong>
             <% else %>
               Invalid

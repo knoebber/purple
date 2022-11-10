@@ -11,10 +11,6 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
     Board.update_user_board(socket.assigns.user_board, params)
   end
 
-  defp save_board(_, :new_board, params) do
-    Board.create_user_board(params)
-  end
-
   @impl Phoenix.LiveComponent
   def update(%{user_board: user_board} = assigns, socket) do
     changeset = Board.change_user_board(user_board)

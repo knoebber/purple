@@ -12,7 +12,7 @@ defmodule Purple.BoardFixtures do
     Enum.into(attrs, %{
       description: "Test Item 🌞",
       priority: 1,
-      last_active_at: Purple.utc_now(),
+      last_active_at: Purple.Date.utc_now(),
       status: :TODO
     })
   end

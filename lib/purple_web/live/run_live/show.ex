@@ -4,6 +4,7 @@ defmodule PurpleWeb.RunLive.Show do
   import PurpleWeb.RunLive.RunHelpers
 
   alias Purple.Activities
+  alias Purple.Activities.Run
 
   defp page_title(:show), do: "Show Run"
   defp page_title(:edit), do: "Edit Run"
@@ -42,7 +43,7 @@ defmodule PurpleWeb.RunLive.Show do
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <strong>
-            <%= @run.miles %> miles@<%= format_pace(@run.miles, @run.seconds) %>
+            <%= @run.miles %> miles@<%= Run.format_pace(@run.miles, @run.seconds) %>
           </strong>
           <span>|</span>
           <%= if @live_action == :edit do %>
@@ -58,7 +59,7 @@ defmodule PurpleWeb.RunLive.Show do
           <% end %>
         </div>
         <i>
-          <%= format_date(@run.date) %>
+          <%= Purple.Date.format(@run.date) %>
         </i>
       </div>
       <%= if @live_action == :edit do %>

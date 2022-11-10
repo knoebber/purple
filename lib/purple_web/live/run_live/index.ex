@@ -137,13 +137,13 @@ defmodule PurpleWeb.RunLive.Index do
           <%= live_redirect(run.miles, to: Routes.run_show_path(@socket, :show, run)) %>
         </:col>
         <:col :let={run} label="Duration" order_col="seconds">
-          <%= format_duration(run.hours, run.minutes, run.minute_seconds) %>
+          <%= Run.format_duration(run.hours, run.minutes, run.minute_seconds) %>
         </:col>
         <:col :let={run} label="Pace">
-          <%= format_pace(run.miles, run.seconds) %>
+          <%= Run.format_pace(run.miles, run.seconds) %>
         </:col>
         <:col :let={run} label="Date" order_col="date">
-          <%= format_date(run.date, :dayname) %>
+          <%= Purple.Date.format(run.date, :dayname) %>
         </:col>
         <:col :let={run} label="">
           <%= link("✏️", phx_click: "edit_run", phx_value_id: run.id, to: "#") %>

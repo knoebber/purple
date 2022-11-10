@@ -191,7 +191,7 @@ defmodule PurpleWeb.BoardLive.Index do
           <% end %>
         </:col>
         <:col :let={item} label="Last Activity" order_col="last_active_at">
-          <%= format_date(item.last_active_at) %>
+          <%= Purple.Date.format(item.last_active_at) %>
         </:col>
         <:col :let={item} label="">
           <.link

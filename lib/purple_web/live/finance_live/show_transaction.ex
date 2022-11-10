@@ -5,15 +5,9 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
 
   @behaviour PurpleWeb.FancyLink
 
-  def transaction_to_string(transaction) do
-    transaction.dollars <>
-      " " <>
-      transaction.merchant.name <> " " <> format_date(transaction.timestamp)
-  end
-
-  defp assign_transaction(socket, transaction) do
+ defp assign_transaction(socket, transaction) do
     socket
-    |> assign(:page_title, transaction_to_string(transaction))
+    |> assign(:page_title, Finance.Transaction.to_string(transaction))
     |> assign(:transaction, transaction)
     |> assign(:is_editing, false)
   end
@@ -28,7 +22,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
     transaction = Finance.get_transaction(tx_id)
 
     if transaction do
-      transaction_to_string(transaction)
+      Finance.Transaction.to_string(transaction)
     end
   end
 

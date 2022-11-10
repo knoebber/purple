@@ -111,7 +111,7 @@ defmodule Purple.Tags do
         Map.merge(
           %{
             tag_id: tag.id,
-            inserted_at: Purple.utc_now()
+            inserted_at: Purple.Date.utc_now()
           },
           ref_params
         )

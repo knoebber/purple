@@ -9,7 +9,7 @@ defmodule Purple.TransactionParser do
   def get_cents(doc, impl) do
     doc
     |> impl.parse_dollars()
-    |> Purple.dollars_to_cents()
+    |> Purple.Finance.Transaction.dollars_to_cents()
   end
 
   def get_merchant(doc, impl) do
@@ -27,7 +27,7 @@ defmodule Purple.TransactionParser do
 
   def get_timestamp(doc, impl) do
     case impl.parse_datetime(doc) do
-      dt = %DateTime{} -> Purple.to_naive_datetime(dt)
+      dt = %DateTime{} -> Purple.Date.to_naive_datetime(dt)
       _ -> nil
     end
   end
