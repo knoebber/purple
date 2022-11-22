@@ -36,10 +36,10 @@ defmodule PurpleWeb.RunLive.Show do
   def render(assigns) do
     ~H"""
     <h1>
-      <.link patch={Routes.run_index_path(@socket, :index)}>Runs</.link>
+      <.link patch={~p"/runs"}>Runs</.link>
       / <%= "#{@run.id}" %>
     </h1>
-    <section class="mt-2 mb-2 window">
+    <.section class="mt-2 mb-2">
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <strong>
@@ -49,11 +49,11 @@ defmodule PurpleWeb.RunLive.Show do
           <%= if @live_action == :edit do %>
             <strong>Edit Run</strong>
             <span>|</span>
-            <.link patch={Routes.run_show_path(@socket, :show, @run)}>
+            <.link patch={~p"/runs/#{@run.id}"}>
               Cancel
             </.link>
           <% else %>
-            <.link patch={Routes.run_show_path(@socket, :edit, @run)}>
+            <.link patch={~p"/runs/#{@run.id}/edit"}>
               Edit
             </.link>
           <% end %>
@@ -70,7 +70,7 @@ defmodule PurpleWeb.RunLive.Show do
             action={@live_action}
             rows={@run_rows}
             run={@run}
-            return_to={Routes.run_show_path(@socket, :show, @run)}
+            return_to={~p"/runs/#{@run.id}"}
           />
         </div>
       <% else %>
@@ -78,7 +78,7 @@ defmodule PurpleWeb.RunLive.Show do
           <%= markdown(@run.description, link_type: :run) %>
         </div>
       <% end %>
-    </section>
+    </.section>
     """
   end
 end

@@ -97,7 +97,7 @@ defmodule PurpleWeb.RunLive.Index do
         <%= @weekly_total %> this week, <%= @total %> displayed
       </i>
     </div>
-    <.modal :if={@editable_run} return_to={index_path(@query_params)} title={@page_title}>
+    <.modal :if={@editable_run} id="edit-run-modal">
       <.live_component
         id={@editable_run.id || :new}
         module={PurpleWeb.RunLive.RunForm}
@@ -107,22 +107,21 @@ defmodule PurpleWeb.RunLive.Index do
       />
     </.modal>
     <.filter_form :let={f}>
-      <%= link(phx_click: "create_run", to: "#") do %>
-        <button class="btn">Create</button>
-      <% end %>
-      <%= text_input(
-        f,
-        :query,
-        placeholder: "Search...",
-        phx_debounce: "200",
-        value: Map.get(@filter, :query, "")
-      ) %>
-      <%= select(
-        f,
-        :tag,
-        @tag_options,
-        value: Map.get(@filter, :tag, "")
-      ) %>
+      <.button phx-click="create_run">Create</.button>
+      <.input
+        field={{f, :query}}
+        value={Map.get(@filter, :query, "")}
+        placeholder="Search..."
+        phx-debounce="200"
+        class="lg:w-1/4"
+      />
+      <.input
+        field={{f, :tag}}
+        type="select"
+        options={@tag_options}
+        value={Map.get(@filter, :tag, "")}
+        class="lg:w-1/4"
+      />
       <.page_links
         filter={@filter}
         first_page={index_path(first_page(@filter))}
@@ -130,11 +129,12 @@ defmodule PurpleWeb.RunLive.Index do
         num_rows={length(@runs)}
       />
     </.filter_form>
-
     <div class="w-full overflow-auto">
       <.table rows={@runs} get_route={&index_path/1} filter={@filter}>
         <:col :let={run} label="Miles" order_col="miles">
-          <%= live_redirect(run.miles, to: Routes.run_show_path(@socket, :show, run)) %>
+          <.link navigate={~p"/runs/#{run.id}"}>
+            <%= run.miles %>
+          </.link>
         </:col>
         <:col :let={run} label="Duration" order_col="seconds">
           <%= Run.format_duration(run.hours, run.minutes, run.minute_seconds) %>
@@ -146,15 +146,14 @@ defmodule PurpleWeb.RunLive.Index do
           <%= Purple.Date.format(run.date, :dayname) %>
         </:col>
         <:col :let={run} label="">
-          <%= link("✏️", phx_click: "edit_run", phx_value_id: run.id, to: "#") %>
+          <.link href="#" phx-click="edit_run" phx-value-id={run.id}>
+            ✏️
+          </.link>
         </:col>
         <:col :let={run} label="">
-          <%= link("❌",
-            phx_click: "delete",
-            phx_value_id: run.id,
-            data: [confirm: "Are you sure?"],
-            to: "#"
-          ) %>
+          <.link href="#" phx-click="edit_run" phx-value-id={run.id} data-confirm="Are you sure?">
+            ❌
+          </.link>
         </:col>
       </.table>
       <.page_links

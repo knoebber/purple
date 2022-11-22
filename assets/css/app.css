@@ -166,25 +166,16 @@
 }
 
 @layer components {
-    button[type="submit"], .btn {
-        @apply bg-purple-300;
-        @apply disabled:bg-purple-100;
-        @apply disabled:opacity-75;
-        @apply hover:bg-purple-400;
-        @apply p-2;
-        @apply rounded;
-    }
-
     .window {
         @apply bg-purple-100;
         @apply border-collapse;
         @apply border-purple-400;
         @apply border;
         @apply rounded;
+        /* TODO: replace this class with <.section> component */
     }
-
+/*
     .flash {
-        /* TODO: info and empty flashes will be at same absolute location */
         @apply absolute;
         @apply right-5;
         @apply top-5;
@@ -220,7 +211,7 @@
     .alert-danger {
         @apply text-red-400;
     }
-
+*/
     .inline-links > * {
         @apply mr-2;
     }

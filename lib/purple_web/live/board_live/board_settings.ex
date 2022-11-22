@@ -131,24 +131,23 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
         <section class="mb-2 window">
           <div class="bg-purple-300 inline-links">
             <h2 class="ml-2 mb-2 inline"><%= user_board.name %></h2>
-            <%= live_redirect(
-              "View",
-              to: index_path(user_board.id)
-            ) %>
+            <.link navigate={~p"/board/#{user_board.id}"}>View</.link>
             <span>|</span>
-            <%= link(
-              if(@editable_board && @editable_board.id == user_board.id, do: "Cancel", else: "Edit"),
-              phx_click: "edit",
-              phx_value_id: user_board.id,
-              to: "#"
-            ) %>
+            <.link href="#" phx-click="edit" phx-value-id={user_board.id}>
+              <%= if(@editable_board && @editable_board.id == user_board.id,
+                do: "Cancel",
+                else: "Edit"
+              ) %>
+            </.link>
             <span>|</span>
-            <%= link("Delete",
-              phx_click: "delete",
-              phx_value_id: user_board.id,
-              data: [confirm: "Are you sure?"],
-              to: "#"
-            ) %>
+            <.link
+              href="#"
+              phx-click="delete"
+              phx-value-id={user_board.id}
+              data-confirm="Are you sure?"
+            >
+              Delete
+            </.link>
           </div>
           <%= if @editable_board && @editable_board.id == user_board.id do %>
             <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">

@@ -50,19 +50,16 @@ defmodule PurpleWeb.BoardLive.UpdateItem do
     <div>
       <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <%= label(f, :status) %>
-          <%= select(f, :status, Board.item_status_mappings()) %>
-          <%= error_tag(f, :status) %>
-          <%= label(f, :description) %>
-          <%= text_input(f, :description, phx_hook: "AutoFocus") %>
-          <%= error_tag(f, :description) %>
-          <%= if Ecto.Changeset.get_field(@changeset, :status) == :TODO do %>
-            <%= label(f, :priority) %>
-            <%= select(f, :priority, 1..5) %>
-            <%= error_tag(f, :priority) %>
-          <% end %>
+          <.input field={{f, :status}} type="select" options={Board.item_status_mappings()} />
+          <.input field={{f, :description}} phx-hook="AutoFocus" />
+          <.input
+            :if={Ecto.Changeset.get_field(@changeset, :status) == :TODO}
+            field={{f, :priority}}
+            type="select"
+            options={1..5}
+          />
         </div>
-        <%= submit("Save", phx_disable_with: "Saving...") %>
+        <.button phx-disable-with="Saving...">Save</.button>
       </.form>
     </div>
     """

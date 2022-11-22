@@ -19,7 +19,6 @@ defmodule Purple.Maint do
     )
   end
 
-
   def sync_item_tags() do
     Enum.each(
       Repo.all(Purple.Board.Item),

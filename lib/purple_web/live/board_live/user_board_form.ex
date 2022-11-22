@@ -101,14 +101,10 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
 
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <%= label(f, :name) %>
-          <%= text_input(f, :name, phx_hook: "AutoFocus") %>
-          <%= error_tag(f, :name) %>
-          <%= label(f, :show_done) %>
-          <%= checkbox(f, :show_done) %>
-          <%= error_tag(f, :show_done) %>
+          <.input field={{f, :name}} phx-hook="AutoFocus" />
+          <.input field={{f, :show_done}} type="checkbox" />
         </div>
-        <%= submit("Update", phx_disable_with: "Saving...") %>
+        <.button phx-disable-with="Saving...">Update</.button>
       </.form>
     </div>
     """

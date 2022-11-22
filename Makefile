@@ -6,7 +6,7 @@ endif
 all: deps create_db js compile assets migrate
 
 warnings:
-	MIX_ENV=test mix do compile --warnings-as-errors + test --warnings-as-errors
+	mix compile --all-warnings
 
 test:
 	mix test

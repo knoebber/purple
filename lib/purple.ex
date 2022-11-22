@@ -20,7 +20,7 @@ defmodule Purple do
     min(parse_int(s, minimum), maximum)
   end
 
- def int_from_map(params, key) do
+  def int_from_map(params, key) do
     case Integer.parse(Map.get(params, key, "")) do
       {0, _} -> nil
       {id, ""} -> id

@@ -28,6 +28,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   end
 
   defp user_board_entry(ub = %UserBoard{}) do
+    # TODO: add full path and add fancy link impl for user board view.
     "Created for [#{ub.name}](#{index_path(ub.id)})\n---\n" <>
       Enum.map_join(ub.tags, " ", &("#" <> &1.name))
   end
@@ -96,23 +97,19 @@ defmodule PurpleWeb.BoardLive.CreateItem do
     <h1 class="mb-2"><%= @page_title %></h1>
     <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate">
       <div class="flex flex-col mb-2 w-full xl:w-1/2">
-        <%= label(f, :description) %>
-        <%= text_input(f, :description, phx_hook: "AutoFocus") %>
-        <%= error_tag(f, :description) %>
-        <%= if Ecto.Changeset.get_field(@changeset, :status) == :TODO do %>
-          <%= label(f, :priority) %>
-          <%= select(f, :priority, 1..5) %>
-          <%= error_tag(f, :priority) %>
-        <% end %>
-        <%= label(f, :status) %>
-        <%= select(f, :status, Board.item_status_mappings()) %>
-        <%= error_tag(f, :status) %>
-        <%= inputs_for f, :entries, fn entry -> %>
-          <%= label(entry, :entry) %>
-          <%= textarea(entry, :content, rows: 3) %>
+        <.input field={{f, :description}} phx-hook="AutoFocus" />
+        <.input
+          :if={Ecto.Changeset.get_field(@changeset, :status) == :TODO}
+          type="select"
+          field={{f, :priority}}
+          options={1..5}
+        />
+        <.input field={{f, :status}} type="select" options={Board.item_status_mappings()} />
+        <%= Phoenix.HTML.inputs_for f, :entries, fn entry -> %>
+          <.input field={{entry, :entry}} type="textarea" , rows="3" />
         <% end %>
       </div>
-      <%= submit("Save", phx_disable_with: "Saving...") %>
+      <.button phx-disable-with="Saving...">Save</.button>
     </.form>
     """
   end

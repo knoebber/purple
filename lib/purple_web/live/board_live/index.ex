@@ -135,28 +135,28 @@ defmodule PurpleWeb.BoardLive.Index do
       </.modal>
     <% end %>
     <.filter_form :let={f}>
-      <%= live_redirect(to: item_create_path(@user_board.id)) do %>
-        <button class="btn" type="button">Create</button>
-      <% end %>
-      <%= text_input(
-        f,
-        :query,
-        placeholder: "Search...",
-        phx_debounce: "200",
-        value: Map.get(@filter, :query, "")
-      ) %>
-      <%= if length(@tag_options) > 0 do %>
-        <%= select(
-          f,
-          :tag,
-          @tag_options,
-          value: Map.get(@filter, :tag, "")
-        ) %>
-      <% end %>
+      <.link navigate={~p"/board/item/create?user_board_id=#{@user_board.id}"}>
+        <.button type="button">Create</.button>
+      </.link>
+      <.input
+        field={{f, :query}}
+        value={Map.get(@filter, :query, "")}
+        placeholder="Search..."
+        phx_debounce="200"
+        class="lg:w-1/4"
+      />
+      <.input
+        field={{f, :tag}}
+        type="select"
+        options={@tag_options}
+        value={Map.get(@filter, :tag, "")}
+        class="lg:w-1/4"
+      />
       <.page_links
         filter={@filter}
-        first_page={index_path(@user_board.id, first_page(@filter))}
-        num_rows={length(@items)}
+        first_page={index_path(first_page(@filter))}
+        next_page={index_path(next_page(@filter))}
+        num_rows={length(@runs)}
       />
     </.filter_form>
     <div class="w-full overflow-auto">
@@ -166,14 +166,10 @@ defmodule PurpleWeb.BoardLive.Index do
         rows={@items}
       >
         <:col :let={item} label="Item" order_col="id">
-          <%= live_redirect(item.id,
-            to: Routes.board_show_item_path(@socket, :show, item)
-          ) %>
+          <.link navigate={~p"/board/item/#{@item.id}"}><%= item.id %></.link>
         </:col>
         <:col :let={item} label="Description" order_col="description">
-          <%= live_redirect(item.description,
-            to: Routes.board_show_item_path(@socket, :show, item)
-          ) %>
+          <.link navigate={~p"/board/item/#{@item.id}"}><%= item.description %></.link>
         </:col>
         <:col :let={item} label="Priority" order_col="priority">
           <%= item.priority %>

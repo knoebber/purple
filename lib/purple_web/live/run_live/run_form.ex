@@ -66,7 +66,7 @@ defmodule PurpleWeb.RunLive.RunForm do
   @impl true
   def render(assigns) do
     ~H"""
-    <section>
+    <div>
       <.form
         :let={f}
         for={@changeset}
@@ -76,42 +76,30 @@ defmodule PurpleWeb.RunLive.RunForm do
         phx-target={@myself}
       >
         <div class="flex flex-col mb-2">
+          <.input field={{f, :miles}} phx-hook="AutoFocus" />
+          <.input field={{f, :date}} />
           <div class="flex mb-2 gap-2">
-            <%= label(f, :miles, phx_hook: "AutoFocus", class: "w-1/2") %>
-            <%= label(f, :date, class: "w-1/2") %>
+            <.input field={{f, :hours}} />
+            <.input field={{f, :minutes}} />
+            <.input field={{f, :minutes_seconds}} />
           </div>
-          <div class="flex mb-2 gap-2">
-            <%= number_input(f, :miles, step: "any", class: "w-1/2") %>
-            <%= date_input(f, :date, class: "w-1/2") %>
-          </div>
-          <div class="flex mb-2 gap-2">
-            <%= label(f, :hours, class: "w-1/3") %>
-            <%= label(f, :minutes, class: "w-1/3") %>
-            <%= label(f, :minute_seconds, "Seconds", class: "w-1/3") %>
-          </div>
-          <div class="flex mb-2 gap-2">
-            <%= number_input(f, :hours, class: "w-1/3") %>
-            <%= number_input(f, :minutes, class: "w-1/3") %>
-            <%= number_input(f, :minute_seconds, class: "w-1/3") %>
-          </div>
-          <%= label(f, :description) %>
-          <%= textarea(f, :description, rows: get_num_textarea_rows(@description)) %>
-          <p class="mt-2">
-            <%= if @changeset.valid? do %>
-              Pace:
-              <strong>
-                <%= Run.format_pace(@miles, @duration_in_seconds) %>
-              </strong>
-            <% else %>
-              Invalid
-            <% end %>
+          <.input
+            field={{f, :description}}
+            type="textarea"
+            rows={get_num_textarea_rows(@description)}
+          />
+          <p :if={@changeset.valid?} class="mt-2">
+            Pace:
+            <strong>
+              <%= Run.format_pace(@miles, @duration_in_seconds) %>
+            </strong>
           </p>
         </div>
         <div>
-          <%= submit("Save", phx_disable_with: "Saving...") %>
+          <.button phx-disable-with="Saving...">Save</.button>
         </div>
       </.form>
-    </section>
+    </div>
     """
   end
 end

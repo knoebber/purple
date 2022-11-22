@@ -5,7 +5,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
 
   @behaviour PurpleWeb.FancyLink
 
- defp assign_transaction(socket, transaction) do
+  defp assign_transaction(socket, transaction) do
     socket
     |> assign(:page_title, Finance.Transaction.to_string(transaction))
     |> assign(:transaction, transaction)

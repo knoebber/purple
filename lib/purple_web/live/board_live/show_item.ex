@@ -152,7 +152,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           :noreply,
           socket
           |> put_flash(:info, "Entry saved")
-          |> push_patch(to: Routes.board_show_item_path(socket, :show, entry.item_id), replace: true)
+          |> push_patch(
+            to: Routes.board_show_item_path(socket, :show, entry.item_id),
+            replace: true
+          )
         }
 
       {:error, changeset} ->
@@ -228,12 +231,11 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     ~H"""
     <.form :let={f} for={@changeset} phx-submit={@action} class="p-4">
       <div class="flex flex-col mb-2">
-        <%= hidden_input(f, :item_id, value: @item_id) %>
-        <%= hidden_input(f, :is_collapsed, value: false) %>
-        <%= label(f, :content) %>
-        <%= textarea(f, :content, phx_hook: "AutoFocus", id: "entry-form", rows: @rows) %>
+        <.input field={{f, :item_id}} type="hidden" value={@item_id} />
+        <.input field={{f, :is_collapsed}} type="hidden" value={false} />
+        <.input field={{f, :content}} type="textarea" rows={@rows} phx-hook="AutoFocus" />
       </div>
-      <%= submit("Save", phx_disable_with: "Saving...") %>
+      <.button phx-disable-with="Saving...">Save</.button>
     </.form>
     """
   end

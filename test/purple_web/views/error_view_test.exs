@@ -1,14 +1,14 @@
-defmodule PurpleWeb.ErrorViewTest do
+defmodule PurpleWeb.ErrorHTMLTest do
   use PurpleWeb.ConnCase, async: true
 
-  # Bring render/3 and render_to_string/3 for testing custom views
-  import Phoenix.View
+  # Bring render_to_string/3 for testing custom views
+  import Phoenix.Template
 
   test "renders 404.html" do
-    assert render_to_string(PurpleWeb.ErrorView, "404.html", []) == "Not Found"
+    assert render_to_string(PurpleWeb.ErrorHTML, "404", "html", []) == "Not Found"
   end
 
   test "renders 500.html" do
-    assert render_to_string(PurpleWeb.ErrorView, "500.html", []) == "Internal Server Error"
+    assert render_to_string(PurpleWeb.ErrorHTML, "500", "html", []) == "Internal Server Error"
   end
 end

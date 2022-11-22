@@ -101,33 +101,24 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     <div class={@class}>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
-          <%= label(f, :description) %>
-          <%= text_input(f, :description, rows: @rows, phx_hook: "AutoFocus") %>
-          <%= error_tag(f, :description) %>
-          <%= label(f, :dollars, "Amount") %>
-          <%= text_input(f, :dollars) %>
-          <%= error_tag(f, :cents) %>
-          <%= label(f, :timestamp, "Timestamp") %>
-          <%= datetime_select_group(f, :timestamp) %>
-          <%= error_tag(f, :timestamp) %>
-          <%= label(f, :merchant_id, "Merchant") %>
-          <%= select(f, :merchant_id, @merchant_options, class: "w-5/6") %>
-          <%= error_tag(f, :merchant_id) %>
-          <%= label(f, :payment_method_id, "Payment Method") %>
-          <%= select(f, :payment_method_id, @payment_method_options, class: "w-5/6") %>
-          <%= error_tag(f, :payment_method_id) %>
-          <%= label(f, :notes) %>
-          <%= textarea(f, :notes, rows: @rows) %>
-          <%= error_tag(f, :notes) %>
+          <.input field={{f, :description}} type="textarea" rows={@rows} phx-hook="AutoFocus" />
+          <.input field={{f, :dollars}} label="Amount" />
+          <.input field={{f, :timestamp}} />
+          <.input field={{f, :merchant_id}} type="select" options={@merchant_options} class="w-5/6" />
+          <.input
+            field={{f, :payment_method_id}}
+            type="select"
+            options={@payment_method_options}
+            class="w-5/6"
+          />
+          <.input field={{f, :notes}} type="textarea" rows={@rows} />
         </div>
         <div class="flex justify-between">
-          <%= submit("Save", phx_disable_with: "Saving...") %>
-          <%= if @action == :new_transaction do %>
-            <div class="self-center">
-              <label for="should_leave_open">Create Another?</label>
-              <input type="checkbox" name="should_leave_open" checked={@should_leave_open} />
-            </div>
-          <% end %>
+          <.button phx-disable-with="Saving...">Save</.button>
+          <div :if={@action == :new_transaction} class="self-center">
+            <label for="should_leave_open">Create Another?</label>
+            <input type="checkbox" name="should_leave_open" checked={@should_leave_open} />
+          </div>
         </div>
       </.form>
     </div>

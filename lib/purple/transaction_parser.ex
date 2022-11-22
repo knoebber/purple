@@ -5,7 +5,6 @@ defmodule Purple.TransactionParser do
   @callback parse_last_4([Map.t()]) :: String.t()
   @callback parse_datetime([Map.t()]) :: DateTime.t() | nil
 
-
   def get_cents(doc, impl) do
     doc
     |> impl.parse_dollars()

@@ -82,21 +82,20 @@ defmodule PurpleWeb.FinanceLive.Index do
       >
         🏦
       </button>
-      <%= text_input(
-        f,
-        :query,
-        value: Map.get(@filter, :query, ""),
-        placeholder: "Search...",
-        phx_debounce: "200",
-        class: "lg:w-1/4"
-      ) %>
-      <%= select(
-        f,
-        :tag,
-        @tag_options,
-        value: Map.get(@filter, :tag, ""),
-        class: "lg:w-1/4"
-      ) %>
+      <.input
+        field={{f, :query}}
+        value={Map.get(@filter, :query, "")}
+        placeholder="Search..."
+        phx_debounce="200"
+        class="lg:w-1/4"
+      />
+      <.input
+        field={{f, :tag}}
+        type="select"
+        options={@tag_options}
+        value={Map.get(@filter, :tag, "")}
+        class="lg:w-1/4"
+      />
     </.filter_form>
     <div class="w-full overflow-auto">
       <.table rows={@transactions} filter={@filter} get_route={&index_path/1}>

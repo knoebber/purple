@@ -48,9 +48,14 @@ defmodule PurpleWeb.FinanceLive.SharedTransactionForm do
     ~H"""
     <div class="mb-2">
       <.form :let={f} for={@changeset} class="flex flex-row" phx-submit="save" phx-target={@myself}>
-        <%= select(f, :transaction_id, @user_transaction_mappings, class: "w-5/6") %>
-        <%= select(f, :type, Finance.share_type_mappings(), class: "w-5/6") %>
-        <button class="ml-3" type="submit">Add</button>
+        <.input
+          field={{f, :transaction_id}}
+          type="select"
+          options={@user_transaction_mappings}
+          class="w-5/6"
+        />
+        <.input field={{f, :type}} type="select" options={Finance.user_type_mappings()} class="w-5/6" />
+        <.button class="ml-3">Add</.button>
       </.form>
     </div>
     """

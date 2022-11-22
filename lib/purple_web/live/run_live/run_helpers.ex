@@ -2,13 +2,14 @@ defmodule PurpleWeb.RunLive.RunHelpers do
   @moduledoc """
   Helpers for run live views
   """
+  use PurpleWeb, :verified_routes
 
   def index_path(params) do
-    PurpleWeb.Router.Helpers.run_index_path(PurpleWeb.Endpoint, :index, params)
+    ~p"/runs?#{params}"
   end
 
   def index_path() do
-    index_path(%{})
+    ~p"/runs"
   end
 
   def side_nav do

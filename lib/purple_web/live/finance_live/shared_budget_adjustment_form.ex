@@ -87,30 +87,18 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
     <div>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
-          <%= label(f, :description) %>
-          <%= text_input(f, :description, rows: @rows, phx_hook: "AutoFocus") %>
-          <%= error_tag(f, :description) %>
-          <%= label(f, :dollars, "Amount") %>
-          <%= text_input(f, :dollars) %>
-          <%= error_tag(f, :cents) %>
-          <%= label(f, :type) %>
-          <%= select(f, :type, Finance.share_type_mappings()) %>
-          <%= error_tag(f, :type) %>
-          <%= label(f, :user_id, "User") %>
-          <%= select(f, :user_id, @user_mappings) %>
-          <%= error_tag(f, :user_id) %>
-          <%= label(f, :notes) %>
-          <%= textarea(f, :notes, rows: @rows) %>
-          <%= error_tag(f, :notes) %>
+          <.input field={{f, :description}} phx-hook="AutoFocus" />
+          <.input field={{f, :dollars}} label="Amount" />
+          <.input field={{f, :type}} type="select" options={Finance.share_type_mappings()} />
+          <.input field={{f, :user_id}} type="select" options={@user_mappings} />
+          <.input field={{f, :notes}} type="textarea" rows={@rows} />
         </div>
         <div class="flex justify-between mb-2_">
-          <%= submit("Save", phx_disable_with: "Saving...") %>
-          <%= if @action == :new_adjustment do %>
-            <div class="self-center">
-              <label for="should_leave_open">Create Another?</label>
-              <input type="checkbox" name="should_leave_open" checked={@should_leave_open} />
-            </div>
-          <% end %>
+          <.button phx-disable-with="Saving...">Save</.button>
+          <div :if={@action == :new_adjustment} class="self-center">
+            <label for="should_leave_open">Create Another?</label>
+            <input type="checkbox" name="should_leave_open" checked={@should_leave_open} />
+          </div>
         </div>
       </.form>
     </div>

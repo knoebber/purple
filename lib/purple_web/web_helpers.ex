@@ -9,7 +9,7 @@ defmodule PurpleWeb.WebHelpers do
     Regex.replace(~r/[#`*\n]/, markdown, "")
   end
 
- def changeset_to_reason_list(%Ecto.Changeset{errors: errors}) do
+  def changeset_to_reason_list(%Ecto.Changeset{errors: errors}) do
     Enum.map(
       errors,
       fn {_, {reason, _}} -> reason end

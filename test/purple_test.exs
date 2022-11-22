@@ -3,7 +3,7 @@ defmodule Purple.PurpleTest do
   import Purple
 
   describe "purple" do
-   test "titleize/1" do
+    test "titleize/1" do
       assert titleize("") == ""
       assert titleize("ok ok") == "Ok Ok"
     end

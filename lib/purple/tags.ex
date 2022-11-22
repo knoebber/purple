@@ -124,6 +124,7 @@ defmodule Purple.Tags do
 
   defp delete_tag_refs(module, tags, ref_params) do
     ref_filter = [{hd(Map.keys(ref_params)), hd(Map.values(ref_params))}]
+
     Repo.delete_all(
       from(m in module,
         where: m.tag_id in ^for(t <- tags, do: t.id),
