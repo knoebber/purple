@@ -40,7 +40,7 @@ defmodule PurpleWeb.RunLive.Index do
       :noreply,
       push_patch(
         socket,
-        to: index_path(filter_params),
+        to: ~p"/runs?#{filter_params}",
         replace: true
       )
     }
@@ -101,7 +101,7 @@ defmodule PurpleWeb.RunLive.Index do
       <.live_component
         id={@editable_run.id || :new}
         module={PurpleWeb.RunLive.RunForm}
-        return_to={index_path(@query_params)}
+        return_to={~p"/runs?#{@query_params}"}
         rows={3}
         run={@editable_run}
       />
@@ -120,17 +120,17 @@ defmodule PurpleWeb.RunLive.Index do
         type="select"
         options={@tag_options}
         value={Map.get(@filter, :tag, "")}
-        class="lg:w-1/4"
+        class=""
       />
       <.page_links
         filter={@filter}
-        first_page={index_path(first_page(@filter))}
-        next_page={index_path(next_page(@filter))}
+        first_page={~p"/runs?#{first_page(@filter)}"}
+        next_page={~p"/runs?#{next_page(@filter)}"}
         num_rows={length(@runs)}
       />
     </.filter_form>
     <div class="w-full overflow-auto">
-      <.table rows={@runs} get_route={&index_path/1} filter={@filter}>
+      <.table rows={@runs} get_route={fn filter -> ~p"/runs?#{filter}" end} filter={@filter}>
         <:col :let={run} label="Miles" order_col="miles">
           <.link navigate={~p"/runs/#{run.id}"}>
             <%= run.miles %>
@@ -158,8 +158,8 @@ defmodule PurpleWeb.RunLive.Index do
       </.table>
       <.page_links
         filter={@filter}
-        first_page={index_path(first_page(@filter))}
-        next_page={index_path(next_page(@filter))}
+        first_page={~p"/runs?#{first_page(@filter)}"}
+        next_page={~p"/runs?#{next_page(@filter)}"}
         num_rows={length(@runs)}
       />
     </div>
