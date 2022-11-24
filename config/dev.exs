@@ -60,11 +60,13 @@ config :purple, PurpleWeb.Endpoint,
 # Watch static and templates for browser reloading.
 config :purple, PurpleWeb.Endpoint,
   live_reload: [
+    interval: 100,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/purple_web/(live|views)/.*(ex)$",
-      ~r"lib/purple_web/templates/.*(eex)$"
+      ~r"lib/purple_web/controllers/.*heex$",
+      ~r"lib/purple_web/components/.*ex$",
+      ~r"lib/purple_web/live/.*ex$"
     ]
   ],
   watchers: [
