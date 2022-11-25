@@ -43,7 +43,7 @@ defmodule PurpleWeb.RunLive.Show do
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <strong>
-            <%= @run.miles %> miles@<%= Run.format_pace(@run.miles, @run.seconds) %>
+            <%= @run.miles %> miles@<%= Run.format_pace(@run.miles, @run.seconds) %> in <%= Run.format_duration(@run.hours, @run.minutes, @run.minute_seconds) %>
           </strong>
           <span>|</span>
           <%= if @live_action == :edit do %>

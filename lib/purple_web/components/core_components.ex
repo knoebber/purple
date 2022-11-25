@@ -425,7 +425,7 @@ defmodule PurpleWeb.CoreComponents do
       "bg-purple-100 border-collapse border-purple-400 border rounded",
       @class
     ]}>
-      <%= render_slot(@innder_block) %>
+      <%= render_slot(@inner_block) %>
     </section>
     """
   end

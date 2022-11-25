@@ -4,6 +4,7 @@ defmodule PurpleWeb.WebHelpers do
   """
   alias PurpleWeb.Endpoint
   alias PurpleWeb.Router.Helpers, as: Routes
+  use PurpleWeb, :verified_routes
 
   def strip_markdown(markdown) do
     Regex.replace(~r/[#`*\n]/, markdown, "")
@@ -24,9 +25,9 @@ defmodule PurpleWeb.WebHelpers do
     |> length()
   end
 
-  def get_tag_link(tag, :board), do: Routes.board_index_path(Endpoint, :index, tag: tag)
-  def get_tag_link(tag, :run), do: Routes.run_index_path(Endpoint, :index, tag: tag)
-  def get_tag_link(tag, :finance), do: Routes.finance_index_path(Endpoint, :index, tag: tag)
+  def get_tag_link(tag, :board), do: ~p"/board?tag=#{tag}"
+  def get_tag_link(tag, :run), do: ~p"/runs?tag=#{tag}"
+  def get_tag_link(tag, :finance), do: ~p"/finance?tag=#{tag}"
   def get_tag_link(tag, _), do: "?tag=#{tag}"
 
   def markdown(md, options \\ []) when is_binary(md) and is_list(options) do
