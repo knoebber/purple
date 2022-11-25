@@ -23,18 +23,8 @@ defmodule Purple.Activities.Run do
         {_, hours} = fetch_field(changeset, :hours)
         {_, minutes} = fetch_field(changeset, :minutes)
         {_, minute_seconds} = fetch_field(changeset, :minute_seconds)
-
         seconds = hours * 3600 + minutes * 60 + minute_seconds
-
-        if seconds <= 0 do
-          put_change(changeset, :seconds, nil)
-        else
-          changeset
-          |> delete_change(:hours)
-          |> delete_change(:minutes)
-          |> delete_change(:minute_seconds)
-          |> put_change(:seconds, seconds)
-        end
+        put_change(changeset, :seconds, if(seconds <= 0, do: nil, else: seconds))
 
       _ ->
         changeset
@@ -75,8 +65,7 @@ defmodule Purple.Activities.Run do
              is_number(seconds) and
              hours + minutes + seconds > 0 do
     [hours, minutes, seconds]
-    |> Enum.map(fn n -> Integer.to_string(n) |> String.pad_leading(2, "0") end)
-    |> Enum.join(":")
+    |> Enum.map_join(":", fn n -> n |> Integer.to_string() |> String.pad_leading(2, "0") end)
   end
 
   def format_duration(_, _, _), do: "N/A"

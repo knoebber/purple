@@ -73,6 +73,8 @@ defmodule PurpleWeb.Router do
            :edit_adjustment
 
       live "/runs", RunLive.Index, :index
+      live "/runs/create", RunLive.Index, :create
+      live "/runs/edit/:id", RunLive.Index, :edit
       live "/runs/:id", RunLive.Show, :show
       live "/runs/:id/edit", RunLive.Show, :edit
 

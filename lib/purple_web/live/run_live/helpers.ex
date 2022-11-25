@@ -1,4 +1,4 @@
-defmodule PurpleWeb.RunLive.RunHelpers do
+defmodule PurpleWeb.RunLive.Helpers do
   @moduledoc """
   Helpers for run live views
   """

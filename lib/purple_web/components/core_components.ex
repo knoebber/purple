@@ -10,6 +10,41 @@ defmodule PurpleWeb.CoreComponents do
     Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
   end
 
+    @doc """
+  Translates an error message using gettext.
+  """
+  def translate_error({msg, opts}) do
+    # When using gettext, we typically pass the strings we want
+    # to translate as a static argument:
+    #
+    #     # Translate "is invalid" in the "errors" domain
+    #     dgettext("errors", "is invalid")
+    #
+    #     # Translate the number of files with plural rules
+    #     dngettext("errors", "1 file", "%{count} files", count)
+    #
+    # Because the error messages we show in our forms and APIs
+    # are defined inside Ecto, we need to translate them dynamically.
+    # This requires us to call the Gettext module passing our gettext
+    # backend as first argument.
+    #
+    # Note we use the "errors" domain, which means translations
+    # should be written to the errors.po file. The :count option is
+    # set by Ecto and indicates we should also apply plural rules.
+    if count = opts[:count] do
+      Gettext.dngettext(PurpleWeb.Gettext, "errors", msg, msg, count, opts)
+    else
+      Gettext.dgettext(PurpleWeb.Gettext, "errors", msg, opts)
+    end
+  end
+
+  @doc """
+  Translates the errors for a field from a keyword list of errors.
+  """
+  def translate_errors(errors, field) when is_list(errors) do
+    for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
   @doc """
   Renders a modal.
 
@@ -44,7 +79,7 @@ defmodule PurpleWeb.CoreComponents do
   def modal(assigns) do
     ~H"""
     <div id={@id} phx-mounted={@show && show_modal(@id)} class="relative z-50 hidden">
-      <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/90 transition-opacity" aria-hidden="true" />
+      <div id={"#{@id}-bg"} class="fixed inset-0 bg-zinc-50/60 transition-opacity" aria-hidden="true" />
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
@@ -54,14 +89,14 @@ defmodule PurpleWeb.CoreComponents do
         tabindex="0"
       >
         <div class="flex min-h-full items-center justify-center">
-          <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
+          <div class="w-full max-w-3xl p-4">
             <.focus_wrap
               id={"#{@id}-container"}
               phx-mounted={@show && show_modal(@id)}
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl bg-white p-14 shadow-lg shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
+              class="hidden relative rounded-2xl bg-white p-4 shadow-lg shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
             >
               <div class="absolute top-6 right-5">
                 <button
@@ -430,13 +465,13 @@ defmodule PurpleWeb.CoreComponents do
   def input(%{field: {f, field}} = assigns) do
     assigns
     |> assign(field: nil)
-    |> assign(:errors, f.errors)
     |> assign_new(:name, fn ->
       name = Phoenix.HTML.Form.input_name(f, field)
       if assigns.multiple, do: name <> "[]", else: name
     end)
     |> assign_new(:id, fn -> Phoenix.HTML.Form.input_id(f, field) end)
     |> assign_new(:value, fn -> Phoenix.HTML.Form.input_value(f, field) end)
+    |> assign_new(:errors, fn -> translate_errors(f.errors || [], field) end)
     |> input()
   end
 
@@ -463,7 +498,7 @@ defmodule PurpleWeb.CoreComponents do
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label for={@id}><%= @label %></.label>
+      <.label :if={@label} for={@id}><%= @label %></.label>
       <select
         id={@id}
         name={@name}
@@ -482,7 +517,7 @@ defmodule PurpleWeb.CoreComponents do
   def input(%{type: "textarea"} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label for={@id}><%= @label %></.label>
+      <.label :if={@label} for={@id}><%= @label %></.label>
       <textarea
         id={@id || @name}
         name={@name}
@@ -504,7 +539,7 @@ defmodule PurpleWeb.CoreComponents do
   def input(assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label for={@id}><%= @label %></.label>
+      <.label :if={@label} for={@id}><%= @label %></.label>
       <input
         type={@type}
         name={@name}
@@ -537,7 +572,7 @@ defmodule PurpleWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800 mt-2">
       <%= render_slot(@inner_block) %>
     </label>
     """

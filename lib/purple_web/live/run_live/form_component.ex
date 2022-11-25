@@ -1,4 +1,4 @@
-defmodule PurpleWeb.RunLive.RunForm do
+defmodule PurpleWeb.RunLive.FormComponent do
   use PurpleWeb, :live_component
 
   alias Purple.Activities
@@ -76,17 +76,18 @@ defmodule PurpleWeb.RunLive.RunForm do
         phx-target={@myself}
       >
         <div class="flex flex-col mb-2">
-          <.input field={{f, :miles}} phx-hook="AutoFocus" />
-          <.input field={{f, :date}} />
+          <.input field={{f, :miles}} phx-hook="AutoFocus" label="Miles" />
+          <.input type="date" field={{f, :date}} label="Date" />
           <div class="flex mb-2 gap-2">
-            <.input field={{f, :hours}} />
-            <.input field={{f, :minutes}} />
-            <.input field={{f, :minutes_seconds}} />
+            <.input field={{f, :hours}} label="Hours" />
+            <.input field={{f, :minutes}} label="Minutes" />
+            <.input field={{f, :minute_seconds}} label="Seconds" />
           </div>
           <.input
             field={{f, :description}}
-            type="textarea"
+            label="Notes"
             rows={get_num_textarea_rows(@description)}
+            type="textarea"
           />
           <p :if={@changeset.valid?} class="mt-2">
             Pace:

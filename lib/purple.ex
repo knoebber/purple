@@ -35,10 +35,14 @@ defmodule Purple do
     end
   end
 
-  def titleize(string) do
+  def titleize(string) when is_binary(string) do
     string
     |> String.split()
     |> Enum.map_join(" ", &String.capitalize/1)
+  end
+
+  def titleize(atom) when is_atom(atom) do 
+    titleize(Atom.to_string(atom))
   end
 
   def maybe_list(list) do

@@ -5,7 +5,7 @@ defmodule PurpleWeb.RunLive.Index do
 
   use PurpleWeb, :live_view
 
-  import PurpleWeb.RunLive.RunHelpers
+  import PurpleWeb.RunLive.Helpers
   import Purple.Filter
 
   alias Purple.Activities
@@ -16,12 +16,34 @@ defmodule PurpleWeb.RunLive.Index do
 
     socket
     |> assign(:page_title, "Runs")
-    |> assign(:editable_run, nil)
     |> assign(:filter, filter)
     |> assign(:runs, Activities.list_runs(filter))
     |> assign(:weekly_total, Activities.sum_miles_in_current_week())
     |> assign(:total, Activities.sum_miles(filter))
     |> assign(:tag_options, Purple.Tags.make_tag_choices(:run))
+  end
+
+  defp apply_action(socket, :edit, %{"id" => run_id}) do
+    assign(socket, :editable_run, Activities.get_run!(run_id))
+  end
+
+  defp apply_action(socket, :create, _) do
+    last_run =
+      case socket.assigns.runs do
+        [last_run | _] -> last_run
+        _ -> %Run{miles: 0, description: ""}
+      end
+
+    last_tags = Purple.Tags.extract_tags(last_run)
+
+    assign(socket, :editable_run, %Run{
+      miles: last_run.miles,
+      description: Enum.map_join(last_tags, " ", &("#" <> &1))
+    })
+  end
+
+  defp apply_action(socket, :index, _) do
+    assign(socket, :editable_run, nil)
   end
 
   @impl Phoenix.LiveView
@@ -31,45 +53,18 @@ defmodule PurpleWeb.RunLive.Index do
       socket
       |> assign(:query_params, params)
       |> assign_data()
+      |> apply_action(socket.assigns.live_action, params)
     }
   end
 
   @impl Phoenix.LiveView
-  def handle_event("search", %{"filter" => filter_params}, socket) do
+  def handle_event("search", %{"filter" => filter_params}, socket) when is_map(filter_params) do
     {
       :noreply,
       push_patch(
         socket,
         to: ~p"/runs?#{filter_params}",
         replace: true
-      )
-    }
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("edit_run", %{"id" => id}, socket) do
-    {:noreply, assign(socket, :editable_run, Activities.get_run!(id))}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("create_run", _, socket) do
-    last_run =
-      case socket.assigns.runs do
-        [last_run | _] -> last_run
-        _ -> %Run{miles: 0, description: ""}
-      end
-
-    last_tags = Purple.Tags.extract_tags(last_run)
-
-    {
-      :noreply,
-      assign(
-        socket,
-        :editable_run,
-        %Run{
-          miles: last_run.miles,
-          description: Enum.map_join(last_tags, " ", &("#" <> &1))
-        }
       )
     }
   end
@@ -97,17 +92,25 @@ defmodule PurpleWeb.RunLive.Index do
         <%= @weekly_total %> this week, <%= @total %> displayed
       </i>
     </div>
-    <.modal :if={@editable_run} id="edit-run-modal">
+    <.modal
+      :if={!!@editable_run}
+      id="edit-run-modal"
+      on_cancel={JS.navigate(~p"/runs?#{@filter}")}
+      show
+    >
+      <:title><%= Purple.titleize(@live_action) %> Run</:title>
       <.live_component
         id={@editable_run.id || :new}
-        module={PurpleWeb.RunLive.RunForm}
-        return_to={~p"/runs?#{@query_params}"}
+        module={PurpleWeb.RunLive.FormComponent}
+        return_to={~p"/runs?#{@filter}"}
         rows={3}
         run={@editable_run}
       />
     </.modal>
     <.filter_form :let={f}>
-      <.button phx-click="create_run">Create</.button>
+      <.link patch={~p"/runs/create?#{@filter}"}>
+        <.button phx-click="create_run">Create</.button>
+      </.link>
       <.input
         field={{f, :query}}
         value={Map.get(@filter, :query, "")}
@@ -132,7 +135,7 @@ defmodule PurpleWeb.RunLive.Index do
     <div class="w-full overflow-auto">
       <.table rows={@runs} get_route={fn filter -> ~p"/runs?#{filter}" end} filter={@filter}>
         <:col :let={run} label="Miles" order_col="miles">
-          <.link navigate={~p"/runs/#{run.id}"}>
+          <.link navigate={~p"/runs/#{run}"}>
             <%= run.miles %>
           </.link>
         </:col>
@@ -146,12 +149,12 @@ defmodule PurpleWeb.RunLive.Index do
           <%= Purple.Date.format(run.date, :dayname) %>
         </:col>
         <:col :let={run} label="">
-          <.link href="#" phx-click="edit_run" phx-value-id={run.id}>
+          <.link patch={~p"/runs/edit/#{run}?#{@filter}"}>
             ✏️
           </.link>
         </:col>
         <:col :let={run} label="">
-          <.link href="#" phx-click="edit_run" phx-value-id={run.id} data-confirm="Are you sure?">
+          <.link href="#" phx-click="delete" phx-value-id={run.id} data-confirm="Are you sure?">
             ❌
           </.link>
         </:col>
