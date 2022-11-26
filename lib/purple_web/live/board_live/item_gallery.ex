@@ -11,6 +11,7 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
       |> assign(:item_id, item_id)
       |> assign(:image_refs, Uploads.get_images_by_item(item_id))
       |> assign(:page_title, "Item #{item_id} gallery")
+      |> PurpleWeb.BoardLive.Helpers.assign_side_nav()
     }
   end
 
@@ -19,25 +20,26 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
     ~H"""
     <h1>
       Board /
-      <.link navigate={Routes.board_show_item_path(@socket, :show, @item_id)}>
+      <.link navigate={~p"/board/item/#{@item_id}"}>
         Item <%= @item_id %>
       </.link>
       / Gallery
     </h1>
-    <%= for ref <- @image_refs do %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-1">
       <.link
-        navigate={Routes.board_show_item_file_path(@socket, :show, @item_id, ref.id)}
+        :for={ref <- @image_refs}
+        navigate={~p"/board/item/#{@item_id}/files/#{ref}"}
         class="no-underline"
       >
         <img
           class="border border-purple-500 mb-2 mt-2"
           height={ref.image_height}
           loading="lazy"
-          src={Routes.file_path(@socket, :show, ref)}
+          src={~p"/files/#{ref}"}
           width={ref.image_width}
         />
       </.link>
-    <% end %>
+    </div>
     """
   end
 end

@@ -1,9 +1,6 @@
 defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
-  use PurpleWeb, :live_component
-
-  import PurpleWeb.FinanceLive.FinanceHelpers
-
   alias Purple.Finance
+  use PurpleWeb, :live_component
 
   defp save_adjustment(socket, :edit_adjustment, params) do
     Finance.update_shared_budget_adjustment(socket.assigns.adjustment, params)
@@ -64,16 +61,14 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
 
         next_path =
           if should_leave_open?(params) do
-            show_shared_budget_path(shared_budget_id, :new_adjustment)
+            ~p"/finance/shared_budgets/#{shared_budget_id}/adjustments/new"
           else
-            show_shared_budget_path(shared_budget_id, :show)
+            ~p"/finance/shared_budgets/#{shared_budget_id}"
           end
 
         {
           :noreply,
-          socket
-          |> put_flash(:info, "Adjustment saved")
-          |> push_patch(to: next_path)
+          push_patch(socket, to: next_path, replace: true)
         }
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -87,30 +82,23 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
     <div>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
-          <%= label(f, :description) %>
-          <%= text_input(f, :description, rows: @rows, phx_hook: "AutoFocus") %>
-          <%= error_tag(f, :description) %>
-          <%= label(f, :dollars, "Amount") %>
-          <%= text_input(f, :dollars) %>
-          <%= error_tag(f, :cents) %>
-          <%= label(f, :type) %>
-          <%= select(f, :type, Finance.adjustment_type_mappings()) %>
-          <%= error_tag(f, :type) %>
-          <%= label(f, :user_id, "User") %>
-          <%= select(f, :user_id, @user_mappings) %>
-          <%= error_tag(f, :user_id) %>
-          <%= label(f, :notes) %>
-          <%= textarea(f, :notes, rows: @rows) %>
-          <%= error_tag(f, :notes) %>
+          <.input field={{f, :description}} label="Description" phx-hook="AutoFocus" />
+          <.input field={{f, :dollars}} label="Amount" />
+          <.input
+            field={{f, :type}}
+            type="select"
+            options={Finance.share_type_mappings()}
+            label="Type"
+          />
+          <.input field={{f, :user_id}} type="select" label="User" options={@user_mappings} />
+          <.input field={{f, :notes}} label="Notes" type="textarea" rows={@rows} />
         </div>
         <div class="flex justify-between mb-2_">
-          <%= submit("Save", phx_disable_with: "Saving...") %>
-          <%= if @action == :new_adjustment do %>
-            <div class="self-center">
-              <label for="should_leave_open">Create Another?</label>
-              <input type="checkbox" name="should_leave_open" checked={@should_leave_open} />
-            </div>
-          <% end %>
+          <.button phx-disable-with="Saving...">Save</.button>
+          <div :if={@action == :new_adjustment} class="self-center">
+            <label for="should_leave_open">Create Another?</label>
+            <input type="checkbox" name="should_leave_open" checked={@should_leave_open} />
+          </div>
         </div>
       </.form>
     </div>

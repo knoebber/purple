@@ -46,7 +46,7 @@ defmodule Purple.Board do
   end
 
   def create_item(params) do
-    changeset = Item.changeset(%Item{last_active_at: Purple.utc_now()}, params)
+    changeset = Item.changeset(%Item{last_active_at: Purple.Date.utc_now()}, params)
 
     item_transaction(fn ->
       with {:ok, item} <- Repo.insert(changeset),
@@ -134,7 +134,7 @@ defmodule Purple.Board do
   def sync_entry_checkboxes(%ItemEntry{} = entry), do: {:ok, ItemEntry.changeset(entry)}
 
   defp set_item_last_active_at(item_id) do
-    last_active_at = Purple.utc_now()
+    last_active_at = Purple.Date.utc_now()
 
     {1, _} =
       Item
@@ -204,7 +204,7 @@ defmodule Purple.Board do
   end
 
   def set_item_complete!(%Item{} = item, is_complete) do
-    now = Purple.utc_now()
+    now = Purple.Date.utc_now()
 
     params =
       if is_complete do
@@ -341,7 +341,7 @@ defmodule Purple.Board do
     |> Repo.update()
   end
 
-  def get_user_board!(id) do
+  def get_user_board(id) do
     Repo.one(
       from ub in UserBoard,
         left_join: t in assoc(ub, :tags),

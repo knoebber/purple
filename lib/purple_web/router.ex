@@ -1,6 +1,5 @@
 defmodule PurpleWeb.Router do
   use PurpleWeb, :router
-
   import Phoenix.LiveDashboard.Router
   import PurpleWeb.UserAuth
 
@@ -8,22 +7,15 @@ defmodule PurpleWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {PurpleWeb.LayoutView, :root}
+    plug :put_root_layout, {PurpleWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", PurpleWeb do
-  #   pipe_through :api
-  # end
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
-
+  ## Live Dashboard
   scope "/" do
-    pipe_through [:browser, :redirect_if_user_not_authenticated]
+    pipe_through [:browser, :require_authenticated_user]
 
     live_dashboard "/dashboard", metrics: PurpleWeb.Telemetry
   end
@@ -32,25 +24,15 @@ defmodule PurpleWeb.Router do
   scope "/", PurpleWeb do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
-    get "/users/register", UserRegistrationController, :new
-    post "/users/register", UserRegistrationController, :create
-    get "/users/log_in", UserSessionController, :new
+    live_session :redirect_if_user_is_authenticated,
+      on_mount: [{PurpleWeb.UserAuth, :redirect_if_user_is_authenticated}] do
+      live "/users/log_in", UserLoginLive, :new
+    end
+
     post "/users/log_in", UserSessionController, :create
-    get "/users/reset_password", UserResetPasswordController, :new
-    post "/users/reset_password", UserResetPasswordController, :create
-    get "/users/reset_password/:token", UserResetPasswordController, :edit
-    put "/users/reset_password/:token", UserResetPasswordController, :update
   end
 
-  ## Protected routes
-  scope "/", PurpleWeb do
-    pipe_through [:browser, :redirect_if_user_not_authenticated]
-
-    get "/users/settings", UserSettingsController, :edit
-    put "/users/settings", UserSettingsController, :update
-    get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
-  end
-
+  ## Protected dead routes
   scope "/", PurpleWeb do
     pipe_through [:browser, :require_authenticated_user]
     get "/files/:id", FileController, :show
@@ -60,12 +42,16 @@ defmodule PurpleWeb.Router do
 
   ## Protected live routes
   scope "/", PurpleWeb do
-    pipe_through [:browser, :redirect_if_user_not_authenticated]
+    pipe_through [:browser, :require_authenticated_user]
 
-    live_session :default, on_mount: PurpleWeb.LiveMount do
+    live_session :require_authenticated_user,
+      on_mount: [{PurpleWeb.UserAuth, :ensure_authenticated}] do
+      live "/users/settings", UserSettingsLive, :edit
+
       live "/finance", FinanceLive.Index, :index
       live "/finance/transactions/create", FinanceLive.CreateTransaction, :create
       live "/finance/transactions/:id", FinanceLive.ShowTransaction, :show
+      live "/finance/transactions/:id/edit", FinanceLive.ShowTransaction, :edit
       live "/finance/merchants", FinanceLive.MerchantIndex, :index
       live "/finance/merchants/:id", FinanceLive.ShowMerchant, :show
       live "/finance/payment_methods", FinanceLive.PaymentMethodIndex, :index
@@ -81,11 +67,14 @@ defmodule PurpleWeb.Router do
            :edit_adjustment
 
       live "/runs", RunLive.Index, :index
+      live "/runs/create", RunLive.Index, :create
+      live "/runs/edit/:id", RunLive.Index, :edit
       live "/runs/:id", RunLive.Show, :show
       live "/runs/:id/edit", RunLive.Show, :edit
 
       live "/board", BoardLive.Index, :index
       live "/board/settings", BoardLive.BoardSettings, :index
+      live "/board/settings/:id", BoardLive.BoardSettings, :edit
       live "/board/:user_board_id", BoardLive.Index, :index
       live "/board/item/create", BoardLive.CreateItem, :create
       live "/board/item/:id", BoardLive.ShowItem, :show
@@ -101,11 +90,7 @@ defmodule PurpleWeb.Router do
   scope "/", PurpleWeb do
     pipe_through [:browser]
 
-    get "/", PageController, :index
+    get "/", PageController, :home
     delete "/users/log_out", UserSessionController, :delete
-    get "/users/confirm", UserConfirmationController, :new
-    post "/users/confirm", UserConfirmationController, :create
-    get "/users/confirm/:token", UserConfirmationController, :edit
-    post "/users/confirm/:token", UserConfirmationController, :update
   end
 end

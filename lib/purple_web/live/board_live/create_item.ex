@@ -2,20 +2,17 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   @moduledoc """
   Item form that's only for creation.
   """
-
-  use PurpleWeb, :live_view
-
-  import PurpleWeb.BoardLive.BoardHelpers
-
   alias Purple.Board
   alias Purple.Board.{Item, ItemEntry, UserBoard}
+  import PurpleWeb.BoardLive.Helpers
+  use PurpleWeb, :live_view
 
   defp assign_changeset(socket, default_entry) do
-    entries = [%ItemEntry{content: default_entry}]
+    entries = [%ItemEntry{content: default_entry, sort_order: 1}]
 
     entries =
       if default_entry != "" do
-        [%ItemEntry{content: ""}] ++ entries
+        [%ItemEntry{content: "", sort_order: 0}] ++ entries
       else
         entries
       end
@@ -28,7 +25,8 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   end
 
   defp user_board_entry(ub = %UserBoard{}) do
-    "Created for [#{ub.name}](#{index_path(ub.id)})\n---\n" <>
+    make_full_url(~p"/board/#{ub}") <>
+      " - " <>
       Enum.map_join(ub.tags, " ", &("#" <> &1.name))
   end
 
@@ -48,7 +46,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
 
     user_board =
       if board_id do
-        Board.get_user_board!(board_id)
+        Board.get_user_board(board_id)
       else
         %UserBoard{tags: []}
       end
@@ -67,7 +65,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
 
     case Board.create_item(params) do
       {:ok, item} ->
-        {:noreply, push_redirect(socket, to: show_item_path(item))}
+        {:noreply, push_redirect(socket, to: ~p"/board/item/#{item}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
@@ -81,13 +79,8 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("validate", %{"item" => params}, socket) do
-    changeset =
-      %Item{}
-      |> Board.change_item(params)
-      |> Map.put(:action, :validate)
-
-    {:noreply, assign(socket, :changeset, changeset)}
+  def handle_event("validate", _, socket) do
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -96,23 +89,25 @@ defmodule PurpleWeb.BoardLive.CreateItem do
     <h1 class="mb-2"><%= @page_title %></h1>
     <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate">
       <div class="flex flex-col mb-2 w-full xl:w-1/2">
-        <%= label(f, :description) %>
-        <%= text_input(f, :description, phx_hook: "AutoFocus") %>
-        <%= error_tag(f, :description) %>
-        <%= if Ecto.Changeset.get_field(@changeset, :status) == :TODO do %>
-          <%= label(f, :priority) %>
-          <%= select(f, :priority, 1..5) %>
-          <%= error_tag(f, :priority) %>
-        <% end %>
-        <%= label(f, :status) %>
-        <%= select(f, :status, Board.item_status_mappings()) %>
-        <%= error_tag(f, :status) %>
-        <%= inputs_for f, :entries, fn entry -> %>
-          <%= label(entry, :entry) %>
-          <%= textarea(entry, :content, rows: 3) %>
+        <.input field={{f, :description}} phx-hook="AutoFocus" label="Description" />
+        <.input
+          :if={Ecto.Changeset.get_field(@changeset, :status) == :TODO}
+          field={{f, :priority}}
+          label="Priority"
+          options={1..5}
+          type="select"
+        />
+        <.input
+          field={{f, :status}}
+          type="select"
+          options={Board.item_status_mappings()}
+          label="Status"
+        />
+        <%= Phoenix.HTML.Form.inputs_for f, :entries, fn entry -> %>
+          <.input field={{entry, :content}} type="textarea" rows="3" label="Entry" />
         <% end %>
       </div>
-      <%= submit("Save", phx_disable_with: "Saving...") %>
+      <.button phx-disable-with="Saving...">Save</.button>
     </.form>
     """
   end

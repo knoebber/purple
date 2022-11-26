@@ -15,8 +15,45 @@ defmodule Purple.Finance.Transaction do
     belongs_to :merchant, Purple.Finance.Merchant
     belongs_to :payment_method, Purple.Finance.PaymentMethod
     belongs_to :user, Purple.Accounts.User
-    has_one :shared_transaction, Purple.Finance.SharedTransaction
+    has_many :shared_transaction, Purple.Finance.SharedTransaction
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.TransactionTag
+  end
+
+  def to_string(transaction = %__MODULE__{}) do
+    transaction.dollars <>
+      " " <>
+      transaction.merchant.name <> " " <> Purple.Date.format(transaction.timestamp)
+  end
+
+  def dollars_to_cents([]) do
+    0
+  end
+
+  def dollars_to_cents([dollars]) do
+    String.to_integer(dollars) * 100
+  end
+
+  def dollars_to_cents([dollars, cents]) do
+    dollars_to_cents([dollars]) + String.to_integer(cents)
+  end
+
+  def dollars_to_cents(<<?$, rest::binary>>), do: dollars_to_cents(rest)
+
+  def dollars_to_cents(dollars) when is_binary(dollars) do
+    dollars = String.replace(dollars, ",", "")
+
+    if dollars =~ ~r/^\$?[0-9]+(\.[0-9]{1,2})?$/ do
+      dollars_to_cents(String.split(dollars, "."))
+    else
+      0
+    end
+  end
+
+  def format_cents(cents) when is_integer(cents) do
+    "$" <>
+      (div(cents, 100) |> Integer.to_string()) <>
+      "." <>
+      (rem(cents, 100) |> Integer.to_string() |> String.pad_trailing(2, "0"))
   end
 
   defp set_timestamp(changeset, attrs) do
@@ -26,7 +63,7 @@ defmodule Purple.Finance.Transaction do
       put_change(
         changeset,
         :timestamp,
-        Purple.naive_datetime_from_map(timestamp_attrs)
+        Purple.Date.naive_datetime_from_map(timestamp_attrs)
       )
     else
       changeset
@@ -37,7 +74,7 @@ defmodule Purple.Finance.Transaction do
     put_change(
       changeset,
       :cents,
-      Purple.dollars_to_cents(get_field(changeset, :dollars))
+      dollars_to_cents(get_field(changeset, :dollars))
     )
   end
 

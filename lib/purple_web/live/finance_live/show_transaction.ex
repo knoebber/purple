@@ -1,21 +1,24 @@
 defmodule PurpleWeb.FinanceLive.ShowTransaction do
-  use PurpleWeb, :live_view
-  import PurpleWeb.FinanceLive.FinanceHelpers
   alias Purple.Finance
+  import PurpleWeb.FinanceLive.Helpers
+  use PurpleWeb, :live_view
 
   @behaviour PurpleWeb.FancyLink
 
-  defp transaction_to_string(transaction) do
-    transaction.dollars <>
-      " " <>
-      transaction.merchant.name <> " " <> format_date(transaction.timestamp)
+  defp assign_data(socket, transaction_id) do
+    transaction = Finance.get_transaction!(transaction_id)
+
+    socket
+    |> assign(:transaction, transaction)
+    |> assign(:page_title, Finance.Transaction.to_string(transaction))
   end
 
-  defp assign_transaction(socket, transaction) do
-    socket
-    |> assign(:page_title, transaction_to_string(transaction))
-    |> assign(:transaction, transaction)
-    |> assign(:is_editing, false)
+  defp apply_action(socket, :edit) do
+    assign(socket, :is_editing, true)
+  end
+
+  defp apply_action(socket, :show) do
+    assign(socket, :is_editing, false)
   end
 
   @impl PurpleWeb.FancyLink
@@ -28,7 +31,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
     transaction = Finance.get_transaction(tx_id)
 
     if transaction do
-      transaction_to_string(transaction)
+      Finance.Transaction.to_string(transaction)
     end
   end
 
@@ -39,11 +42,11 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => id}, _url, socket) do
-    transaction = Finance.get_transaction!(id)
-
     {
       :noreply,
-      assign_transaction(socket, transaction)
+      socket
+      |> assign_data(id)
+      |> apply_action(socket.assigns.live_action)
     }
   end
 
@@ -55,21 +58,16 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
       :noreply,
       socket
       |> put_flash(:info, "Transaction deleted")
-      |> push_redirect(to: index_path())
+      |> push_redirect(to: ~p"/finance", replace: true)
     }
   end
 
   @impl Phoenix.LiveView
-  def handle_event("toggle_edit", _, socket) do
-    {:noreply, assign(socket, :is_editing, not socket.assigns.is_editing)}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_info({:saved, transaction}, socket) do
+  def handle_info({:saved, _}, socket) do
     {
       :noreply,
       socket
-      |> assign_transaction(transaction)
+      |> push_patch(to: ~p"/finance/transactions/#{socket.assigns.transaction}", replace: true)
       |> put_flash(:info, "Transaction saved")
     }
   end
@@ -77,16 +75,17 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1 class="mb-2"><%= @page_title %></h1>
-    <section class="mb-2 window">
+    <h1 class="mb-2">
+      <%= @page_title %>
+    </h1>
+    <.section class="mb-2">
       <div class="flex justify-between bg-purple-300 p-1 mb-2">
         <div class="inline-links">
-          <.link href="#" phx-click="toggle_edit">
-            <%= if @is_editing do %>
-              Cancel
-            <% else %>
-              Edit
-            <% end %>
+          <.link :if={!@is_editing} patch={~p"/finance/transactions/#{@transaction}/edit"} replace={true}>
+            Edit
+          </.link>
+          <.link :if={@is_editing} patch={~p"/finance/transactions/#{@transaction}"} replace={true}>
+            Cancel
           </.link>
           <span>|</span>
           <.link href="#" phx-click="delete" data-confirm="Are you sure?">
@@ -118,7 +117,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
           <%= markdown(@transaction.notes, link_type: :finance) %>
         </div>
       <% end %>
-    </section>
+    </.section>
     """
   end
 end

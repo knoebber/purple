@@ -28,6 +28,8 @@ defmodule PurpleWeb.ConnCase do
 
       # The default endpoint for testing
       @endpoint PurpleWeb.Endpoint
+
+      use PurpleWeb, :verified_routes
     end
   end
 

@@ -1,9 +1,10 @@
 defmodule PurpleWeb.RunLive.Show do
   use PurpleWeb, :live_view
 
-  import PurpleWeb.RunLive.RunHelpers
+  import PurpleWeb.RunLive.Helpers
 
   alias Purple.Activities
+  alias Purple.Activities.Run
 
   defp page_title(:show), do: "Show Run"
   defp page_title(:edit), do: "Edit Run"
@@ -35,41 +36,41 @@ defmodule PurpleWeb.RunLive.Show do
   def render(assigns) do
     ~H"""
     <h1>
-      <.link patch={Routes.run_index_path(@socket, :index)}>Runs</.link>
+      <.link patch={~p"/runs"}>Runs</.link>
       / <%= "#{@run.id}" %>
     </h1>
-    <section class="mt-2 mb-2 window">
+    <.section class="mt-2 mb-2">
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <strong>
-            <%= @run.miles %> miles@<%= format_pace(@run.miles, @run.seconds) %>
+            <%= @run.miles %> miles@<%= Run.format_pace(@run) %> in <%= Run.format_duration(@run) %>
           </strong>
           <span>|</span>
           <%= if @live_action == :edit do %>
             <strong>Edit Run</strong>
             <span>|</span>
-            <.link patch={Routes.run_show_path(@socket, :show, @run)}>
+            <.link patch={~p"/runs/#{@run.id}"} replace={true}>
               Cancel
             </.link>
           <% else %>
-            <.link patch={Routes.run_show_path(@socket, :edit, @run)}>
+            <.link patch={~p"/runs/#{@run.id}/edit"} replace={true}>
               Edit
             </.link>
           <% end %>
         </div>
         <i>
-          <%= format_date(@run.date) %>
+          <%= Purple.Date.format(@run.date) %>
         </i>
       </div>
       <%= if @live_action == :edit do %>
         <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
           <.live_component
-            module={PurpleWeb.RunLive.RunForm}
+            module={PurpleWeb.RunLive.FormComponent}
             id={@run.id}
             action={@live_action}
             rows={@run_rows}
             run={@run}
-            return_to={Routes.run_show_path(@socket, :show, @run)}
+            return_to={~p"/runs/#{@run.id}"}
           />
         </div>
       <% else %>
@@ -77,7 +78,7 @@ defmodule PurpleWeb.RunLive.Show do
           <%= markdown(@run.description, link_type: :run) %>
         </div>
       <% end %>
-    </section>
+    </.section>
     """
   end
 end

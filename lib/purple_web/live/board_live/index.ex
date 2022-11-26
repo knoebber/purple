@@ -2,11 +2,12 @@ defmodule PurpleWeb.BoardLive.Index do
   @moduledoc """
   Index page for board
   """
-
-  use PurpleWeb, :live_view
-  import PurpleWeb.BoardLive.BoardHelpers
-  import Purple.Filter
   alias Purple.Board
+  import Purple.Filter
+  import PurpleWeb.BoardLive.Helpers
+  use PurpleWeb, :live_view
+
+  @behaviour PurpleWeb.FancyLink
 
   @filter_types %{
     show_done: :boolean
@@ -54,13 +55,28 @@ defmodule PurpleWeb.BoardLive.Index do
     |> assign(:tag_options, tag_options)
   end
 
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_type do
+    "Board"
+  end
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_title(%{"user_board_id" => board_id}) do
+    user_board = Board.get_user_board(board_id)
+
+    case user_board do
+      nil -> nil
+      _ -> user_board.name
+    end
+  end
+
   @impl Phoenix.LiveView
   def handle_params(params, _, socket) do
     board_id = Purple.int_from_map(params, "user_board_id")
 
     user_board =
       if board_id do
-        Board.get_user_board!(board_id)
+        Board.get_user_board(board_id)
       else
         %Board.UserBoard{name: "All Items", show_done: true}
       end
@@ -80,7 +96,7 @@ defmodule PurpleWeb.BoardLive.Index do
       :noreply,
       push_patch(
         socket,
-        to: index_path(socket.assigns.user_board.id, filter_params),
+        to: board_path(socket.assigns.user_board.id, filter_params),
         replace: true
       )
     }
@@ -124,56 +140,57 @@ defmodule PurpleWeb.BoardLive.Index do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
-    <%= if @editable_item do %>
-      <.modal title={@page_title} return_to={index_path(@user_board.id, @query_params)}>
-        <.live_component
-          module={PurpleWeb.BoardLive.UpdateItem}
-          id={@editable_item.id}
-          item={@editable_item}
-          return_to={index_path(@user_board.id, @query_params)}
-        />
-      </.modal>
-    <% end %>
+    <.modal
+      :if={!!@editable_item}
+      id="edit-item-modal"
+      on_cancel={JS.patch(board_path(@user_board.id, @query_params), replace: true)}
+      show
+    >
+      <:title><%= @page_title %></:title>
+      <.live_component
+        module={PurpleWeb.BoardLive.UpdateItem}
+        id={@editable_item.id}
+        item={@editable_item}
+        return_to={board_path(@user_board.id, @query_params)}
+      />
+    </.modal>
     <.filter_form :let={f}>
-      <%= live_redirect(to: item_create_path(@user_board.id)) do %>
-        <button class="btn" type="button">Create</button>
-      <% end %>
-      <%= text_input(
-        f,
-        :query,
-        placeholder: "Search...",
-        phx_debounce: "200",
-        value: Map.get(@filter, :query, "")
-      ) %>
-      <%= if length(@tag_options) > 0 do %>
-        <%= select(
-          f,
-          :tag,
-          @tag_options,
-          value: Map.get(@filter, :tag, "")
-        ) %>
-      <% end %>
+      <.link navigate={item_create_path(@user_board.id)}>
+        <.button type="button">Create</.button>
+      </.link>
+      <.input
+        field={{f, :query}}
+        value={Map.get(@filter, :query, "")}
+        placeholder="Search..."
+        phx-debounce="200"
+        class="lg:w-1/4"
+      />
+      <.input
+        :if={length(@tag_options) > 0}
+        field={{f, :tag}}
+        type="select"
+        options={@tag_options}
+        value={Map.get(@filter, :tag, "")}
+        class="lg:w-1/4"
+      />
       <.page_links
         filter={@filter}
-        first_page={index_path(@user_board.id, first_page(@filter))}
+        first_page={board_path(first_page(@filter))}
+        next_page={board_path(next_page(@filter))}
         num_rows={length(@items)}
       />
     </.filter_form>
     <div class="w-full overflow-auto">
       <.table
         filter={@filter}
-        get_route={fn new_filter -> index_path(@user_board.id, new_filter) end}
+        get_route={fn new_filter -> board_path(@user_board.id, new_filter) end}
         rows={@items}
       >
         <:col :let={item} label="Item" order_col="id">
-          <%= live_redirect(item.id,
-            to: Routes.board_show_item_path(@socket, :show, item)
-          ) %>
+          <.link navigate={~p"/board/item/#{item}"}><%= item.id %></.link>
         </:col>
         <:col :let={item} label="Description" order_col="description">
-          <%= live_redirect(item.description,
-            to: Routes.board_show_item_path(@socket, :show, item)
-          ) %>
+          <.link navigate={~p"/board/item/#{item}"}><%= item.description %></.link>
         </:col>
         <:col :let={item} label="Priority" order_col="priority">
           <%= item.priority %>
@@ -191,7 +208,7 @@ defmodule PurpleWeb.BoardLive.Index do
           <% end %>
         </:col>
         <:col :let={item} label="Last Activity" order_col="last_active_at">
-          <%= format_date(item.last_active_at) %>
+          <%= Purple.Date.format(item.last_active_at) %>
         </:col>
         <:col :let={item} label="">
           <.link
@@ -209,8 +226,8 @@ defmodule PurpleWeb.BoardLive.Index do
       </.table>
       <.page_links
         filter={@filter}
-        first_page={index_path(@user_board.id, first_page(@filter))}
-        next_page={index_path(@user_board.id, next_page(@filter))}
+        first_page={board_path(@user_board.id, first_page(@filter))}
+        next_page={board_path(@user_board.id, next_page(@filter))}
         num_rows={length(@items)}
       />
     </div>

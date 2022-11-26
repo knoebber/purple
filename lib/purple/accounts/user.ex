@@ -47,7 +47,7 @@ defmodule Purple.Accounts.User do
   defp validate_password(changeset, opts) do
     changeset
     |> validate_required([:password])
-    |> validate_length(:password, min: 8, max: 72)
+    |> validate_length(:password, min: 12, max: 72)
     # |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
     # |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
     # |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/, message: "at least one digit or punctuation character")
@@ -107,7 +107,7 @@ defmodule Purple.Accounts.User do
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do
-    change(user, confirmed_at: Purple.utc_now())
+    change(user, confirmed_at: Purple.Date.utc_now())
   end
 
   @doc """

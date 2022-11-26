@@ -16,7 +16,7 @@ defmodule Purple.Accounts.UserOAuthToken do
       when is_integer(unix_expires_at) do
     %__MODULE__{
       access_token: access_token,
-      access_expires_at: Purple.unix_to_naive(unix_expires_at),
+      access_expires_at: Purple.Date.unix_to_naive(unix_expires_at),
       refresh_token: refresh_token,
       user_id: user_id
     }
@@ -28,7 +28,7 @@ defmodule Purple.Accounts.UserOAuthToken do
       oauth_token,
       %{
         access_token: access_token,
-        access_expires_at: Purple.unix_to_naive(unix_expires_at)
+        access_expires_at: Purple.Date.unix_to_naive(unix_expires_at)
       }
     )
   end

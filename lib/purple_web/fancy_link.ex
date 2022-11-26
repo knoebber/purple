@@ -39,8 +39,7 @@ defmodule PurpleWeb.FancyLink do
           Map.put(
             fancy_link_map,
             url,
-            "🌻 · " <> module.get_fancy_link_type() <> " · " <> module.get_fancy_link_title(params) ||
-              "Unknown"
+            "🌻 · " <> module.get_fancy_link_type() <> " · " <> module.get_fancy_link_title(params)
           )
         else
           fancy_link_map

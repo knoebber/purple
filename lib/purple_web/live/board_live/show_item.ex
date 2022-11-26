@@ -1,11 +1,9 @@
 defmodule PurpleWeb.BoardLive.ShowItem do
-  use PurpleWeb, :live_view
-
-  import PurpleWeb.BoardLive.BoardHelpers
-
   alias Purple.Board
   alias Purple.Board.ItemEntry
   alias Purple.Uploads
+  import PurpleWeb.BoardLive.Helpers
+  use PurpleWeb, :live_view
 
   @behaviour PurpleWeb.FancyLink
 
@@ -152,7 +150,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           :noreply,
           socket
           |> put_flash(:info, "Entry saved")
-          |> push_patch(to: Routes.board_show_item_path(socket, :show, entry.item_id), replace: true)
+          |> push_patch(to: ~p"/board/item/#{entry.item_id}", replace: true)
         }
 
       {:error, changeset} ->
@@ -187,6 +185,11 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("validate_entry", _, socket) do
+    { :noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     Board.get_item!(id)
     |> Board.delete_item!()
@@ -195,7 +198,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       :noreply,
       socket
       |> put_flash(:info, "Deleted item")
-      |> push_redirect(to: Routes.board_index_path(socket, :index))
+      |> push_redirect(to: ~p"/board", replace: true)
     }
   end
 
@@ -220,20 +223,19 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   defp cancel_link(assigns) do
     ~H"""
-    <.link patch={Routes.board_show_item_path(@socket, :show, @item.id)} replace={true}>Cancel</.link>
+    <.link patch={~p"/board/item/#{@item}"} replace={true}>Cancel</.link>
     """
   end
 
   defp entry_form(assigns) do
     ~H"""
-    <.form :let={f} for={@changeset} phx-submit={@action} class="p-4">
+    <.form :let={f} for={@changeset} phx-submit={@action} phx-change="validate_entry" class="p-4">
       <div class="flex flex-col mb-2">
-        <%= hidden_input(f, :item_id, value: @item_id) %>
-        <%= hidden_input(f, :is_collapsed, value: false) %>
-        <%= label(f, :content) %>
-        <%= textarea(f, :content, phx_hook: "AutoFocus", id: "entry-form", rows: @rows) %>
+        <.input field={{f, :item_id}} type="hidden" value={@item_id} />
+        <.input field={{f, :is_collapsed}} type="hidden" value={false} />
+        <.input field={{f, :content}} type="textarea" rows={@rows} phx-hook="AutoFocus" />
       </div>
-      <%= submit("Save", phx_disable_with: "Saving...") %>
+      <.button phx-disable-with="Saving...">Save</.button>
     </.form>
     """
   end
@@ -257,16 +259,18 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           >
             <%= if(@entry.is_collapsed, do: "[+]", else: "[-]") %>
           </a>
-          <.link
-            patch={Routes.board_show_item_path(@socket, :edit_entry, @item.id, @entry.id)}
-            replace={true}
-          >
+          <.link patch={~p"/board/item/#{@item}/entry/#{@entry}"} replace={true}>
             Edit
           </.link>
           <span>|</span>
-          <a href="#" phx-click="delete_entry" phx-value-id={@entry.id} data-confirm="Are you sure?">
+          <.link
+            href="#"
+            phx-click="delete_entry"
+            phx-value-id={@entry.id}
+            data-confirm="Are you sure?"
+          >
             Delete
-          </a>
+          </.link>
         <% end %>
       </div>
       <%= if @entry.is_collapsed do %>
@@ -283,12 +287,12 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def render(assigns) do
     ~H"""
     <h1>
-      <.link patch={index_path()}>
+      <.link navigate={~p"/board"}>
         Board
       </.link>
       / <%= "Item #{@item.id}" %>
     </h1>
-    <section class="mt-2 mb-2 window">
+    <.section class="mt-2 mb-2">
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <%= if @live_action == :edit_item do %>
@@ -298,7 +302,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <% else %>
             <strong><%= @item.status %></strong>
             <span>|</span>
-            <.link patch={Routes.board_show_item_path(@socket, :edit_item, @item)} replace={true}>
+            <.link patch={~p"/board/item/#{@item}/edit"} replace={true}>
               Edit
             </.link>
           <% end %>
@@ -307,7 +311,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             Delete
           </a>
           <span>|</span>
-          <.link patch={Routes.board_show_item_path(@socket, :create_entry, @item)} replace={true}>
+          <.link patch={~p"/board/item/#{@item}/entry/new"} replace={true}>
             Create Entry
           </.link>
         </div>
@@ -320,7 +324,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             id={@item.id}
             action={@live_action}
             item={@item}
-            return_to={Routes.board_show_item_path(@socket, :show, @item)}
+            return_to={~p"/board/item/#{@item}"}
           />
         </div>
       <% else %>
@@ -333,13 +337,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <.link href="#" phx-click="toggle_files_collapsed" class="ml-1 no-underline font-mono">
             <%= if(!@item.show_files, do: "[+]", else: "[-]") %>
           </.link>
-          <%= if @total_files > 0 do %>
-            <.link navigate={Routes.board_item_gallery_path(@socket, :index, @item)}>
-              <%= @total_files %> file<%= if length(@image_refs) != 1, do: "s" %>
-            </.link>
-          <% else %>
-            No files
-          <% end %>
+          Upload files
         </span>
       </div>
       <%= if @item.show_files do %>
@@ -350,8 +348,13 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             id={"item-#{@item.id}-upload"}
             max_entries={20}
             module={PurpleWeb.LiveUpload}
-            return_to={Routes.board_show_item_path(@socket, :show, @item.id)}
+            return_to={~p"/board/item/#{@item}"}
           />
+        </div>
+        <div class="p-3">
+          <strong><.link :if={length(@image_refs) > 0} navigate={~p"/board/item/#{@item}/files"}>
+            Images
+          </.link></strong>
         </div>
         <%= if length(@image_refs) + length(@file_refs) > 0 do %>
           <%= for ref <- @image_refs do %>
@@ -361,39 +364,37 @@ defmodule PurpleWeb.BoardLive.ShowItem do
                   id={"copy-markdown-#{ref.id}"}
                   phx-hook="CopyMarkdownImage"
                   name={Uploads.file_title(ref)}
-                  value={Routes.file_path(@socket, :show, ref)}
+                  value={~p"/files/#{ref}"}
                   class="cursor-pointer w-1/6"
                 >
                   🔗
                 </div>
-                <.link
-                  class="no-underline"
-                  navigate={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}
-                >
+                <.link class="no-underline" navigate={~p"/board/item/#{@item}/files/#{ref}"}>
                   <img
                     id={"thumbnail-#{ref.id}"}
                     class="inline border border-purple-500 m-1"
                     width="150"
                     height="150"
-                    src={Routes.file_path(@socket, :show_thumbnail, ref)}
+                    src={~p"/files/#{ref}/thumbnail"}
                   />
                 </.link>
               </div>
             </div>
           <% end %>
-          <ul class="ml-8">
-            <%= for ref <- @file_refs do %>
-              <li>
-                <.link navigate={Routes.board_show_item_file_path(@socket, :show, @item.id, ref.id)}>
+          <div :if={length(@file_refs) > 0} class="p-3">
+            <strong>Files</strong>
+            <ul class="ml-8">
+              <li :for={ref <- @file_refs}>
+                <.link navigate={~p"/board/item/#{@item}/files/#{ref}"}>
                   <%= Uploads.file_title(ref) %>
                 </.link>
               </li>
-            <% end %>
-          </ul>
+            </ul>
+          </div>
         <% end %>
       <% end %>
-    </section>
-    <section :if={@live_action == :create_entry} class="window mt-2 mb-2">
+    </.section>
+    <.section :if={@live_action == :create_entry} class="mt-2 mb-2">
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <strong>New Entry</strong>
@@ -402,10 +403,10 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         </div>
       </div>
       <.entry_form rows={5} action="save_entry" changeset={@new_entry_changeset} item_id={@item.id} />
-    </section>
+    </.section>
     <div id="entry-container" phx-hook="Sortable">
       <%= for entry <- @entries do %>
-        <section class="window mt-2 mb-2 js-sortable-item" id={Integer.to_string(entry.id)}>
+        <.section class="mt-2 mb-2 js-sortable-item" id={Integer.to_string(entry.id)}>
           <%= if @live_action == :edit_entry and @editable_entry.id == entry.id do %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
             <.entry_form
@@ -426,7 +427,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
               </div>
             <% end %>
           <% end %>
-        </section>
+        </.section>
       <% end %>
     </div>
     """

@@ -11,10 +11,6 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
     Board.update_user_board(socket.assigns.user_board, params)
   end
 
-  defp save_board(_, :new_board, params) do
-    Board.create_user_board(params)
-  end
-
   @impl Phoenix.LiveComponent
   def update(%{user_board: user_board} = assigns, socket) do
     changeset = Board.change_user_board(user_board)
@@ -79,15 +75,16 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
     <div>
       <%= if length(@available_tags) > 0 do %>
         <form class="flex flex-row mb-2" phx-submit="add_tag" phx-target={@myself}>
-          <select name="tag_id">
-            <option value="">🏷 Select a tag</option>
-            <%= for tag <- @available_tags do %>
-              <option value={tag.id}>
-                #<%= tag.name %>
-              </option>
-            <% end %>
-          </select>
-          <button class="ml-3" type="submit">Add</button>
+          <.input
+            id="tag_select"
+            name="tag_id"
+            errors={[]}
+            options={for tag <- @available_tags, do: {tag.name, tag.id}}
+            prompt="🏷 Select a tag"
+            type="select"
+            value=""
+          />
+          <.button class="ml-3">Add</.button>
         </form>
       <% end %>
       <%= if length(@user_board.tags) > 0 do %>
@@ -105,14 +102,10 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
 
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <%= label(f, :name) %>
-          <%= text_input(f, :name, phx_hook: "AutoFocus") %>
-          <%= error_tag(f, :name) %>
-          <%= label(f, :show_done) %>
-          <%= checkbox(f, :show_done) %>
-          <%= error_tag(f, :show_done) %>
+          <.input field={{f, :name}} phx-hook="AutoFocus" label="Name" />
+          <.input field={{f, :show_done}} type="checkbox" label="Show Done?" />
         </div>
-        <%= submit("Update", phx_disable_with: "Saving...") %>
+        <.button phx-disable-with="Saving...">Save</.button>
       </.form>
     </div>
     """

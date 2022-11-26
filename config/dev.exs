@@ -11,7 +11,6 @@ config :purple, Purple.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-
 config :purple, Purple.Repo, log: false
 
 # For development, we disable any cache and enable
@@ -30,7 +29,8 @@ config :purple, PurpleWeb.Endpoint,
   secret_key_base: "tPF7EmyPMy+IEenpy6xzoGJW1bl6T74lSDWd6T+l0qGo9DFHJOZRDCwVh4Bv40nG",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -60,11 +60,13 @@ config :purple, PurpleWeb.Endpoint,
 # Watch static and templates for browser reloading.
 config :purple, PurpleWeb.Endpoint,
   live_reload: [
+    interval: 100,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/purple_web/(live|views)/.*(ex)$",
-      ~r"lib/purple_web/templates/.*(eex)$"
+      ~r"lib/purple_web/controllers/.*heex$",
+      ~r"lib/purple_web/components/.*ex$",
+      ~r"lib/purple_web/live/.*ex$"
     ]
   ],
   watchers: [

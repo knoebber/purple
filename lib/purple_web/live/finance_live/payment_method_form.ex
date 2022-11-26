@@ -39,11 +39,9 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodForm do
     <div>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <%= label(f, :name) %>
-          <%= text_input(f, :name, phx_hook: "AutoFocus") %>
-          <%= error_tag(f, :name) %>
+          <.input field={{f, :name}} phx-hook="AutoFocus" />
         </div>
-        <%= submit("Save", phx_disable_with: "Saving...") %>
+        <.button phx-disable-with="Saving...">Save</.button>
       </.form>
     </div>
     """
