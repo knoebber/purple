@@ -4,7 +4,7 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
   """
 
   use PurpleWeb, :live_view
-  import PurpleWeb.FinanceLive.FinanceHelpers
+  import PurpleWeb.FinanceLive.Helpers
   alias Purple.Finance.Transaction
 
   @impl Phoenix.LiveView
@@ -24,7 +24,7 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
 
   @impl Phoenix.LiveView
   def handle_info({:redirect, transaction}, socket) do
-    {:noreply, push_redirect(socket, to: show_transaction_path(transaction))}
+    {:noreply, push_redirect(socket, to: ~p"/finance/transactions/#{transaction}")}
   end
 
   def handle_info({:saved, _}, socket) do

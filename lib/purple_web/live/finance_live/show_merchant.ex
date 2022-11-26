@@ -1,7 +1,7 @@
 defmodule PurpleWeb.FinanceLive.ShowMerchant do
   use PurpleWeb, :live_view
 
-  import PurpleWeb.FinanceLive.FinanceHelpers
+  import PurpleWeb.FinanceLive.Helpers
 
   alias Purple.Finance
 

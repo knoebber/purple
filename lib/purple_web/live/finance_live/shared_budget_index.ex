@@ -1,7 +1,7 @@
 defmodule PurpleWeb.FinanceLive.SharedBudgetIndex do
   use PurpleWeb, :live_view
 
-  import PurpleWeb.FinanceLive.FinanceHelpers
+  import PurpleWeb.FinanceLive.Helpers
 
   alias Purple.Finance
 
@@ -42,20 +42,25 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetIndex do
     <h1 class="mb-2">Add Shared Budgets</h1>
     <form phx-submit="new" class="sm:w-1/3">
       <div class="flex flex-col mb-2">
-        <input type="text" name="name" phx-change="change_name" value={@name} />
+        <.input
+          errors={[]}
+          id="shared-budget-name"
+          label="New Shared Budget"
+          name="name"
+          phx-change="change_name"
+          value={@name}
+        />
       </div>
-      <button class="btn mb-2" type="button" phx-click="new">
+      <.button class="mb-2" phx-disable-with="Saving">
         Save
-      </button>
+      </.button>
     </form>
     <ul>
-      <%= for shared_budget <- @shared_budgets do %>
-        <li>
-          <%= live_redirect(shared_budget_title(shared_budget),
-            to: Routes.finance_show_shared_budget_path(@socket, :show, shared_budget)
-          ) %>
-        </li>
-      <% end %>
+      <li :for={shared_budget <- @shared_budgets}>
+        <.link navigate={~p"/finance/shared_budgets/#{shared_budget}"}>
+          <%= shared_budget.name %>
+        </.link>
+      </li>
     </ul>
     """
   end

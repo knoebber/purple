@@ -1,9 +1,6 @@
 defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
-  use PurpleWeb, :live_component
-
-  import PurpleWeb.FinanceLive.FinanceHelpers
-
   alias Purple.Finance
+  use PurpleWeb, :live_component
 
   defp save_adjustment(socket, :edit_adjustment, params) do
     Finance.update_shared_budget_adjustment(socket.assigns.adjustment, params)
@@ -64,16 +61,14 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
 
         next_path =
           if should_leave_open?(params) do
-            show_shared_budget_path(shared_budget_id, :new_adjustment)
+            ~p"/finance/shared_budgets/#{shared_budget_id}/adjustments/new"
           else
-            show_shared_budget_path(shared_budget_id, :show)
+            ~p"/finance/shared_budgets/#{shared_budget_id}"
           end
 
         {
           :noreply,
-          socket
-          |> put_flash(:info, "Adjustment saved")
-          |> push_patch(to: next_path)
+          push_patch(socket, to: next_path, replace: true)
         }
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -87,11 +82,16 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
     <div>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
-          <.input field={{f, :description}} phx-hook="AutoFocus" />
+          <.input field={{f, :description}} label="Description" phx-hook="AutoFocus" />
           <.input field={{f, :dollars}} label="Amount" />
-          <.input field={{f, :type}} type="select" options={Finance.share_type_mappings()} />
-          <.input field={{f, :user_id}} type="select" options={@user_mappings} />
-          <.input field={{f, :notes}} type="textarea" rows={@rows} />
+          <.input
+            field={{f, :type}}
+            type="select"
+            options={Finance.share_type_mappings()}
+            label="Type"
+          />
+          <.input field={{f, :user_id}} type="select" label="User" options={@user_mappings} />
+          <.input field={{f, :notes}} label="Notes" type="textarea" rows={@rows} />
         </div>
         <div class="flex justify-between mb-2_">
           <.button phx-disable-with="Saving...">Save</.button>

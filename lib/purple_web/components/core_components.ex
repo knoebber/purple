@@ -6,6 +6,13 @@ defmodule PurpleWeb.CoreComponents do
   alias Phoenix.LiveView.JS
   alias Purple.Filter
 
+  @select_class ~s"""
+  block w-full py-2 px-3 pr-7 border border-gray-300 bg-white rounded-md shadow-sm 
+  focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm"
+  """
+
+  defp select_class, do: @select_class
+
   defp input_equals?(val1, val2) do
     Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
   end
@@ -358,10 +365,22 @@ defmodule PurpleWeb.CoreComponents do
 
       ~H"""
       <div class="flex gap-2">
-        <%= @b.(:day, []) %>
-        <%= @b.(:month, []) %>
-        <%= @b.(:year, []) %>
-        <%= @b.(:hour, options: @hours) %>
+        <div>
+          <.label>Hour</.label>
+          <%= @b.(:hour, class: select_class(), options: @hours) %>
+        </div>
+        <div>
+          <.label>Day</.label>
+          <%= @b.(:day, class: select_class()) %>
+        </div>
+        <div>
+          <.label>Month</.label>
+          <%= @b.(:month, class: select_class()) %>
+        </div>
+        <div>
+          <.label>Year</.label>
+          <%= @b.(:year, class: select_class()) %>
+        </div>
       </div>
       """
     end
@@ -375,7 +394,7 @@ defmodule PurpleWeb.CoreComponents do
         Purple.Date.local_now()
       end
 
-    Phoenix.HTML.datetime_select(
+    Phoenix.HTML.Form.datetime_select(
       form,
       field,
       [
@@ -463,7 +482,7 @@ defmodule PurpleWeb.CoreComponents do
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
   attr :rest, :global, include: ~w(autocomplete disabled form max maxlength min minlength
-                                   pattern placeholder readonly required size step)
+                                   pattern placeholder readonly required rows size step)
   slot :inner_block
 
   def input(%{field: {f, field}} = assigns) do
@@ -503,13 +522,7 @@ defmodule PurpleWeb.CoreComponents do
     ~H"""
     <div phx-feedback-for={@name}>
       <.label :if={@label} for={@id}><%= @label %></.label>
-      <select
-        id={@id}
-        name={@name}
-        class="block w-full py-2 px-3 pr-7 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm"
-        multiple={@multiple}
-        {@rest}
-      >
+      <select id={@id} name={@name} class={select_class()} multiple={@multiple} {@rest}>
         <option :if={@prompt}><%= @prompt %></option>
         <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
       </select>

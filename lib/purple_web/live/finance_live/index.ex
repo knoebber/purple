@@ -1,7 +1,7 @@
 defmodule PurpleWeb.FinanceLive.Index do
   use PurpleWeb, :live_view
 
-  import PurpleWeb.FinanceLive.FinanceHelpers
+  import PurpleWeb.FinanceLive.Helpers
   import Purple.Filter
 
   alias Purple.Finance
@@ -51,17 +51,13 @@ defmodule PurpleWeb.FinanceLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("search", %{"filter" => params}, socket) do
-    {:noreply, push_patch(socket, to: index_path(params), replace: true)}
+    {:noreply, push_patch(socket, to: ~p"/finance?#{params}", replace: true)}
   end
 
   @impl Phoenix.LiveView
   def handle_event("import", _, socket) do
     Finance.import_transactions(socket.assigns.current_user.id)
-
-    {
-      :noreply,
-      assign_data(socket)
-    }
+    {:noreply, assign_data(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -71,22 +67,21 @@ defmodule PurpleWeb.FinanceLive.Index do
       <h1><%= @page_title %></h1>
     </div>
     <.filter_form :let={f}>
-      <%= live_redirect(to: create_transaction_path()) do %>
-        <button class="btn" type="button">Create</button>
+      <%= live_redirect(to: ~p"/finance/transactions/create") do %>
+        <.button class="h-full" type="button">Create</.button>
       <% end %>
-      <button
-        type="btn"
-        class="window pl-4 pr-4 text-lg"
+      <.button
+        class="pl-4 pr-4 text-lg bg-purple-200 border-collapse border-purple-400 border rounded h-full"
         phx-click="import"
         title="Import transactions"
       >
         🏦
-      </button>
+      </.button>
       <.input
         field={{f, :query}}
         value={Map.get(@filter, :query, "")}
         placeholder="Search..."
-        phx_debounce="200"
+        phx-debounce="200"
         class="lg:w-1/4"
       />
       <.input
@@ -98,9 +93,13 @@ defmodule PurpleWeb.FinanceLive.Index do
       />
     </.filter_form>
     <div class="w-full overflow-auto">
-      <.table rows={@transactions} filter={@filter} get_route={&index_path/1}>
+      <.table
+        rows={@transactions}
+        filter={@filter}
+        get_route={fn filter -> ~p"/finance?#{filter}" end}
+      >
         <:col :let={transaction} label="Amount" order_col="cents">
-          <%= live_redirect(transaction.dollars, to: show_transaction_path(transaction)) %>
+          <%= live_redirect(transaction.dollars, to: ~p"/finance/transactions/#{transaction}") %>
         </:col>
         <:col :let={transaction} label="Timestamp" order_col="timestamp">
           <%= Purple.Date.format(transaction.timestamp) %>
@@ -118,8 +117,8 @@ defmodule PurpleWeb.FinanceLive.Index do
       <.page_links
         num_rows={length(@transactions)}
         filter={@filter}
-        first_page={index_path(first_page(@filter))}
-        next_page={index_path(next_page(@filter))}
+        first_page={~p"/finance?#{first_page(@filter)}"}
+        next_page={~p"/finance?#{next_page(@filter)}"}
       />
     </div>
     """

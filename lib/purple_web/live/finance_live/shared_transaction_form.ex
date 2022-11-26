@@ -47,15 +47,22 @@ defmodule PurpleWeb.FinanceLive.SharedTransactionForm do
   def render(assigns) do
     ~H"""
     <div class="mb-2">
-      <.form :let={f} for={@changeset} class="flex flex-row" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} class="grid grid-cols-3 grid-rows-1 gap-2" phx-submit="save" phx-target={@myself}>
         <.input
           field={{f, :transaction_id}}
+          label="Transaction"
           type="select"
           options={@user_transaction_mappings}
-          class="w-5/6"
         />
-        <.input field={{f, :type}} type="select" options={Finance.user_type_mappings()} class="w-5/6" />
-        <.button class="ml-3">Add</.button>
+        <.input
+          field={{f, :type}}
+          label="Type"
+          type="select"
+          options={Finance.share_type_mappings()}
+        />
+        <div class="flex">
+          <.button class="h-2/3 self-end">Add</.button>
+        </div>
       </.form>
     </div>
     """

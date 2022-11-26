@@ -1,6 +1,6 @@
 defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   use PurpleWeb, :live_view
-  import PurpleWeb.FinanceLive.FinanceHelpers
+  import PurpleWeb.FinanceLive.Helpers
   alias Purple.Finance
 
   defp map_user_transactions(user_id, shared_budget_id) do
@@ -104,7 +104,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       :noreply,
       socket
       |> put_flash(:info, "Deleted shared budget")
-      |> push_redirect(to: shared_budget_index_path())
+      |> push_redirect(to: ~p"/finance/shared_budgets", replace: true)
     }
   end
 
@@ -124,9 +124,13 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
     <h1 class="mb-2"><%= @page_title %></h1>
     <.modal
       :if={@live_action in [:edit_adjustment, :new_adjustment]}
-      title="Adjust Shared Budget"
-      return_to={show_shared_budget_path(@shared_budget.id, :show)}
+      id="adjust-shared-budget-modal"
+      on_cancel={JS.patch(~p"/finance/shared_budgets/#{@shared_budget}", replace: true)}
+      show
     >
+      <:title>
+        Adjust Shared Budget
+      </:title>
       <.live_component
         action={@live_action}
         adjustment={@adjustment}
@@ -138,9 +142,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         user_mappings={@user_mappings}
       />
     </.modal>
-    <%= if length(@users) == 0 do %>
-      <button type="button" class="btn mb-2" phx-click="delete">Delete</button>
-    <% end %>
+    <.button :if={length(@users) == 0} class="mb-2" phx-click="delete">Delete</.button>
     <.live_component
       action={:new}
       current_user={@current_user}
@@ -156,8 +158,8 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       </.link>
     </div>
     <%= if @shared_budget.show_adjustments do %>
-      <.link patch={show_shared_budget_path(@shared_budget.id, :new_adjustment)}>
-        <button class="btn mb-2">New Adjustment</button>
+      <.link patch={~p"/finance/shared_budgets/#{@shared_budget}/adjustments/new"} replace={true}>
+        <.button class="mb-2">New Adjustment</.button>
       </.link>
     <% end %>
     <div class="grid grid-cols-1 md:grid-cols-2 w-full overflow-auto">
@@ -185,14 +187,10 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
                 <%= row.description %>
               </:col>
               <:col :let={row} label="">
-                <.link patch={
-                  Routes.finance_show_shared_budget_path(
-                    @socket,
-                    :edit_adjustment,
-                    @shared_budget.id,
-                    row.id
-                  )
-                }>
+                <.link
+                  patch={~p"/finance/shared_budgets/#{@shared_budget}/adjustments/edit/#{row}"}
+                  replace={true}
+                >
                   Edit
                 </.link>
               </:col>
@@ -211,7 +209,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
             <:col :let={transaction} label="Transaction">
               <%= live_redirect(
                 Finance.Transaction.to_string(transaction),
-                to: show_transaction_path(transaction)
+                to: ~p"/finance/transactions/#{transaction}"
               ) %>
             </:col>
             <:col :let={transaction} label="Type">

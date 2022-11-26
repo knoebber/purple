@@ -1,7 +1,7 @@
 defmodule PurpleWeb.FinanceLive.MerchantIndex do
   use PurpleWeb, :live_view
 
-  import PurpleWeb.FinanceLive.FinanceHelpers
+  import PurpleWeb.FinanceLive.Helpers
 
   alias Purple.Finance
   alias Purple.Finance.Merchant
@@ -64,7 +64,7 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
     </div>
     <.table rows={@merchants}>
       <:col :let={row} label="Name">
-        <.link navigate={show_merchant_path(row)}>
+        <.link navigate={~p"/finance/merchants/#{row}"}>
           <%= row.name %>
         </.link>
       </:col>
@@ -73,7 +73,7 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
       </:col>
       <:col :let={row} label="# Transactions">
         <%= if length(row.transactions) > 0 do %>
-          <.link navigate={index_path(%{merchant_id: row.id})}>
+          <.link navigate={~p"/finance?#{%{merchant_id: row.id}}"}>
             <%= length(row.transactions) %>
           </.link>
         <% else %>

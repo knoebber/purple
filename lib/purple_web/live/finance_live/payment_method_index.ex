@@ -1,7 +1,7 @@
 defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
   use PurpleWeb, :live_view
 
-  import PurpleWeb.FinanceLive.FinanceHelpers
+  import PurpleWeb.FinanceLive.Helpers
 
   alias Purple.Finance
   alias Purple.Finance.PaymentMethod
@@ -67,7 +67,7 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
       </:col>
       <:col :let={row} label="# Transactions">
         <%= if length(row.transactions) > 0 do %>
-          <.link navigate={index_path(%{payment_method_id: row.id})}>
+          <.link navigate={~p"/finance?#{%{payment_method_id: row.id}}"}>
             <%= length(row.transactions) %>
           </.link>
         <% else %>
