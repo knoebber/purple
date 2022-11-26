@@ -8,9 +8,7 @@ defmodule PurpleWeb.UserLoginLiveTest do
     test "renders log in page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log_in")
 
-      assert html =~ "Log in"
-      assert html =~ "Register"
-      assert html =~ "Forgot your password?"
+      assert html =~ "Login"
     end
 
     test "redirects if already logged in", %{conn: conn} do

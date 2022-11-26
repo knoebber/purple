@@ -4,14 +4,14 @@ defmodule PurpleWeb.UserSettingsLive do
   use PurpleWeb, :live_view
   require Logger
 
-  defp oauth_redirect_url(socket) do
+  defp oauth_redirect_url() do
     make_full_url(~p"/users/settings")
   end
 
   def mount(%{"code" => oauth_code}, _, socket) do
     google_token = Accounts.get_user_oauth_token(socket.assigns.current_user.id)
     if oauth_code && google_token == nil do
-      case Gmail.make_token(oauth_redirect_url(socket), oauth_code) do
+      case Gmail.make_token(oauth_redirect_url(), oauth_code) do
         {:ok, %{token: token}} ->
           Accounts.save_oauth_token!(token, socket.assigns.current_user.id)
           put_flash(socket, :info, "OAuth token saved.")
@@ -47,11 +47,11 @@ defmodule PurpleWeb.UserSettingsLive do
     {:noreply,
      redirect(
        socket,
-       external: Gmail.get_authorize_url!(oauth_redirect_url(socket))
+       external: Gmail.get_authorize_url!(oauth_redirect_url())
      )}
   end
 
-  def handle_event("validate", params, socket) do
+  def handle_event("validate", _, socket) do
     {:noreply, socket}
   end
 
