@@ -92,7 +92,7 @@ defmodule PurpleWeb.RunLive.FormComponent do
           <p :if={@changeset.valid?} class="mt-2">
             Pace:
             <strong>
-              <%= Run.format_pace(@miles, @duration_in_seconds) %>
+              <%= Run.format_pace(%Run{miles: @miles, seconds: @duration_in_seconds}) %>
             </strong>
           </p>
         </div>

@@ -43,14 +43,18 @@ defmodule Purple.Activities.Run do
     is_number(i) and i > 0
   end
 
-  def format_pace(miles, duration_in_seconds) do
-    if is_positive_number(miles) and is_positive_number(duration_in_seconds) do
-      seconds_per_mile = floor(duration_in_seconds / miles)
+  def format_pace(%__MODULE__{miles: miles, seconds: seconds} = run) do
+    if is_positive_number(miles) and is_positive_number(seconds) do
+      seconds_per_mile = floor(run.seconds / run.miles)
       minutes_per_mile = div(seconds_per_mile, 60)
       minute_seconds_per_mile = rem(seconds_per_mile, 60)
 
       String.replace_prefix(
-        format_duration(0, minutes_per_mile, minute_seconds_per_mile),
+        format_duration(%__MODULE__{
+          hours: 0,
+          minutes: minutes_per_mile,
+          minute_seconds: minute_seconds_per_mile
+        }),
         "00:",
         ""
       )
@@ -59,18 +63,22 @@ defmodule Purple.Activities.Run do
     end
   end
 
-  def format_duration(hours, minutes, seconds)
-      when is_number(hours) and
-             is_number(minutes) and
-             is_number(seconds) and
-             hours + minutes + seconds > 0 do
-    [hours, minutes, seconds]
-    |> Enum.map_join(":", fn n -> n |> Integer.to_string() |> String.pad_leading(2, "0") end)
+  def format_duration(%__MODULE__{hours: hours, minutes: minutes, minute_seconds: seconds} = run) do
+    if is_number(hours) and
+         is_number(minutes) and
+         is_number(seconds) and
+         hours + minutes + seconds > 0 do
+      Enum.map_join(
+        [hours, minutes, seconds],
+        ":",
+        &(&1 |> Integer.to_string() |> String.pad_leading(2, "0"))
+      )
+    else
+      "N/A"
+    end
   end
 
-  def format_duration(_, _, _), do: "N/A"
-
-  def changeset(run, attrs) do
+  def changeset(%__MODULE__{} = run, attrs) do
     run
     |> cast(attrs, [:miles, :hours, :minutes, :minute_seconds, :description, :date])
     |> validate_required([:miles])

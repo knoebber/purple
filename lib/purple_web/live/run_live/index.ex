@@ -140,10 +140,10 @@ defmodule PurpleWeb.RunLive.Index do
           </.link>
         </:col>
         <:col :let={run} label="Duration" order_col="seconds">
-          <%= Run.format_duration(run.hours, run.minutes, run.minute_seconds) %>
+          <%= Run.format_duration(run) %>
         </:col>
         <:col :let={run} label="Pace">
-          <%= Run.format_pace(run.miles, run.seconds) %>
+          <%= Run.format_pace(run) %>
         </:col>
         <:col :let={run} label="Date" order_col="date">
           <%= Purple.Date.format(run.date, :dayname) %>
