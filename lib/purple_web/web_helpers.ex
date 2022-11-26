@@ -2,8 +2,6 @@ defmodule PurpleWeb.WebHelpers do
   @moduledoc """
   Functions that are available to all purple web views
   """
-  alias PurpleWeb.Endpoint
-  alias PurpleWeb.Router.Helpers, as: Routes
   use PurpleWeb, :verified_routes
 
   def make_full_url(path) when is_binary(path) do

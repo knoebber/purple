@@ -18,7 +18,7 @@
         <.link navigate={~p"/board"}>Board</.link>
         <.link navigate={~p"/finance"}>Bean Counter</.link>
         <.link navigate={~p"/runs"}>Runs</.link>
-        <.link navigate={~p"/users/#{@current_user.id}"}><%= @current_user.email %></.link>
+        <.link navigate={~p"/users/settings"}><%= @current_user.email %></.link>
         <.link href={~p"/users/log_out"} method="delete">Log out</.link>
       <% else %>
         <.link href={~p"/users/log_in"}>Log in</.link>

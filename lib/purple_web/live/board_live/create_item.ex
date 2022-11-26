@@ -79,7 +79,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("validate", %{"item" => params}, socket) do
+  def handle_event("validate", _, socket) do
     {:noreply, socket}
   end
 

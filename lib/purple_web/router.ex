@@ -13,13 +13,6 @@ defmodule PurpleWeb.Router do
     plug :fetch_current_user
   end
 
-  ## Public pages
-  scope "/", PurpleWeb do
-    pipe_through :browser
-
-    get "/", PageController, :home
-  end
-
   ## Live Dashboard
   scope "/" do
     pipe_through [:browser, :require_authenticated_user]
@@ -58,6 +51,7 @@ defmodule PurpleWeb.Router do
       live "/finance", FinanceLive.Index, :index
       live "/finance/transactions/create", FinanceLive.CreateTransaction, :create
       live "/finance/transactions/:id", FinanceLive.ShowTransaction, :show
+      live "/finance/transactions/:id/edit", FinanceLive.ShowTransaction, :edit
       live "/finance/merchants", FinanceLive.MerchantIndex, :index
       live "/finance/merchants/:id", FinanceLive.ShowMerchant, :show
       live "/finance/payment_methods", FinanceLive.PaymentMethodIndex, :index

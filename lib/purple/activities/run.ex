@@ -63,7 +63,7 @@ defmodule Purple.Activities.Run do
     end
   end
 
-  def format_duration(%__MODULE__{hours: hours, minutes: minutes, minute_seconds: seconds} = run) do
+  def format_duration(%__MODULE__{hours: hours, minutes: minutes, minute_seconds: seconds}) do
     if is_number(hours) and
          is_number(minutes) and
          is_number(seconds) and

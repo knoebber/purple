@@ -42,6 +42,7 @@ defmodule Purple.MixProject do
       {:floki, ">= 0.33.1"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.4.0"},
+      {:mail, "~> 0.2"}, 
       {:mogrify, "~> 0.9.2"},
       {:phoenix, "~> 1.7.0-rc.0", override: true},
       {:phoenix_ecto, "~> 4.4"},

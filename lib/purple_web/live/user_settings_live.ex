@@ -1,7 +1,9 @@
 defmodule PurpleWeb.UserSettingsLive do
-  use PurpleWeb, :live_view
-
   alias Purple.Accounts
+  alias Purple.Gmail
+  use PurpleWeb, :live_view
+  require Logger
+
 
   defp oauth_redirect_uri(socket) do
     IO.inspect(socket, label: "TODO: fix redirect uri")
@@ -43,7 +45,7 @@ defmodule PurpleWeb.UserSettingsLive do
       end
     end
 
-    {:ok, push_navigate(socket, to: ~p"/users/settings")}
+    {:ok, push_navigate(socket, to: ~p"/users/settings", replace: true)}
   end
 
   def mount(_params, _session, socket) do
@@ -67,39 +69,6 @@ defmodule PurpleWeb.UserSettingsLive do
       socket,
       external: Gmail.get_authorize_url!(oauth_redirect_uri(socket))
     )
-  end
-
-  def handle_event("validate_email", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
-    email_changeset = Accounts.change_user_email(socket.assigns.current_user, user_params)
-
-    socket =
-      assign(socket,
-        email_changeset: Map.put(email_changeset, :action, :validate),
-        email_form_current_password: password
-      )
-
-    {:noreply, socket}
-  end
-
-  def handle_event("update_email", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
-    user = socket.assigns.current_user
-
-    case Accounts.apply_user_email(user, password, user_params) do
-      {:ok, applied_user} ->
-        Accounts.deliver_user_update_email_instructions(
-          applied_user,
-          user.email,
-          &url(~p"/users/settings/confirm_email/#{&1}")
-        )
-
-        info = "A link to confirm your email change has been sent to the new address."
-        {:noreply, put_flash(socket, :info, info)}
-
-      {:error, changeset} ->
-        {:noreply, assign(socket, :email_changeset, Map.put(changeset, :action, :insert))}
-    end
   end
 
   def handle_event("validate_password", params, socket) do
