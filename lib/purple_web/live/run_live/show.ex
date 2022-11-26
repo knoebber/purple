@@ -49,11 +49,11 @@ defmodule PurpleWeb.RunLive.Show do
           <%= if @live_action == :edit do %>
             <strong>Edit Run</strong>
             <span>|</span>
-            <.link patch={~p"/runs/#{@run.id}"}>
+            <.link patch={~p"/runs/#{@run.id}"} replace={true}>
               Cancel
             </.link>
           <% else %>
-            <.link patch={~p"/runs/#{@run.id}/edit"}>
+            <.link patch={~p"/runs/#{@run.id}/edit"} replace={true}>
               Edit
             </.link>
           <% end %>

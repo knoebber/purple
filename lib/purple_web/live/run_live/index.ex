@@ -95,7 +95,7 @@ defmodule PurpleWeb.RunLive.Index do
     <.modal
       :if={!!@editable_run}
       id="edit-run-modal"
-      on_cancel={JS.patch(~p"/runs?#{@filter}")}
+      on_cancel={JS.patch(~p"/runs?#{@filter}", replace: true)}
       show
     >
       <:title><%= Purple.titleize(@live_action) %> Run</:title>
@@ -108,7 +108,7 @@ defmodule PurpleWeb.RunLive.Index do
       />
     </.modal>
     <.filter_form :let={f}>
-      <.link patch={~p"/runs/create?#{@filter}"}>
+      <.link patch={~p"/runs/create?#{@filter}"} replace={true}>
         <.button phx-click="create_run">Create</.button>
       </.link>
       <.input
@@ -149,7 +149,7 @@ defmodule PurpleWeb.RunLive.Index do
           <%= Purple.Date.format(run.date, :dayname) %>
         </:col>
         <:col :let={run} label="">
-          <.link patch={~p"/runs/edit/#{run}?#{@filter}"}>
+          <.link patch={~p"/runs/edit/#{run}?#{@filter}"} replace={true}>
             ✏️
           </.link>
         </:col>

@@ -10,7 +10,7 @@ defmodule PurpleWeb.CoreComponents do
     Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
   end
 
-    @doc """
+  @doc """
   Translates an error message using gettext.
   """
   def translate_error({msg, opts}) do
@@ -416,15 +416,19 @@ defmodule PurpleWeb.CoreComponents do
   end
 
   attr :class, :string, default: nil
+  attr :rest, :global
 
   slot :inner_block, required: true
 
   def section(assigns) do
     ~H"""
-    <section class={[
-      "bg-purple-100 border-collapse border-purple-400 border rounded",
-      @class
-    ]}>
+    <section
+      class={[
+        "bg-purple-100 border-collapse border-purple-400 border rounded",
+        @class
+      ]}
+      {@rest}
+    >
       <%= render_slot(@inner_block) %>
     </section>
     """
@@ -487,7 +491,7 @@ defmodule PurpleWeb.CoreComponents do
         name={@name}
         value="true"
         checked={@checked}
-        class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+        class="mt-2 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
         {@rest}
       />
       <%= @label %>
@@ -502,7 +506,7 @@ defmodule PurpleWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="block w-full py-2 px-3 pr-5 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm"
+        class="block w-full py-2 px-3 pr-7 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm"
         multiple={@multiple}
         {@rest}
       >
@@ -528,9 +532,7 @@ defmodule PurpleWeb.CoreComponents do
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
         {@rest}
-      >
-
-    <%= @value %></textarea>
+      ><%= @value %></textarea>
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """

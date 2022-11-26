@@ -166,52 +166,6 @@
 }
 
 @layer components {
-    .window {
-        @apply bg-purple-100;
-        @apply border-collapse;
-        @apply border-purple-400;
-        @apply border;
-        @apply rounded;
-        /* TODO: replace this class with <.section> component */
-    }
-/*
-    .flash {
-        @apply absolute;
-        @apply right-5;
-        @apply top-5;
-
-        @apply font-bold;
-        @apply mb-2;
-        @apply p-4;
-        @apply rounded;
-        @apply shadow-md;
-        @apply z-30;
-    }
-
-    .flash:empty {
-        @apply hidden;
-    }
-
-    .flash-error {
-        @apply bg-red-500;
-    }
-
-    .flash-info {
-        @apply bg-teal-500;
-    }
-
-    .invalid-feedback {
-        @apply font-bold;
-    }
-
-    .alert {
-        @apply font-bold;
-    }
-
-    .alert-danger {
-        @apply text-red-400;
-    }
-*/
     .inline-links > * {
         @apply mr-2;
     }

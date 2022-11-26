@@ -341,7 +341,7 @@ defmodule Purple.Board do
     |> Repo.update()
   end
 
-  def get_user_board!(id) do
+  def get_user_board(id) do
     Repo.one(
       from ub in UserBoard,
         left_join: t in assoc(ub, :tags),

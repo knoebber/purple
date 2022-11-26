@@ -3,20 +3,28 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
   Live view for managing user's boards.
   """
 
-  use PurpleWeb, :live_view
-
-  import PurpleWeb.BoardLive.BoardHelpers
-
   alias Purple.Board
   alias Purple.Board.UserBoard
+  import PurpleWeb.BoardLive.Helpers
+  use PurpleWeb, :live_view
 
-  defp get_board(socket, board_id) do
-    Enum.find(socket.assigns.user_boards, %UserBoard{}, fn ub ->
-      ub.id == board_id
-    end)
+  def apply_action(socket, :index, _) do
+    assign(socket, :editable_board, nil)
   end
 
-  def assign_boards(socket) do
+  def apply_action(socket, :edit, %{"id" => id}) do
+    user_board_id = Purple.parse_int(id)
+
+    assign(
+      socket,
+      :editable_board,
+      Enum.find(socket.assigns.user_boards, nil, fn ub ->
+        ub.id == user_board_id
+      end)
+    )
+  end
+
+  def assign_data(socket) do
     assign(socket, :user_boards, Board.list_user_boards(socket.assigns.current_user.id))
   end
 
@@ -26,51 +34,25 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(_, _, socket) do
+  def handle_params(params, _, socket) do
     {
       :noreply,
       socket
-      |> assign_boards()
-      |> assign(:new_name, "")
-      |> assign(:editable_board, nil)
+      |> assign_data()
+      |> apply_action(socket.assigns.live_action, params)
       |> assign(:page_title, "Board Settings")
     }
   end
 
   @impl Phoenix.LiveView
-  def handle_event("edit", %{"id" => id}, socket) do
-    id = Purple.parse_int(id)
-    last_edited = socket.assigns.editable_board
-
-    if last_edited && last_edited.id == id do
-      {:noreply, assign(socket, :editable_board, nil)}
-    else
-      {:noreply, assign(socket, :editable_board, get_board(socket, id))}
-    end
-  end
-
-  @impl Phoenix.LiveView
   def handle_event("new", _, socket) do
-    if socket.assigns.new_name != "" do
+    {:ok, new_board} =
       Board.create_user_board(%UserBoard{
-        name: socket.assigns.new_name,
+        name: "<New board>",
         user_id: socket.assigns.current_user.id
       })
 
-      {
-        :noreply,
-        socket
-        |> assign_boards()
-        |> assign_side_nav()
-      }
-    else
-      {:noreply, socket}
-    end
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("change_new_name", %{"name" => name}, socket) do
-    {:noreply, assign(socket, :new_name, name)}
+    {:noreply, push_patch(socket, to: ~p"/board/settings/#{new_board}", replace: true)}
   end
 
   @impl Phoenix.LiveView
@@ -80,9 +62,9 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
     {
       :noreply,
       socket
-      |> assign_boards()
-      |> put_flash(:info, "Deleted board")
+      |> assign_data()
       |> assign_side_nav()
+      |> put_flash(:info, "Deleted board")
     }
   end
 
@@ -91,10 +73,8 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
     {
       :noreply,
       socket
+      |> push_patch(to: ~p"/board/settings", replace: true)
       |> put_flash(:info, "Board saved")
-      |> assign(:editable_board, nil)
-      |> assign_boards()
-      |> assign_side_nav()
     }
   end
 
@@ -104,7 +84,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
       :noreply,
       socket
       |> put_flash(:info, "Updated tags")
-      |> assign_boards()
+      |> assign_data()
     }
   end
 
@@ -113,27 +93,18 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
     <form phx-submit="new" class="sm:w-1/3">
-      <div class="flex flex-col mb-2">
-        <input
-          type="text"
-          name="name"
-          phx-change="change_new_name"
-          value={@new_name}
-          placeholder="New board name"
-        />
-      </div>
-      <button class="btn mb-2" type="button" phx-click="new">
-        Save
-      </button>
+      <.button class="mb-2">
+        Add Board
+      </.button>
     </form>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <%= for user_board <- @user_boards do %>
-        <section class="mb-2 window">
+        <.section class="mb-2">
           <div class="bg-purple-300 inline-links">
             <h2 class="ml-2 mb-2 inline"><%= user_board.name %></h2>
             <.link navigate={~p"/board/#{user_board.id}"}>View</.link>
             <span>|</span>
-            <.link href="#" phx-click="edit" phx-value-id={user_board.id}>
+            <.link patch={~p"/board/settings/#{user_board}"}>
               <%= if(@editable_board && @editable_board.id == user_board.id,
                 do: "Cancel",
                 else: "Edit"
@@ -174,7 +145,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
               </div>
             </div>
           <% end %>
-        </section>
+        </.section>
       <% end %>
     </div>
     """

@@ -144,7 +144,7 @@ defmodule PurpleWeb.LiveUpload do
           <.live_file_input upload={@uploads.files} />
         </div>
         <%= if Enum.count(@uploads.files.entries) > 0 do %>
-          <button type="submit" phx-disable-with="Uploading...">Upload</button>
+          <.button type="submit" phx-disable-with="Uploading...">Upload</.button>
         <% end %>
       </form>
       <%= if Enum.count(@uploads.files.entries) > 0 do %>

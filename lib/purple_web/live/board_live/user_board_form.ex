@@ -75,15 +75,16 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
     <div>
       <%= if length(@available_tags) > 0 do %>
         <form class="flex flex-row mb-2" phx-submit="add_tag" phx-target={@myself}>
-          <select name="tag_id">
-            <option value="">🏷 Select a tag</option>
-            <%= for tag <- @available_tags do %>
-              <option value={tag.id}>
-                #<%= tag.name %>
-              </option>
-            <% end %>
-          </select>
-          <button class="ml-3" type="submit">Add</button>
+          <.input
+            id="tag_select"
+            name="tag_id"
+            errors={[]}
+            options={for tag <- @available_tags, do: {tag.name, tag.id}}
+            prompt="🏷 Select a tag"
+            type="select"
+            value=""
+          />
+          <.button class="ml-3">Add</.button>
         </form>
       <% end %>
       <%= if length(@user_board.tags) > 0 do %>
@@ -101,10 +102,10 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
 
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <.input field={{f, :name}} phx-hook="AutoFocus" />
-          <.input field={{f, :show_done}} type="checkbox" />
+          <.input field={{f, :name}} phx-hook="AutoFocus" label="Name" />
+          <.input field={{f, :show_done}} type="checkbox" label="Show Done?" />
         </div>
-        <.button phx-disable-with="Saving...">Update</.button>
+        <.button phx-disable-with="Saving...">Save</.button>
       </.form>
     </div>
     """

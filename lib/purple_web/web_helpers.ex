@@ -6,6 +6,19 @@ defmodule PurpleWeb.WebHelpers do
   alias PurpleWeb.Router.Helpers, as: Routes
   use PurpleWeb, :verified_routes
 
+  def make_full_url(path) when is_binary(path) do
+    host = Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host]
+
+    base =
+      if Application.get_env(:purple, :env) == :dev do
+        "http://#{host}:#{Application.get_env(:purple, PurpleWeb.Endpoint)[:http][:port]}"
+      else
+        "https://#{host}"
+      end
+
+    base <> path
+  end
+
   def strip_markdown(markdown) do
     Regex.replace(~r/[#`*\n]/, markdown, "")
   end
