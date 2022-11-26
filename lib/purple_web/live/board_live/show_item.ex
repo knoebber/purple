@@ -185,6 +185,11 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("validate_entry", _, socket) do
+    { :noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     Board.get_item!(id)
     |> Board.delete_item!()
@@ -224,7 +229,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   defp entry_form(assigns) do
     ~H"""
-    <.form :let={f} for={@changeset} phx-submit={@action} class="p-4">
+    <.form :let={f} for={@changeset} phx-submit={@action} phx-change="validate_entry" class="p-4">
       <div class="flex flex-col mb-2">
         <.input field={{f, :item_id}} type="hidden" value={@item_id} />
         <.input field={{f, :is_collapsed}} type="hidden" value={false} />
