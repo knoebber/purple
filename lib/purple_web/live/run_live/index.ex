@@ -95,7 +95,7 @@ defmodule PurpleWeb.RunLive.Index do
     <.modal
       :if={!!@editable_run}
       id="edit-run-modal"
-      on_cancel={JS.navigate(~p"/runs?#{@filter}")}
+      on_cancel={JS.patch(~p"/runs?#{@filter}")}
       show
     >
       <:title><%= Purple.titleize(@live_action) %> Run</:title>
