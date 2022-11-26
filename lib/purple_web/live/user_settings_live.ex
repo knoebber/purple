@@ -4,37 +4,14 @@ defmodule PurpleWeb.UserSettingsLive do
   use PurpleWeb, :live_view
   require Logger
 
-
-  defp oauth_redirect_uri(socket) do
-    IO.inspect(socket, label: "TODO: fix redirect uri")
-
-    if false do
-      port = socket.port
-
-      port =
-        if port == 80 do
-          ""
-        else
-          ":#{port}"
-        end
-
-      scheme =
-        if Application.get_env(:purple, :env) == :dev do
-          "http://"
-        else
-          "https://"
-        end
-
-      scheme <>
-        Application.fetch_env!(:purple, PurpleWeb.Endpoint)[:url][:host] <>
-        port <>
-        ~p"/users/settings"
-    end
+  defp oauth_redirect_url(socket) do
+    make_full_url(~p"/users/settings")
   end
 
   def mount(%{"code" => oauth_code}, _, socket) do
-    if oauth_code && not socket.assigns.has_google_token do
-      case Gmail.make_token(oauth_redirect_uri(socket), oauth_code) do
+    google_token = Accounts.get_user_oauth_token(socket.assigns.current_user.id)
+    if oauth_code && google_token == nil do
+      case Gmail.make_token(oauth_redirect_url(socket), oauth_code) do
         {:ok, %{token: token}} ->
           Accounts.save_oauth_token!(token, socket.assigns.current_user.id)
           put_flash(socket, :info, "OAuth token saved.")
@@ -50,35 +27,32 @@ defmodule PurpleWeb.UserSettingsLive do
 
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
+    google_token = Accounts.get_user_oauth_token(user.id)
 
     socket =
       socket
       |> assign(:current_password, nil)
-      |> assign(:email_form_current_password, nil)
-      |> assign(:current_email, user.email)
       |> assign(:email_changeset, Accounts.change_user_email(user))
+      |> assign(:email_form_current_password, nil)
+      |> assign(:has_google_token, google_token != nil)
       |> assign(:page_title, "User Settings")
       |> assign(:password_changeset, Accounts.change_user_password(user))
+      |> assign(:side_nav, [])
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
   end
 
   def handle_event("get_oauth_token", _, socket) do
-    push_navigate(
-      socket,
-      external: Gmail.get_authorize_url!(oauth_redirect_uri(socket))
-    )
+    {:noreply,
+     redirect(
+       socket,
+       external: Gmail.get_authorize_url!(oauth_redirect_url(socket))
+     )}
   end
 
-  def handle_event("validate_password", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
-    password_changeset = Accounts.change_user_password(socket.assigns.current_user, user_params)
-
-    {:noreply,
-     socket
-     |> assign(:password_changeset, Map.put(password_changeset, :action, :validate))
-     |> assign(:current_password, password)}
+  def handle_event("validate", params, socket) do
+    {:noreply, socket}
   end
 
   def handle_event("update_password", params, socket) do
@@ -121,12 +95,12 @@ defmodule PurpleWeb.UserSettingsLive do
         for={@password_changeset}
         action={~p"/users/log_in?_action=password_updated"}
         method="post"
-        phx-change="validate_password"
+        phx-change="validate"
         phx-submit="update_password"
         phx-trigger-action={@trigger_submit}
       >
         <div class="flex flex-col mb-2">
-          <.input field={{f, :email}} type="hidden" value={@current_email} />
+          <.input field={{f, :email}} type="hidden" value={@current_user.email} />
           <.input field={{f, :password}} type="password" label="New password" required />
           <.input field={{f, :password_confirmation}} type="password" label="Confirm new password" />
           <.input
