@@ -8,6 +8,9 @@ all: deps create_db js compile assets migrate
 warnings:
 	mix compile --all-warnings
 
+format:
+	mix format mix.exs "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}"
+
 test:
 	mix test
 
@@ -38,4 +41,4 @@ migrate:
 deploy: test
 	fly deploy
 
-.PHONY: all test hex rebar deps create_db js compile assets migrate deploy warnings
+.PHONY: all format test hex rebar deps create_db js compile assets migrate deploy warnings
