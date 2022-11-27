@@ -41,7 +41,7 @@ defmodule Purple do
     |> Enum.map_join(" ", &String.capitalize/1)
   end
 
-  def titleize(atom) when is_atom(atom) do 
+  def titleize(atom) when is_atom(atom) do
     titleize(Atom.to_string(atom))
   end
 

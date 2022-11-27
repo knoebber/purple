@@ -108,7 +108,6 @@ defmodule Purple.Accounts do
     User.email_changeset(user, attrs)
   end
 
-
   @doc """
   Returns an `%Ecto.Changeset{}` for changing the user password.
 

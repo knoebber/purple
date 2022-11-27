@@ -186,7 +186,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   @impl Phoenix.LiveView
   def handle_event("validate_entry", _, socket) do
-    { :noreply, socket}
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -352,9 +352,11 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           />
         </div>
         <div class="p-3">
-          <strong><.link :if={length(@image_refs) > 0} navigate={~p"/board/item/#{@item}/files"}>
-            Images
-          </.link></strong>
+          <strong>
+            <.link :if={length(@image_refs) > 0} navigate={~p"/board/item/#{@item}/files"}>
+              Images
+            </.link>
+          </strong>
         </div>
         <%= if length(@image_refs) + length(@file_refs) > 0 do %>
           <%= for ref <- @image_refs do %>

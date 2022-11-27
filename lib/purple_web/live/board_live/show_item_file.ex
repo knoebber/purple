@@ -33,8 +33,9 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
     ~H"""
     <h1>
       <.link navigate={~p"/board"}>Board</.link>
-       / <.link navigate={~p"/board/item/#{@item_id}"}>Item <%= @item_id %></.link>
-       / <%= @page_title %>
+      /
+      <.link navigate={~p"/board/item/#{@item_id}"}>Item <%= @item_id %></.link>
+      / <%= @page_title %>
     </h1>
 
     <div class="flex bg-purple-300 inline-links p-1 border rounded border-purple-500">

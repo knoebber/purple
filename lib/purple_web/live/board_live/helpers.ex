@@ -5,10 +5,10 @@ defmodule PurpleWeb.BoardLive.Helpers do
   use PurpleWeb, :verified_routes
 
   def board_path(nil, params), do: board_path(params)
+
   def board_path(board_id, params) when is_map(params) do
     ~p"/board/#{board_id}?#{params}"
   end
-
 
   def board_path(params) when is_map(params) do
     ~p"/board?#{params}"

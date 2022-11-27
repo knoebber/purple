@@ -109,7 +109,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
             type="textarea"
           />
           <.input field={{f, :dollars}} label="Amount" />
-          <%= datetime_select_group(f, :timestamp) %> 
+          <%= datetime_select_group(f, :timestamp) %>
           <.input
             class="w-5/6"
             field={{f, :merchant_id}}

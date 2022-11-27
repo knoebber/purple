@@ -3,7 +3,7 @@ defmodule PurpleWeb.FinanceLive.Helpers do
   Helpers for finance live views
   """
   use PurpleWeb, :verified_routes
-  
+
   def side_nav do
     [
       %{
@@ -12,7 +12,7 @@ defmodule PurpleWeb.FinanceLive.Helpers do
         children: [
           %{
             label: "Merchants",
-            to: ~p"/finance/merchants",
+            to: ~p"/finance/merchants"
           },
           %{
             label: "Payment Methods",

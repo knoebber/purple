@@ -81,7 +81,11 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
     <.section class="mb-2">
       <div class="flex justify-between bg-purple-300 p-1 mb-2">
         <div class="inline-links">
-          <.link :if={!@is_editing} patch={~p"/finance/transactions/#{@transaction}/edit"} replace={true}>
+          <.link
+            :if={!@is_editing}
+            patch={~p"/finance/transactions/#{@transaction}/edit"}
+            replace={true}
+          >
             Edit
           </.link>
           <.link :if={@is_editing} patch={~p"/finance/transactions/#{@transaction}"} replace={true}>
