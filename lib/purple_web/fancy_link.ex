@@ -35,15 +35,23 @@ defmodule PurpleWeb.FancyLink do
       routes_from_markdown,
       %{},
       fn {url, module, params}, fancy_link_map ->
-        if __MODULE__.implemented_by?(module) do
-          Map.put(
-            fancy_link_map,
-            url,
-            "🌻 · " <> module.get_fancy_link_type() <> " · " <> module.get_fancy_link_title(params)
-          )
-        else
-          fancy_link_map
-        end
+        result =
+          if __MODULE__.implemented_by?(module) do
+            title = module.get_fancy_link_title(params)
+
+            if title do
+              Map.put(
+                fancy_link_map,
+                url,
+                Enum.join(
+                  [module.get_fancy_link_type(), title],
+                  " · "
+                )
+              )
+            end
+          end
+
+        result || fancy_link_map
       end
     )
   end

@@ -78,6 +78,10 @@ defmodule Purple.Activities.Run do
     end
   end
 
+  def to_string(%__MODULE__{} = run) do 
+    "#{run.miles} miles@#{format_pace(run)} in #{format_duration(run)}"
+  end
+
   def changeset(%__MODULE__{} = run, attrs) do
     run
     |> cast(attrs, [:miles, :hours, :minutes, :minute_seconds, :description, :date])

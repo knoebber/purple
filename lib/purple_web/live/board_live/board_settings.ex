@@ -13,7 +13,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
   end
 
   def apply_action(socket, :edit, %{"id" => id}) do
-    user_board_id = Purple.parse_int(id)
+    user_board_id = Purple.parse_int!(id)
 
     assign(
       socket,

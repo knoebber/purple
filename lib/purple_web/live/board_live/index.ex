@@ -57,7 +57,7 @@ defmodule PurpleWeb.BoardLive.Index do
 
   @impl PurpleWeb.FancyLink
   def get_fancy_link_type do
-    "Board"
+    "🌻"
   end
 
   @impl PurpleWeb.FancyLink

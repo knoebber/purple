@@ -380,7 +380,7 @@ defmodule Purple.Board do
   end
 
   def delete_user_board!(id) do
-    Repo.delete!(%UserBoard{id: Purple.parse_int(id)})
+    Repo.delete!(%UserBoard{id: Purple.parse_int!(id)})
   end
 
   def item_status_mappings do

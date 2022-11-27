@@ -120,6 +120,12 @@ defmodule Purple.Activities do
     |> Repo.get!(id)
   end
 
+  def get_run(id) do
+    Run
+    |> run_select
+    |> Repo.get(id)
+  end
+
   def get_run!(id, :tags) do
     Repo.one!(
       from r in Run,

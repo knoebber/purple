@@ -1,13 +1,25 @@
 defmodule PurpleWeb.RunLive.Show do
-  use PurpleWeb, :live_view
-
-  import PurpleWeb.RunLive.Helpers
-
   alias Purple.Activities
   alias Purple.Activities.Run
+  import PurpleWeb.RunLive.Helpers
+  use PurpleWeb, :live_view
 
-  defp page_title(:show), do: "Show Run"
-  defp page_title(:edit), do: "Edit Run"
+
+  @behaviour PurpleWeb.FancyLink
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_type do
+    "🏃"
+  end
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_title(%{"id" => run_id}) do
+    run = Activities.get_run(run_id)
+
+    if run do
+      Run.to_string(run)
+    end
+  end
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => id}, _, socket) do
@@ -21,7 +33,7 @@ defmodule PurpleWeb.RunLive.Show do
     {
       :noreply,
       socket
-      |> assign(:page_title, page_title(socket.assigns.live_action))
+      |> assign(:page_title, Run.to_string(run))
       |> assign(:run, run)
       |> assign(:run_rows, run_rows + 1)
       |> assign_fancy_link_map(run.description)
@@ -44,7 +56,7 @@ defmodule PurpleWeb.RunLive.Show do
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <strong>
-            <%= @run.miles %> miles@<%= Run.format_pace(@run) %> in <%= Run.format_duration(@run) %>
+            <%= Run.to_string(@run) %>
           </strong>
           <span>|</span>
           <%= if @live_action == :edit do %>

@@ -24,7 +24,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
 
   @impl PurpleWeb.FancyLink
   def get_fancy_link_type do
-    "Transaction"
+    "💵"
   end
 
   @impl PurpleWeb.FancyLink
