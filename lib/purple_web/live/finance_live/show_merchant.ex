@@ -1,9 +1,7 @@
 defmodule PurpleWeb.FinanceLive.ShowMerchant do
-  use PurpleWeb, :live_view
-
-  import PurpleWeb.FinanceLive.Helpers
-
   alias Purple.Finance
+  import PurpleWeb.FinanceLive.Helpers
+  use PurpleWeb, :live_view
 
   defp assign_data(socket, merchant_id) do
     merchant = Finance.get_merchant!(merchant_id)

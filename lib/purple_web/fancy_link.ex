@@ -30,7 +30,7 @@ defmodule PurpleWeb.FancyLink do
     |> Enum.filter(& &1)
   end
 
-  def build_fancy_link_map(routes_from_markdown) do
+  def build_fancy_link_map(routes_from_markdown) when is_list(routes_from_markdown) do
     Enum.reduce(
       routes_from_markdown,
       %{},
@@ -46,5 +46,12 @@ defmodule PurpleWeb.FancyLink do
         end
       end
     )
+  end
+
+
+  def build_fancy_link_map(md) when is_binary(md) do
+    md
+    |> extract_routes_from_markdown()
+    |> build_fancy_link_map()
   end
 end

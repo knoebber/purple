@@ -117,7 +117,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
             Notes 👇
           </p>
         </div>
-        <div class="markdown-content mt-2">
+        <div if={@transaction.notes != ""} class="markdown-content mt-2">
           <%= markdown(@transaction.notes, link_type: :finance) %>
         </div>
       <% end %>

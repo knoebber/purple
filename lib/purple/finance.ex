@@ -193,7 +193,9 @@ defmodule Purple.Finance do
     Repo.one!(
       from(adjustment in SharedBudgetAdjustment,
         select_merge: %{dollars: fragment(@dollar_amount_fragment)},
-        where: adjustment.id == ^id
+        join: u in assoc(adjustment, :user),
+        where: adjustment.id == ^id,
+        preload: [user: u]
       )
     )
   end
@@ -207,6 +209,10 @@ defmodule Purple.Finance do
         preload: [tags: t]
       )
     )
+  end
+
+  def load_shared_budget_adjustment_user(%SharedBudgetAdjustment{} = adjustment) do
+    Repo.preload(adjustment, :user)
   end
 
   def delete_transaction!(%Transaction{} = transaction) do

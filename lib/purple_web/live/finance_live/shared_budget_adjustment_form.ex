@@ -14,7 +14,7 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
   end
 
   defp should_leave_open?(params) do
-    Map.get(params, "should_leave_open") == "on"
+    Map.get(params, "should_leave_open") == "true"
   end
 
   defp assign_changeset(socket, params) do
@@ -93,11 +93,17 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
           <.input field={{f, :user_id}} type="select" label="User" options={@user_mappings} />
           <.input field={{f, :notes}} label="Notes" type="textarea" rows={@rows} />
         </div>
-        <div class="flex justify-between mb-2_">
+        <div class="flex justify-between mb-2">
           <.button phx-disable-with="Saving...">Save</.button>
           <div :if={@action == :new_adjustment} class="self-center">
-            <label for="should_leave_open">Create Another?</label>
-            <input type="checkbox" name="should_leave_open" checked={@should_leave_open} />
+            <.input
+              errors={[]}
+              label="Create Another?"
+              id="should_leave_open"
+              name="should_leave_open"
+              type="checkbox"
+              value={@should_leave_open}
+            />
           </div>
         </div>
       </.form>

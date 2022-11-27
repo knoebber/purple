@@ -123,24 +123,33 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
     <.modal
-      :if={@live_action in [:edit_adjustment, :new_adjustment]}
+      :if={@live_action in [:edit_adjustment, :new_adjustment, :show_adjustment]}
       id="adjust-shared-budget-modal"
       on_cancel={JS.patch(~p"/finance/shared_budgets/#{@shared_budget}", replace: true)}
       show
     >
       <:title>
-        Adjust Shared Budget
+        Shared Budget Adjustment
       </:title>
-      <.live_component
-        action={@live_action}
-        adjustment={@adjustment}
-        current_user={@current_user}
-        id={@adjustment.id || :new}
-        module={PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm}
-        params={%{}}
-        shared_budget_id={@shared_budget.id}
-        user_mappings={@user_mappings}
-      />
+      <%= if @live_action == :show_adjustment do %>
+        <.live_component
+          adjustment={@adjustment}
+          shared_budget={@shared_budget}
+          id="show-adjustment-modal"
+          module={PurpleWeb.FinanceLive.ShowSharedBudgetAdjustment}
+        />
+      <% else %>
+        <.live_component
+          action={@live_action}
+          adjustment={@adjustment}
+          current_user={@current_user}
+          id={@adjustment.id || :new}
+          module={PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm}
+          params={%{}}
+          shared_budget_id={@shared_budget.id}
+          user_mappings={@user_mappings}
+        />
+      <% end %>
     </.modal>
     <.button :if={length(@users) == 0} class="mb-2" phx-click="delete">Delete</.button>
     <.live_component
@@ -178,7 +187,12 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
           <div class="p-1">
             <.table rows={user.adjustments}>
               <:col :let={row} label="Amount">
-                <%= row.dollars %>
+                <.link
+                  patch={~p"/finance/shared_budgets/#{@shared_budget}/adjustments/#{row}"}
+                  replace={true}
+                >
+                  <%= row.dollars %>
+                </.link>
               </:col>
               <:col :let={row} label="Type">
                 <%= row.type %>
@@ -187,16 +201,8 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
                 <%= row.description %>
               </:col>
               <:col :let={row} label="">
-                <.link
-                  patch={~p"/finance/shared_budgets/#{@shared_budget}/adjustments/edit/#{row}"}
-                  replace={true}
-                >
-                  Edit
-                </.link>
-              </:col>
-              <:col :let={row} label="">
                 <.link href="#" phx-click="delete_adjustment" phx-value_id={row.id}>
-                  Delete
+                  ❌
                 </.link>
               </:col>
             </.table>

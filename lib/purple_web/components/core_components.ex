@@ -228,7 +228,7 @@ defmodule PurpleWeb.CoreComponents do
 
   def timestamp(assigns) do
     ~H"""
-    <span title={"updated: #{Purple.Date.format(@model.updated_at)}"}>
+    <span title={if Map.has_key?(@model, :updated_at), do: "updated: #{Purple.Date.format(@model.updated_at)}"}>
       <%= Purple.Date.format(@model.inserted_at) %>
     </span>
     """

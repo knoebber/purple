@@ -63,7 +63,11 @@ defmodule PurpleWeb.Router do
            FinanceLive.ShowSharedBudget,
            :new_adjustment
 
-      live "/finance/shared_budgets/:id/adjustments/edit/:adjustment_id",
+      live "/finance/shared_budgets/:id/adjustments/:adjustment_id",
+           FinanceLive.ShowSharedBudget,
+           :show_adjustment
+
+      live "/finance/shared_budgets/:id/adjustments/:adjustment_id/edit",
            FinanceLive.ShowSharedBudget,
            :edit_adjustment
 

@@ -29,7 +29,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
   end
 
   defp should_leave_open?(params) do
-    Map.get(params, "should_leave_open") == "on"
+    Map.get(params, "should_leave_open") == "true"
   end
 
   defp assign_changeset(socket, params \\ %{}) do
@@ -106,7 +106,6 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
             label="Description"
             phx-hook="AutoFocus"
             rows={@rows}
-            type="textarea"
           />
           <.input field={{f, :dollars}} label="Amount" />
           <%= datetime_select_group(f, :timestamp) %>
