@@ -555,7 +555,7 @@ defmodule Purple.Finance do
   def save_imported_transaction(%TransactionImportTask{} = tit, message_id) do
     case get_transaction_from_gmail(tit, message_id) do
       {:ok, params} -> save_imported_transaction(params)
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "#{message_id}: #{reason}"}
     end
   end
 

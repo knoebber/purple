@@ -1,10 +1,10 @@
 defmodule PurpleWeb.FinanceLive.Index do
   use PurpleWeb, :live_view
 
-  import PurpleWeb.FinanceLive.Helpers
-  import Purple.Filter
-
   alias Purple.Finance
+  import Purple.Filter
+  import PurpleWeb.FinanceLive.Helpers
+  require Logger
 
   @filter_types %{
     merchant_id: :integer,
@@ -56,7 +56,34 @@ defmodule PurpleWeb.FinanceLive.Index do
 
   @impl Phoenix.LiveView
   def handle_event("import", _, socket) do
-    Finance.import_transactions(socket.assigns.current_user.id)
+    user_id = socket.assigns.current_user.id
+    result = Finance.import_transactions(user_id)
+
+    socket =
+      if result.failed > 0 do
+        Enum.each(result.errors, fn error ->
+          Logger.error("failed to import transaction for user #{user_id}: #{error}")
+        end)
+
+        put_flash(socket, :error, "Failed to import #{result.failed} transactions")
+      else
+        socket
+      end
+
+    socket =
+      if result.success > 0 do
+        put_flash(socket, :success, "Imported #{result.success} transactions")
+      else
+        socket
+      end
+
+    socket =
+      if result.success == 0 and result.failed == 0 do
+        put_flash(socket, :info, "All transactions are imported")
+      else
+        socket
+      end
+
     {:noreply, assign_data(socket)}
   end
 
@@ -66,32 +93,37 @@ defmodule PurpleWeb.FinanceLive.Index do
     <div class="flex mb-2">
       <h1><%= @page_title %></h1>
     </div>
-    <.filter_form :let={f}>
+    <div class="flex flex-col md:flex-row gap-1 mb-2">
       <%= live_redirect(to: ~p"/finance/transactions/create") do %>
         <.button class="h-full" type="button">Create</.button>
       <% end %>
-      <.button
-        class="pl-4 pr-4 text-lg bg-purple-200 border-collapse border-purple-400 border rounded h-full"
-        phx-click="import"
-        title="Import transactions"
-      >
-        🏦
-      </.button>
-      <.input
-        field={{f, :query}}
-        value={Map.get(@filter, :query, "")}
-        placeholder="Search..."
-        phx-debounce="200"
-        class="lg:w-1/4"
-      />
-      <.input
-        field={{f, :tag}}
-        type="select"
-        options={@tag_options}
-        value={Map.get(@filter, :tag, "")}
-        class="lg:w-1/4"
-      />
-    </.filter_form>
+      <.form for={:import} phx-submit="import">
+        <.button
+          class="pl-4 pr-4 text-lg bg-purple-200 border-collapse border-purple-400 border rounded h-full"
+          phx-click="import"
+          phx-disable-with="Importing..."
+          title="Import transactions"
+        >
+          🏦
+        </.button>
+      </.form>
+      <.filter_form :let={f}>
+        <.input
+          field={{f, :query}}
+          value={Map.get(@filter, :query, "")}
+          placeholder="Search..."
+          phx-debounce="200"
+          class="lg:w-1/4"
+        />
+        <.input
+          field={{f, :tag}}
+          type="select"
+          options={@tag_options}
+          value={Map.get(@filter, :tag, "")}
+          class="lg:w-1/4"
+        />
+      </.filter_form>
+    </div>
     <div class="w-full overflow-auto">
       <.table
         rows={@transactions}

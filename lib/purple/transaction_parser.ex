@@ -25,9 +25,14 @@ defmodule Purple.TransactionParser do
   end
 
   def get_timestamp(doc, impl) do
-    case impl.parse_datetime(doc) do
-      dt = %DateTime{} -> Purple.Date.to_naive_datetime(dt)
-      _ -> nil
+    try do
+      case impl.parse_datetime(doc) do
+        dt = %DateTime{} -> Purple.Date.to_naive_datetime(dt)
+        _ -> nil
+      end
+    rescue
+      ArgumentError ->
+        nil
     end
   end
 

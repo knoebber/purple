@@ -45,13 +45,13 @@ defmodule Purple.TransactionParser.ChaseEmail do
          ] <- String.split(time_string, ":") do
       DateTime.new!(
         Date.new!(
-          Purple.parse_int(year_string),
+          Purple.parse_int!(year_string),
           Purple.Date.month_name_to_number(month_string),
-          Purple.parse_int(day_string)
+          Purple.parse_int!(day_string)
         ),
         Time.new!(
           Purple.Date.hour_to_number(hour_string, pm_string),
-          Purple.parse_int(minute_string),
+          Purple.parse_int!(minute_string),
           0
         ),
         Purple.Date.get_tzname(tz_string)

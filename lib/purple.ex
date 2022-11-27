@@ -2,24 +2,18 @@ defmodule Purple do
   @moduledoc """
   Misc functions for purple
   """
-  def parse_int(s) do
+  def parse_int!(s) do
     {int, _} = Integer.parse(s)
     int
   end
 
-  def parse_int(s, minimum) when is_binary(s) do
+  def parse_int(s, default) when is_binary(s) do
     case Integer.parse(s) do
-      {n, ""} -> max(n, minimum)
-      _ -> minimum
+      {n, ""} -> n
+      _ -> default
     end
   end
-
-  def parse_int(_, min), do: min
-
-  def parse_int(s, minimum, maximum) do
-    min(parse_int(s, minimum), maximum)
-  end
-
+ 
   def int_from_map(params, key) do
     case Integer.parse(Map.get(params, key, "")) do
       {0, _} -> nil

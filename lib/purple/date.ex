@@ -54,9 +54,9 @@ defmodule Purple.Date do
 
   defp time_from_map(%{} = m) do
     Time.new(
-      Map.get(m, "hour") |> Purple.parse_int(0),
-      Map.get(m, "minute") |> Purple.parse_int(0),
-      Map.get(m, "second") |> Purple.parse_int(0),
+      Purple.parse_int(Map.get(m, "hour"), 0),
+      Purple.parse_int(Map.get(m, "minute"), 0),
+      Purple.parse_int(Map.get(m, "second"), 0),
       0
     )
   end
@@ -100,8 +100,10 @@ defmodule Purple.Date do
     ) + 1
   end
 
-  def hour_to_number(hour_string, "AM"), do: Purple.parse_int(hour_string)
-  def hour_to_number(hour_string, "PM"), do: Purple.parse_int(hour_string) + 12
+  def hour_to_number("12", "AM"), do: 0
+  def hour_to_number("12", "PM"), do: 12
+  def hour_to_number(hour_string, "AM"), do: Purple.parse_int!(hour_string)
+  def hour_to_number(hour_string, "PM"), do: Purple.parse_int!(hour_string) + 12
 
   def get_tzname("ET"), do: "America/New_York"
   def get_tzname(tz), do: tz

@@ -34,9 +34,9 @@ defmodule Purple.TransactionParser.BOAEmail do
       [month_string, day_string, year_string] ->
         DateTime.new!(
           Date.new!(
-            Purple.parse_int(year_string),
+            Purple.parse_int!(year_string),
             Purple.Date.month_name_to_number(month_string),
-            Purple.parse_int(day_string)
+            Purple.parse_int!(day_string)
           ),
           Time.new!(
             12,
