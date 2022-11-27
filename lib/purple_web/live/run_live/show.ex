@@ -24,6 +24,7 @@ defmodule PurpleWeb.RunLive.Show do
       |> assign(:page_title, page_title(socket.assigns.live_action))
       |> assign(:run, run)
       |> assign(:run_rows, run_rows + 1)
+      |> assign_fancy_link_map(run.description)
     }
   end
 
@@ -74,9 +75,7 @@ defmodule PurpleWeb.RunLive.Show do
           />
         </div>
       <% else %>
-        <div class="markdown-content">
-          <%= markdown(@run.description, link_type: :run) %>
-        </div>
+        <.markdown content={@run.description} link_type={:run} fancy_link_map={@fancy_link_map} />
       <% end %>
     </.section>
     """

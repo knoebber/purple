@@ -328,9 +328,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           />
         </div>
       <% else %>
-        <div class="markdown-content">
-          <%= markdown("# #{@item.description}", link_type: :board) %>
-        </div>
+        <.markdown content={"# #{@item.description}"} link_type={:board} />
       <% end %>
       <div>
         <span>
@@ -420,13 +418,12 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <% else %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
             <%= unless entry.is_collapsed do %>
-              <div class="markdown-content">
-                <%= markdown(entry.content,
-                  link_type: :board,
-                  checkbox_map: make_checkbox_map(entry),
-                  fancy_link_map: @fancy_link_map
-                ) %>
-              </div>
+              <.markdown
+                checkbox_map={make_checkbox_map(entry)}
+                content={entry.content}
+                fancy_link_map={@fancy_link_map}
+                link_type={:board}
+              />
             <% end %>
           <% end %>
         </.section>

@@ -11,6 +11,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
     socket
     |> assign(:transaction, transaction)
     |> assign(:page_title, Finance.Transaction.to_string(transaction))
+    |> assign_fancy_link_map(transaction.notes)
   end
 
   defp apply_action(socket, :edit) do
@@ -117,9 +118,11 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
             Notes 👇
           </p>
         </div>
-        <div if={@transaction.notes != ""} class="markdown-content mt-2">
-          <%= markdown(@transaction.notes, link_type: :finance) %>
-        </div>
+        <.markdown
+          content={@transaction.notes}
+          link_type={:finance}
+          fancy_link_map={@fancy_link_map}
+        />
       <% end %>
     </.section>
     """

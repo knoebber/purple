@@ -1,6 +1,4 @@
 defmodule PurpleWeb.FinanceLive.ShowSharedBudgetAdjustment do
-  alias Purple.Finance
-  import PurpleWeb.FinanceLive.Helpers
   use PurpleWeb, :live_component
 
   @impl Phoenix.LiveComponent
@@ -9,14 +7,11 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudgetAdjustment do
       :ok,
       socket
       |> assign(assigns)
-      |> assign(
-        :fancy_link_map,
-        PurpleWeb.FancyLink.build_fancy_link_map(assigns.adjustment.notes)
-      )
+      |> assign_fancy_link_map(assigns.adjustment.notes)
     }
   end
 
-  @impl Phoenix.LiveView
+  @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
     <div class="flex flex-col">
@@ -27,9 +22,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudgetAdjustment do
       <div>
         <%= @adjustment.dollars %> <%= Purple.titleize(@adjustment.type) %> for <%= @adjustment.user.email %>
       </div>
-      <div :if={@adjustment.notes != ""} class="markdown-content">
-        <%= markdown(@adjustment.notes, link_type: :finance, fancy_link_map: @fancy_link_map) %>
-      </div>
+      <.markdown content={@adjustment.notes} link_type={:finance} fancy_link_map={@fancy_link_map} />
       <div class="mt-2">
         <.link
           patch={~p"/finance/shared_budgets/#{@shared_budget}/adjustments/#{@adjustment}/edit"}

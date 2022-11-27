@@ -115,6 +115,11 @@
         @apply underline;
     }
 
+    p {
+        @apply pt-2;
+        @apply pb-2;
+    }
+
     ul {
         @apply list-disc;
     }

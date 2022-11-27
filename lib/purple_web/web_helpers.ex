@@ -2,8 +2,6 @@ defmodule PurpleWeb.WebHelpers do
   @moduledoc """
   Functions that are available to all purple web views
   """
-  use PurpleWeb, :verified_routes
-
   def make_full_url(path) when is_binary(path) do
     host = Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host]
 
@@ -36,22 +34,17 @@ defmodule PurpleWeb.WebHelpers do
     |> length()
   end
 
-  def get_tag_link(tag, :board), do: ~p"/board?tag=#{tag}"
-  def get_tag_link(tag, :run), do: ~p"/runs?tag=#{tag}"
-  def get_tag_link(tag, :finance), do: ~p"/finance?tag=#{tag}"
-  def get_tag_link(tag, _), do: "?tag=#{tag}"
-
-  def markdown(md, options \\ []) when is_binary(md) and is_list(options) do
-    md
-    |> Purple.Markdown.markdown_to_html(%{
-      checkbox_map: Keyword.get(options, :checkbox_map, %{}),
-      get_tag_link: &get_tag_link(&1, Keyword.get(options, :link_type)),
-      fancy_link_map: Keyword.get(options, :fancy_link_map, %{})
-    })
-    |> Phoenix.HTML.raw()
-  end
-
   def get_num_textarea_rows(content) do
     max(3, length(String.split(content, "\n")) + 1)
+  end
+
+  def assign_fancy_link_map(socket, content) when is_binary(content) do
+    Phoenix.Component.assign(
+      socket,
+      :fancy_link_map,
+      content
+      |> PurpleWeb.FancyLink.extract_routes_from_markdown()
+      |> PurpleWeb.FancyLink.build_fancy_link_map()
+    )
   end
 end

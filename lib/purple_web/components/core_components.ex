@@ -3,6 +3,7 @@ defmodule PurpleWeb.CoreComponents do
   Provides core UI components.
   """
   use Phoenix.Component
+  use PurpleWeb, :verified_routes
   alias Phoenix.LiveView.JS
   alias Purple.Filter
 
@@ -228,7 +229,9 @@ defmodule PurpleWeb.CoreComponents do
 
   def timestamp(assigns) do
     ~H"""
-    <span title={if Map.has_key?(@model, :updated_at), do: "updated: #{Purple.Date.format(@model.updated_at)}"}>
+    <span title={
+      if Map.has_key?(@model, :updated_at), do: "updated: #{Purple.Date.format(@model.updated_at)}"
+    }>
       <%= Purple.Date.format(@model.inserted_at) %>
     </span>
     """
@@ -607,6 +610,31 @@ defmodule PurpleWeb.CoreComponents do
     """
   end
 
+  defp get_tag_link(tag, :board), do: ~p"/board?tag=#{tag}"
+  defp get_tag_link(tag, :run), do: ~p"/runs?tag=#{tag}"
+  defp get_tag_link(tag, :finance), do: ~p"/finance?tag=#{tag}"
+  defp get_tag_link(tag, nil), do: "?tag=#{tag}"
+
+  attr :checkbox_map, :map, default: %{}
+  attr :fancy_link_map, :map, default: %{}
+  attr :link_type, :atom, default: nil
+  attr :content, :string, required: true
+
+  def markdown(assigns) do
+    ~H"""
+    <div :if={@content != ""} class="markdown-content">
+      <%= Phoenix.HTML.raw(
+        Purple.Markdown.markdown_to_html(@content, %{
+          checkbox_map: @checkbox_map,
+          fancy_link_map: @fancy_link_map,
+          get_tag_link: &get_tag_link(&1, @link_type)
+        })
+      ) %>
+    </div>
+    """
+  end
+
+  ## JS Commands
   def show(js \\ %JS{}, selector) do
     JS.show(js,
       to: selector,
@@ -617,7 +645,6 @@ defmodule PurpleWeb.CoreComponents do
     )
   end
 
-  ## JS Commands
   def hide(js \\ %JS{}, selector) do
     JS.hide(js,
       to: selector,

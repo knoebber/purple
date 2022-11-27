@@ -47,11 +47,4 @@ defmodule PurpleWeb.FancyLink do
       end
     )
   end
-
-
-  def build_fancy_link_map(md) when is_binary(md) do
-    md
-    |> extract_routes_from_markdown()
-    |> build_fancy_link_map()
-  end
 end

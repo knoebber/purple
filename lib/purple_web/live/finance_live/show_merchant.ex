@@ -9,6 +9,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
     socket
     |> assign(:page_title, merchant.name)
     |> assign(:merchant, merchant)
+    |> assign_fancy_link_map(merchant.description)
   end
 
   defp apply_action(socket, :edit) do
@@ -60,20 +61,21 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
         </div>
         <.timestamp model={@merchant} />
       </div>
-      <%= if @is_editing do %>
-        <.live_component
-          action={:edit_merchant}
-          class="p-4"
-          current_user={@current_user}
-          id={@merchant.id}
-          module={PurpleWeb.FinanceLive.MerchantForm}
-          merchant={@merchant}
-        />
-      <% else %>
-        <div class="markdown-content">
-          <%= markdown(@merchant.description, link_type: :finance) %>
-        </div>
-      <% end %>
+      <.live_component
+        :if={@is_editing}
+        action={:edit_merchant}
+        class="p-4"
+        current_user={@current_user}
+        id={@merchant.id}
+        module={PurpleWeb.FinanceLive.MerchantForm}
+        merchant={@merchant}
+      />
+      <.markdown
+        :if={!@is_editing}
+        content={@merchant.description}
+        link_type={:finance}
+        fancy_link_map={@fancy_link_map}
+      />
     </.section>
     """
   end
