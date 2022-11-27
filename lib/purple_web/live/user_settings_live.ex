@@ -10,6 +10,7 @@ defmodule PurpleWeb.UserSettingsLive do
 
   def mount(%{"code" => oauth_code}, _, socket) do
     google_token = Accounts.get_user_oauth_token(socket.assigns.current_user.id)
+
     if oauth_code && google_token == nil do
       case Gmail.make_token(oauth_redirect_url(), oauth_code) do
         {:ok, %{token: token}} ->
@@ -87,7 +88,7 @@ defmodule PurpleWeb.UserSettingsLive do
         </.form>
       <% end %>
     </.section>
-    <.section class="lg:w-1/2 md:w-full window mt-2 mb-2 p-4">
+    <.section class="lg:w-1/2 md:w-full mt-2 mb-2 p-4">
       <h2>Change password</h2>
       <.form
         :let={f}

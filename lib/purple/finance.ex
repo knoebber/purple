@@ -320,7 +320,7 @@ defmodule Purple.Finance do
   def list_payment_methods(user_id) when is_integer(user_id) do
     PaymentMethod
     |> join(:left, [pm], tx in assoc(pm, :transactions))
-    |> where([pm, tx], tx.user_id == ^user_id)
+    |> where([pm, tx], tx.user_id == ^user_id or is_nil(tx.user_id))
     |> order_by(:name)
     |> preload([_, tx], transactions: tx)
     |> Repo.all()

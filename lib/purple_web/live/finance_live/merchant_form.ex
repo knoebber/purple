@@ -23,6 +23,11 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
   end
 
   @impl Phoenix.LiveComponent
+  def handle_event("validate", _, socket) do
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveComponent
   def handle_event("save", %{"merchant" => merchant}, socket) do
     case save_merchant(socket, socket.assigns.action, merchant) do
       {:ok, merchant} ->
@@ -39,10 +44,10 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
   def render(assigns) do
     ~H"""
     <div class={@class}>
-      <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <.input field={{f, :name}} phx-hook="AutoFocus" />
-          <.input field={{f, :description}} type="textarea" rows={@rows} />
+          <.input field={{f, :name}} phx-hook="AutoFocus" label="Name" />
+          <.input field={{f, :description}} type="textarea" rows={@rows} label="Description" />
         </div>
         <.button phx-disable-with="Saving...">Save</.button>
       </.form>
