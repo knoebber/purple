@@ -2,7 +2,6 @@ defmodule PurpleWeb.FinanceLive.Index do
   use PurpleWeb, :live_view
 
   alias Purple.Finance
-  alias Purple.Finance.Transaction
   import Purple.Filter
   import PurpleWeb.FinanceLive.Helpers
   require Logger
@@ -37,18 +36,17 @@ defmodule PurpleWeb.FinanceLive.Index do
   defp apply_action(socket, :share, %{"id" => transaction_id}) do
     shared_budgets = Finance.list_shared_budgets()
 
-    socket =
-      if length(shared_budgets) == 1 do
-        # N.B. this only works when there is a single shared budget for now.
-        tx = Finance.get_transaction!(transaction_id, :shared_transaction)
+    if length(shared_budgets) == 1 do
+      # N.B. this only works when there is a single shared budget for now.
+      tx = Finance.get_transaction!(transaction_id, :shared_transaction)
 
-        socket
-        |> assign(:transaction_for_share, tx)
-        |> assign(:shared_budget, hd(shared_budgets))
-        |> assign(:transaction_is_shared, length(tx.shared_transaction) > 0)
-      else
-        apply_action(socket, :index, %{})
-      end
+      socket
+      |> assign(:transaction_for_share, tx)
+      |> assign(:shared_budget, hd(shared_budgets))
+      |> assign(:transaction_is_shared, length(tx.shared_transaction) > 0)
+    else
+      apply_action(socket, :index, %{})
+    end
   end
 
   @impl Phoenix.LiveView
