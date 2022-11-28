@@ -7,13 +7,17 @@ defmodule Purple do
     int
   end
 
+  def parse_int(nil, default) do
+    default
+  end
+
   def parse_int(s, default) when is_binary(s) do
     case Integer.parse(s) do
       {n, ""} -> n
       _ -> default
     end
   end
- 
+
   def int_from_map(params, key) do
     case Integer.parse(Map.get(params, key, "")) do
       {0, _} -> nil
