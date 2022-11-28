@@ -178,6 +178,10 @@ defmodule Purple.Finance do
     Repo.one!(get_transaction_query(id))
   end
 
+  def get_transaction!(id, :shared_transaction) do
+    Repo.preload(get_transaction(id), :shared_transaction)
+  end
+
   def get_transaction!(id, :tags) do
     Repo.one!(
       from(tx in Transaction,

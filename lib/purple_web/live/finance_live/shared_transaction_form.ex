@@ -26,6 +26,7 @@ defmodule PurpleWeb.FinanceLive.SharedTransactionForm do
     {
       :ok,
       socket
+      |> assign(:transaction, Map.get(assigns, :transaction))
       |> assign(assigns)
       |> assign_data()
     }
@@ -47,23 +48,25 @@ defmodule PurpleWeb.FinanceLive.SharedTransactionForm do
   def render(assigns) do
     ~H"""
     <div class="mb-2">
-      <.form
-        :let={f}
-        for={@changeset}
-        class="grid grid-cols-3 grid-rows-1 gap-2"
-        phx-submit="save"
-        phx-target={@myself}
-      >
-        <.input
-          field={{f, :transaction_id}}
-          label="Transaction"
-          type="select"
-          options={@user_transaction_mappings}
-        />
+      <.form :let={f} for={@changeset} class="flex gap-2" phx-submit="save" phx-target={@myself}>
+        <%= if @transaction do %>
+          <.input field={{f, :transaction_id}} value={@transaction.id} type="hidden" />
+        <% else %>
+          <.input
+            field={{f, :transaction_id}}
+            label="Transaction"
+            type="select"
+            options={@user_transaction_mappings}
+          />
+        <% end %>
         <.input field={{f, :type}} label="Type" type="select" options={Finance.share_type_mappings()} />
-        <div class="flex">
-          <.button class="h-2/3 self-end">Add</.button>
-        </div>
+        <.button class="h-2/3 self-end justify-self-end">
+          <%= if @shared_transaction.id do %>
+            Update
+          <% else %>
+            Share
+          <% end %>
+        </.button>
       </.form>
     </div>
     """

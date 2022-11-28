@@ -49,6 +49,7 @@ defmodule PurpleWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
 
       live "/finance", FinanceLive.Index, :index
+      live "/finance/share/transaction/:id", FinanceLive.Index, :share
       live "/finance/transactions/create", FinanceLive.CreateTransaction, :create
       live "/finance/transactions/:id", FinanceLive.ShowTransaction, :show
       live "/finance/transactions/:id/edit", FinanceLive.ShowTransaction, :edit

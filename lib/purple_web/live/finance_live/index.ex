@@ -2,6 +2,7 @@ defmodule PurpleWeb.FinanceLive.Index do
   use PurpleWeb, :live_view
 
   alias Purple.Finance
+  alias Purple.Finance.Transaction
   import Purple.Filter
   import PurpleWeb.FinanceLive.Helpers
   require Logger
@@ -29,6 +30,27 @@ defmodule PurpleWeb.FinanceLive.Index do
     |> assign(:transactions, Finance.list_transactions(filter))
   end
 
+  defp apply_action(socket, :index, _) do
+    assign(socket, :transaction_for_share, nil)
+  end
+
+  defp apply_action(socket, :share, %{"id" => transaction_id}) do
+    shared_budgets = Finance.list_shared_budgets()
+
+    socket =
+      if length(shared_budgets) == 1 do
+        # N.B. this only works when there is a single shared budget for now.
+        tx = Finance.get_transaction!(transaction_id, :shared_transaction)
+
+        socket
+        |> assign(:transaction_for_share, tx)
+        |> assign(:shared_budget, hd(shared_budgets))
+        |> assign(:transaction_is_shared, length(tx.shared_transaction) > 0)
+      else
+        apply_action(socket, :index, %{})
+      end
+  end
+
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
     {
@@ -46,6 +68,7 @@ defmodule PurpleWeb.FinanceLive.Index do
       socket
       |> assign(:query_params, params)
       |> assign_data()
+      |> apply_action(socket.assigns.live_action, params)
     }
   end
 
@@ -88,11 +111,61 @@ defmodule PurpleWeb.FinanceLive.Index do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("unshare_transaction", params, socket) do
+    Finance.remove_shared_transaction!(
+      socket.assigns.shared_budget.id,
+      Purple.int_from_map(params, "id")
+    )
+
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Removed transaction")
+      |> push_patch(to: ~p"/finance?#{socket.assigns.filter}", replace: true)
+    }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info(:new_shared_transaction, socket) do
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Shared transaction")
+      |> push_patch(to: ~p"/finance?#{socket.assigns.filter}", replace: true)
+    }
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="flex mb-2">
       <h1><%= @page_title %></h1>
     </div>
+    <.modal
+      :if={!!@transaction_for_share}
+      id="share-transaction-modal"
+      on_cancel={JS.patch(~p"/finance?#{@filter}", replace: true)}
+      show
+    >
+      <:title>Share Transaction</:title>
+      <.live_component
+        id={@transaction_for_share.id}
+        action={if @transaction_is_shared, do: :edit, else: :new}
+        module={PurpleWeb.FinanceLive.SharedTransactionForm}
+        shared_budget_id={@shared_budget.id}
+        transaction={@transaction_for_share}
+        shared_transaction={
+          if @transaction_is_shared,
+            do: hd(@transaction_for_share.shared_transaction),
+            else: %Finance.SharedTransaction{}
+        }
+      />
+      <%= if @transaction_is_shared do %>
+        <.button phx-click="unshare_transaction" phx-value-id={@transaction_for_share.id}>
+          Unshare
+        </.button>
+      <% end %>
+    </.modal>
     <div class="flex flex-col md:flex-row gap-1 mb-2">
       <%= live_redirect(to: ~p"/finance/transactions/create") do %>
         <.button class="h-full" type="button">Create</.button>
@@ -144,6 +217,19 @@ defmodule PurpleWeb.FinanceLive.Index do
         </:col>
         <:col :let={transaction} label="Description">
           <%= transaction.description %>
+        </:col>
+        <:col :let={transaction} label="Share">
+          <.link patch={~p"/finance/share/transaction/#{transaction.id}"} replace={true}>
+            <%= if length(transaction.shared_transaction) == 0 do %>
+              🙈
+            <% else %>
+              <%= if hd(transaction.shared_transaction).type == :SHARE do %>
+                🧍‍♀🧍
+              <% else %>
+                🎁
+              <% end %>
+            <% end %>
+          </.link>
         </:col>
       </.table>
       <.page_links
