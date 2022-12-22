@@ -6,7 +6,7 @@ defmodule PurpleWeb.UserAuthTest do
   alias PurpleWeb.UserAuth
   import Purple.AccountsFixtures
 
-  @remember_me_cookie "_green_web_user_remember_me"
+  @remember_me_cookie "_purple_remember_me"
 
   setup %{conn: conn} do
     conn =

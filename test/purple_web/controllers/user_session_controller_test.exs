@@ -35,7 +35,7 @@ defmodule PurpleWeb.UserSessionControllerTest do
           }
         })
 
-      assert conn.resp_cookies["_green_web_user_remember_me"]
+      assert conn.resp_cookies["_purple_remember_me"]
       assert redirected_to(conn) == ~p"/"
     end
 
