@@ -224,7 +224,7 @@ defmodule PurpleWeb.FinanceLive.Index do
               <%= if hd(transaction.shared_transaction).type == :SHARE do %>
                 🧍‍♀🧍
               <% else %>
-                🎁
+                🐡
               <% end %>
             <% end %>
           </.link>
