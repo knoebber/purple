@@ -164,6 +164,10 @@
         @apply cursor-pointer;
     }
 
+    input[readonly=""] {
+        @apply bg-gray-300;
+    }
+
     img {
         image-orientation: from-image;
     }
