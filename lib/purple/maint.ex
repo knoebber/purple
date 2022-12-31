@@ -27,4 +27,15 @@ defmodule Purple.Maint do
       end
     )
   end
+
+  def fix_file_size() do
+    Enum.each(Repo.all(Purple.Uploads.FileRef), fn file_ref ->
+      file_ref
+      |> Purple.Uploads.FileRef.changeset(%{
+        byte_size: File.stat!(Purple.Uploads.get_full_upload_path(file_ref)).size
+      })
+      |> IO.inspect(label: "changeset")
+      |> Repo.update!()
+    end)
+  end
 end
