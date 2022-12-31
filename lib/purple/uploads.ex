@@ -211,8 +211,7 @@ defmodule Purple.Uploads do
   end
 
   def update_file_ref(%FileRef{} = file_ref, attrs) do
-    {:ok, update_result} =
-      transaction_result =
+    {_, result} =
       Repo.transaction(fn ->
         update_result =
           file_ref
@@ -223,13 +222,16 @@ defmodule Purple.Uploads do
           {_, updated_file_ref} = update_result
 
           if updated_file_ref.path != file_ref.path do
+            # Rollback db operation if file rename fails
             File.rename!(get_full_upload_path(file_ref), get_full_upload_path(updated_file_ref))
           end
-        end
 
-        update_result
+          update_result
+        else
+          Repo.rollback(update_result)
+        end
       end)
 
-    update_result
+    result
   end
 end
