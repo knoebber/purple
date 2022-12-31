@@ -6,10 +6,6 @@ defmodule Purple.Uploads do
   import Ecto.Query
   require Logger
 
-  defp remove_extname(s), do: String.replace_suffix(s, Path.extname(s), "")
-  defp remove_repeating_underscore(s), do: Regex.replace(~r/__+/, s, "_")
-  defp remove_non_alphanum(s), do: Regex.replace(~r/[^a-z0-9]/, s, "_")
-
   defp convert_file_type(f = %FileRef{extension: ".heic"}), do: %FileRef{f | extension: ".jpeg"}
   defp convert_file_type(f = %FileRef{}), do: f
 
@@ -61,14 +57,7 @@ defmodule Purple.Uploads do
   end
 
   def get_relative_upload_path(dir, client_name) do
-    Path.join([
-      dir,
-      client_name
-      |> String.downcase()
-      |> remove_extname
-      |> remove_non_alphanum
-      |> remove_repeating_underscore
-    ])
+    Path.join([dir, FileRef.clean_path(client_name)])
   end
 
   def write_thumbnail!(%FileRef{} = file_ref) do
@@ -186,12 +175,16 @@ defmodule Purple.Uploads do
     Repo.insert!(ItemFile.changeset(file_ref.id, item.id))
   end
 
+  defp set_file_name(file_ref) do
+    Map.put(file_ref, :file_name, FileRef.name(file_ref))
+  end
+
   def get_file_ref(id) do
-    Repo.get(FileRef, id)
+    FileRef |> Repo.get(id) |> set_file_name()
   end
 
   def get_file_ref!(id) do
-    Repo.get!(FileRef, id)
+    FileRef |> Repo.get!(id) |> set_file_name()
   end
 
   defp get_files_by_item_query(item_id) do
@@ -213,7 +206,30 @@ defmodule Purple.Uploads do
     |> Repo.all()
   end
 
-  def file_title(%FileRef{} = file_ref) do
-    Path.basename(file_ref.path <> file_ref.extension)
+  def change_file_ref(%FileRef{} = file_ref, attrs \\ %{}) do
+    FileRef.changeset(file_ref, attrs)
+  end
+
+  def update_file_ref(%FileRef{} = file_ref, attrs) do
+    {:ok, update_result} =
+      transaction_result =
+      Repo.transaction(fn ->
+        update_result =
+          file_ref
+          |> FileRef.changeset(attrs)
+          |> Repo.update()
+
+        if match?({:ok, _}, update_result) do
+          {_, updated_file_ref} = update_result
+
+          if updated_file_ref.path != file_ref.path do
+            File.rename!(get_full_upload_path(file_ref), get_full_upload_path(updated_file_ref))
+          end
+        end
+
+        update_result
+      end)
+
+    update_result
   end
 end

@@ -13,7 +13,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     socket
     |> assign(:file_refs, Enum.reject(files, fn f -> Uploads.image?(f) end))
     |> assign(:image_refs, Enum.filter(files, fn f -> Uploads.image?(f) end))
-    |> assign(:total_files, length(files))
+    |> assign(:num_total_files, length(files))
   end
 
   defp assign_entries(socket) do
@@ -320,7 +320,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         <.timestamp model={@item} />
       </div>
       <%= if @live_action == :edit_item do %>
-        <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
+        <div class="m-2 p-2 border border-purplength(@image_refs) + length(@file_refs)le-500 bg-purple-50 rounded">
           <.live_component
             module={PurpleWeb.BoardLive.UpdateItem}
             id={@item.id}
@@ -337,7 +337,13 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <.link href="#" phx-click="toggle_files_collapsed" class="ml-1 no-underline font-mono">
             <%= if(!@item.show_files, do: "[+]", else: "[-]") %>
           </.link>
-          Upload files
+          <%= if @num_total_files > 0 do %>
+            <.link navigate={~p"/board/item/#{@item}/files"}>
+              File Uploads
+            </.link>
+          <% else %>
+            File Uploads
+          <% end %>
         </span>
       </div>
       <%= if @item.show_files do %>
@@ -351,13 +357,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             return_to={~p"/board/item/#{@item}"}
           />
         </div>
-        <div class="p-3">
-          <strong>
-            <.link :if={length(@image_refs) > 0} navigate={~p"/board/item/#{@item}/files"}>
-              Images
-            </.link>
-          </strong>
-        </div>
         <%= if length(@image_refs) + length(@file_refs) > 0 do %>
           <%= for ref <- @image_refs do %>
             <div class="inline">
@@ -365,7 +364,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
                 <div
                   id={"copy-markdown-#{ref.id}"}
                   phx-hook="CopyMarkdownImage"
-                  name={Uploads.file_title(ref)}
+                  name={Uploads.FileRef.title(ref)}
                   value={~p"/files/#{ref}"}
                   class="cursor-pointer w-1/6"
                 >
@@ -388,7 +387,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <ul class="ml-8">
               <li :for={ref <- @file_refs}>
                 <.link navigate={~p"/board/item/#{@item}/files/#{ref}"}>
-                  <%= Uploads.file_title(ref) %>
+                  <%= Uploads.FileRef.title(ref) %>
                 </.link>
               </li>
             </ul>

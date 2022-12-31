@@ -11,19 +11,70 @@ defmodule Purple.Uploads.FileRef do
     field :path, :string
     field :sha_hash, :binary
 
+    field :file_name, :string, virtual: true
+
     timestamps()
   end
 
-  def changeset(file_ref, attrs) do
+  defp remove_extname(s), do: String.replace_suffix(s, Path.extname(s), "")
+  defp remove_repeating_underscore(s), do: Regex.replace(~r/__+/, s, "_")
+  defp remove_non_alphanum(s), do: Regex.replace(~r/[^a-z0-9]/, s, "_")
+
+  def clean_path(path) when is_binary(path) do
+    path
+    |> String.downcase()
+    |> remove_extname
+    |> remove_non_alphanum
+    |> remove_repeating_underscore
+  end
+
+  def title(%__MODULE__{} = file_ref) do
+    Path.basename(file_ref.path <> file_ref.extension)
+  end
+
+  def name(%__MODULE__{path: path}) do
+    path
+    |> String.split("/")
+    |> List.last()
+  end
+
+  defp get_new_path(current_path, new_file_name) do
+    parts = String.split(current_path, "/")
+
+    parts
+    |> List.replace_at(length(parts) - 1, clean_path(new_file_name))
+    |> Enum.join("/")
+  end
+
+  defp set_path(changeset) do
+    new_file_name = get_change(changeset, :file_name)
+
+    if new_file_name do
+      put_change(
+        changeset,
+        :path,
+        get_new_path(
+          get_field(changeset, :path),
+          new_file_name
+        )
+      )
+    else
+      changeset
+    end
+  end
+
+  def changeset(%__MODULE__{} = file_ref, attrs) do
     file_ref
     |> cast(attrs, [
       :byte_size,
       :extension,
+      :file_name,
       :image_height,
       :image_width,
       :path,
       :sha_hash
     ])
+    |> set_path()
     |> validate_required([
       :byte_size,
       :extension,
