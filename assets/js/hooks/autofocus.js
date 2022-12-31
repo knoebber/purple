@@ -1,7 +1,5 @@
-const AutoFocus = {
+export default {
     mounted() {
       this.el.focus();
     }
 }
-
-export default AutoFocus;

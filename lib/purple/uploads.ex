@@ -30,6 +30,10 @@ defmodule Purple.Uploads do
     is_integer(file_ref.image_height) and is_integer(file_ref.image_width)
   end
 
+  def pdf?(%FileRef{} = file_ref) do
+    file_ref.extension == ".pdf"
+  end
+
   def get_file_info(source_path, client_name) do
     try do
       # Throws when source_path isn't an image or doesn't exist.

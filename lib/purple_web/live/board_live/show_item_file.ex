@@ -72,14 +72,26 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
       <:title>Update File Reference</:title>
       <.live_component module={PurpleWeb.UpdateFileRef} id={@file_ref.id} file_ref={@file_ref} />
     </.modal>
-    <%= if Uploads.image?(@file_ref) do %>
-      <img
-        class="inline border border-purple-500 m-1"
-        width={@file_ref.image_width}
-        height={@file_ref.image_height}
-        src={~p"/files/#{@file_ref}"}
-      />
-    <% end %>
+    <img
+      :if={Uploads.image?(@file_ref)}
+      class="inline border border-purple-500 m-1"
+      width={@file_ref.image_width}
+      height={@file_ref.image_height}
+      src={~p"/files/#{@file_ref}"}
+    />
+    <div :if={Uploads.pdf?(@file_ref)} class="flex justify-between w-full mt-2">
+      <.button class="js-prev" type="button">Prev</.button>
+      <input class="js-zoom" type="range" value="1.5" min="0" max="2" step=".1" />
+      <.button class="js-next" type="button">Next</.button>
+    </div>
+    <canvas
+      :if={Uploads.pdf?(@file_ref)}
+      class="mt-1"
+      phx-hook="PDF"
+      id="pdf-canvas"
+      data-path={~p"/files/#{@file_ref}"}
+    >
+    </canvas>
     """
   end
 end

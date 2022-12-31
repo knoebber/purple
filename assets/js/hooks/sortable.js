@@ -8,7 +8,7 @@ function onSort(hook) {
   hook.pushEvent('save_sort_order', { list });
 }
 
-const SortableHook = {
+export default {
   mounted() {
     Sortable.create(this.el, {
       animation: 150,
@@ -19,5 +19,3 @@ const SortableHook = {
     });
   },
 };
-
-export default SortableHook;

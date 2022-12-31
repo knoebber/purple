@@ -7,7 +7,7 @@ function copyMarkdownToClipboard(name, path) {
     });
 }
 
-const CopyMarkdownImage = {
+export default {
   mounted() {
     this.el.addEventListener('click', () => {
       copyMarkdownToClipboard(
@@ -17,5 +17,3 @@ const CopyMarkdownImage = {
     });
   },
 };
-
-export default CopyMarkdownImage;
