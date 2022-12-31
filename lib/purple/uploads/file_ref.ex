@@ -38,6 +38,16 @@ defmodule Purple.Uploads.FileRef do
     |> List.last()
   end
 
+  def size_string(%__MODULE__{byte_size: byte_size}) do
+    kb = byte_size / 1000
+
+    if kb < 1000 do
+      "#{round(kb)} KB"
+    else
+      "#{Float.round(byte_size / 1_000_000, 2)} MB"
+    end
+  end
+
   defp get_new_path(current_path, new_file_name) do
     parts = String.split(current_path, "/")
 

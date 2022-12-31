@@ -104,31 +104,36 @@ defmodule Purple.Uploads do
     )
   end
 
-  # TODO: add custom is_image guard
-  defp post_process_file!(%FileRef{image_height: nil} = file_ref), do: file_ref
-
   defp post_process_file!(%FileRef{} = file_ref) do
     converted = convert_file_type(file_ref)
-    extension_is_changed = converted.extension != file_ref.extension
 
-    original_path = get_full_upload_path(file_ref)
-    img = Mogrify.open(original_path)
+    if image?(file_ref) do
+      is_extension_changed = converted.extension != file_ref.extension
 
-    if extension_is_changed do
-      Mogrify.format(img, String.trim(converted.extension, "."))
-    else
-      img
+      original_path = get_full_upload_path(file_ref)
+      img = Mogrify.open(original_path)
+
+      if is_extension_changed do
+        Mogrify.format(img, String.trim(converted.extension, "."))
+      else
+        img
+      end
+      |> Mogrify.auto_orient()
+      |> Mogrify.save(in_place: true)
+
+      if is_extension_changed do
+        File.rm!(original_path)
+      end
     end
-    |> Mogrify.auto_orient()
-    |> Mogrify.save(in_place: true)
 
-    if extension_is_changed do
-      file_ref = Repo.update!(FileRef.changeset(file_ref, Map.from_struct(converted)))
-      File.rm!(original_path)
-      file_ref
-    else
-      file_ref
-    end
+    params =
+      converted
+      |> Map.from_struct()
+      |> Map.put(:byte_size, File.stat!(get_full_upload_path(converted)).size)
+
+    file_ref
+    |> FileRef.changeset(params)
+    |> Repo.update!()
   end
 
   def save_file_upload(source_path, params) do

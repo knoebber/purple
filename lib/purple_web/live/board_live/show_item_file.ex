@@ -1,6 +1,7 @@
 defmodule PurpleWeb.BoardLive.ShowItemFile do
-  use PurpleWeb, :live_view
   alias Purple.Uploads
+  alias Purple.Uploads.FileRef
+  use PurpleWeb, :live_view
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => item_id, "file_id" => file_id}, _url, socket) do
@@ -11,7 +12,7 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
       socket
       |> assign(:file_ref, file_ref)
       |> assign(:item_id, item_id)
-      |> assign(:page_title, Uploads.FileRef.title(file_ref))
+      |> assign(:page_title, FileRef.title(file_ref))
       |> PurpleWeb.BoardLive.Helpers.assign_side_nav()
     }
   end
@@ -34,7 +35,10 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
       :noreply,
       socket
       |> put_flash(:info, "File reference updated")
-      |> push_patch(to: ~p"/board/item/#{socket.assigns.item_id}/files/#{socket.assigns.file_ref.id}", replace: true)
+      |> push_patch(
+        to: ~p"/board/item/#{socket.assigns.item_id}/files/#{socket.assigns.file_ref.id}",
+        replace: true
+      )
     }
   end
 
@@ -47,11 +51,17 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
       <.link navigate={~p"/board/item/#{@item_id}"}>Item <%= @item_id %></.link>
       / <%= @page_title %>
     </h1>
-
-    <div class="flex bg-purple-300 inline-links p-1 border rounded border-purple-500">
-      <.link href={~p"/files/#{@file_ref}/download"}>Download</.link>
-      <.link patch={~p"/board/item/#{@item_id}/files/#{@file_ref}/edit"}>Edit</.link>
-      <.link href="#" phx-click="delete" data-confirm="Are you sure?">Delete</.link>
+    <div class="flex justify-between bg-purple-300 p-1 border rounded border-purple-500">
+      <div class="inline-links">
+        <.link href={~p"/files/#{@file_ref}/download"}>Download</.link>
+        <span>|</span>
+        <.link patch={~p"/board/item/#{@item_id}/files/#{@file_ref}/edit"}>Edit</.link>
+        <span>|</span>
+        <.link href="#" phx-click="delete" data-confirm="Are you sure?">Delete</.link>
+        <span>|</span>
+        <strong><%= FileRef.size_string(@file_ref) %></strong>
+      </div>
+      <.timestamp model={@file_ref} />
     </div>
     <.modal
       :if={@live_action == :edit}
