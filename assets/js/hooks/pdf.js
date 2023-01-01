@@ -1,10 +1,9 @@
 import pdfJS from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
+import 'pdfjs-dist/build/pdf.worker.entry';
 
-pdfJS.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 function renderPDF(canvas) {
-  let pageNum = 1;
+  let currentPageNum = 1;
 
   // Handle hidi
   const outputScale = window.devicePixelRatio || 1;
@@ -35,23 +34,24 @@ function renderPDF(canvas) {
       transform,
       viewport,
     };
+
     page.render(renderContext);
 
     async function onPrevPage() {
-      if (pageNum <= 1) {
+      if (currentPageNum <= 1) {
         return;
       }
-      pageNum -= 1;
-      page = await pdf.getPage(pageNum);
+      currentPageNum -= 1;
+      page = await pdf.getPage(currentPageNum);
       page.render(renderContext);
     }
 
     async function onNextPage() {
-      if (pageNum >= pdf.numPages) {
+      if (currentPageNum >= pdf.numPages) {
         return;
       }
-      pageNum += 1;
-      page = await pdf.getPage(pageNum);
+      currentPageNum += 1;
+      page = await pdf.getPage(currentPageNum);
       page.render(renderContext);
     } 
 
@@ -59,7 +59,7 @@ function renderPDF(canvas) {
       const newViewport = page.getViewport({ scale: parseFloat(e.target.value) });
       adjustCanvasSize(newViewport);
       renderContext.viewport = newViewport;
-      page = await pdf.getPage(pageNum);
+      page = await pdf.getPage(currentPageNum);
       page.render(renderContext);     
     } 
 

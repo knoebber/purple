@@ -38,6 +38,7 @@ defmodule PurpleWeb.Router do
     get "/files/:id", FileController, :show
     get "/files/:id/thumbnail", FileController, :show_thumbnail
     get "/files/:id/download", FileController, :download
+    get "/files/:id/open/:filename", FileController, :show
   end
 
   ## Protected live routes
