@@ -8,6 +8,25 @@ defmodule Purple.Finance.Transaction do
     field :timestamp, :naive_datetime
     field :notes, :string, default: ""
 
+    field :category, Ecto.Enum,
+      values: [
+        :ACTIVITIES,
+        :CAR,
+        :CLOTHES,
+        :CONSTRUCTION,
+        :GAS,
+        :GIFT,
+        :GROCERIES,
+        :HEALTH,
+        :HOME,
+        :OTHER,
+        :RESTAURANT,
+        :TREATS,
+        :UTILITIES,
+        :VACATION
+      ],
+      default: :OTHER
+
     field :dollars, :string, default: "", virtual: true
 
     timestamps()
@@ -81,6 +100,7 @@ defmodule Purple.Finance.Transaction do
   def changeset(transaction, attrs) do
     transaction
     |> cast(attrs, [
+      :category,
       :description,
       :dollars,
       :merchant_id,

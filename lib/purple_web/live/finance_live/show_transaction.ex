@@ -114,6 +114,9 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
           <p :if={@transaction.description != ""}>
             Description: <%= @transaction.description %>
           </p>
+          <p>
+            Category: <%= Purple.titleize(@transaction.category) %>
+          </p>
           <p :if={@transaction.notes != ""}>
             Notes 👇
           </p>

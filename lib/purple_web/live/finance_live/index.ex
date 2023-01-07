@@ -202,16 +202,19 @@ defmodule PurpleWeb.FinanceLive.Index do
         get_route={fn filter -> ~p"/finance?#{filter}" end}
       >
         <:col :let={transaction} label="Amount" order_col="cents">
-          <%= live_redirect(transaction.dollars, to: ~p"/finance/transactions/#{transaction}") %>
+          <.link navigate={~p"/finance/transactions/#{transaction}"}><%= transaction.dollars %></.link>
         </:col>
         <:col :let={transaction} label="Timestamp" order_col="timestamp">
           <%= Purple.Date.format(transaction.timestamp) %>
         </:col>
         <:col :let={transaction} label="Merchant">
-          <%= transaction.merchant.name %>
+          <.link navigate={~p"/finance/merchants/#{transaction.merchant}"}><%= transaction.merchant.name %></.link>
         </:col>
         <:col :let={transaction} label="Payment Method">
           <%= transaction.payment_method.name %>
+        </:col>
+        <:col :let={transaction} label="Category" order_col="category">
+          <%= Purple.titleize(transaction.category) %>
         </:col>
         <:col :let={transaction} label="Description">
           <%= transaction.description %>

@@ -107,6 +107,12 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
             phx-hook="AutoFocus"
             rows={@rows}
           />
+          <.input
+            field={{f, :category}}
+            label="Category"
+            type="select"
+            options={Finance.category_mappings()}
+          />
           <.input field={{f, :dollars}} label="Amount" />
           <%= datetime_select_group(f, :timestamp) %>
           <.input

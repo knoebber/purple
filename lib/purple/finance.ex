@@ -244,7 +244,8 @@ defmodule Purple.Finance do
       ilike(tx.description, ^term) or
         ilike(m.description, ^term) or
         ilike(m.name, ^term) or
-        ilike(pm.name, ^term)
+        ilike(pm.name, ^term) or
+        ilike(tx.category, ^term)
     )
   end
 
@@ -488,6 +489,13 @@ defmodule Purple.Finance do
 
   def share_type_mappings do
     Ecto.Enum.mappings(SharedTransaction, :type)
+  end
+
+  def category_mappings do
+    Enum.map(
+      Ecto.Enum.mappings(Transaction, :category),
+      fn {label, value} -> {Purple.titleize(label), value} end
+    )
   end
 
   def get_messages_for_import(%TransactionImportTask{user: user} = tit) do
