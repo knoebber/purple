@@ -289,7 +289,7 @@ defmodule Purple.Finance do
     if order_by do
       [{Filter.current_order(filter), order_by}]
     else
-      [desc: :timestamp]
+      [desc: :timestamp, desc: :updated_at]
     end
   end
 

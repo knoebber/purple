@@ -109,6 +109,36 @@ defmodule PurpleWeb.FinanceLive.Index do
   end
 
   @impl Phoenix.LiveView
+  def handle_event(
+        "update_category",
+        %{"transaction" => %{"id" => id} = params},
+        socket
+      ) do
+    {:ok, transaction} = Finance.update_transaction(Finance.get_transaction!(id), params)
+    transactions = socket.assigns.transactions
+    tx_index = Enum.find_index(transactions, &(&1.id == transaction.id))
+    old_transaction = Enum.at(transactions, tx_index)
+    # Replace the transaction category from the socket's list. 
+    # This preserves the preloaded data.
+    # Don't reload whole list from database because that can cause the order to change.
+    updated_transaction = Map.put(old_transaction, :category, transaction.category)
+
+    {
+      :noreply,
+      socket
+      |> assign(
+        :transactions,
+        List.replace_at(
+          transactions,
+          tx_index,
+          updated_transaction
+        )
+      )
+      |> put_flash(:info, "Updated category")
+    }
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("unshare_transaction", params, socket) do
     Finance.remove_shared_transaction!(
       socket.assigns.shared_budget.id,
@@ -202,22 +232,41 @@ defmodule PurpleWeb.FinanceLive.Index do
         get_route={fn filter -> ~p"/finance?#{filter}" end}
       >
         <:col :let={transaction} label="Amount" order_col="cents">
-          <.link navigate={~p"/finance/transactions/#{transaction}"}><%= transaction.dollars %></.link>
+          <.link navigate={~p"/finance/transactions/#{transaction}"}>
+            <%= transaction.dollars %>
+          </.link>
         </:col>
-        <:col :let={transaction} label="Timestamp" order_col="timestamp">
-          <%= Purple.Date.format(transaction.timestamp) %>
+        <:col :let={transaction} label="Merchant" order_col="merchant_id">
+          <.link navigate={~p"/finance/merchants/#{transaction.merchant}"}>
+            <%= transaction.merchant.name %>
+          </.link>
         </:col>
-        <:col :let={transaction} label="Merchant">
-          <.link navigate={~p"/finance/merchants/#{transaction.merchant}"}><%= transaction.merchant.name %></.link>
-        </:col>
-        <:col :let={transaction} label="Payment Method">
+        <:col :let={transaction} label="Payment Method" order_col="payment_method_id">
           <%= transaction.payment_method.name %>
         </:col>
         <:col :let={transaction} label="Category" order_col="category">
-          <%= Purple.titleize(transaction.category) %>
+          <form phx-change="update_category" id={"transaction-#{transaction.id}-category"}>
+            <input type="hidden" value={transaction.id} name="transaction[id]" />
+            <select
+              name="transaction[category]"
+              class={[
+                "text-xs py-2 px-3 pr-7 border border-gray-300",
+                "bg-white rounded-md shadow-sm focus:outline-none",
+                "focus:ring-zinc-500 focus:border-zinc-500"
+              ]}
+            >
+              <%= Phoenix.HTML.Form.options_for_select(
+                Finance.category_mappings(),
+                transaction.category
+              ) %>
+            </select>
+          </form>
         </:col>
         <:col :let={transaction} label="Description">
           <%= transaction.description %>
+        </:col>
+        <:col :let={transaction} label="Timestamp" order_col="timestamp">
+          <%= Purple.Date.format(transaction.timestamp) %>
         </:col>
         <:col :let={transaction} label="Share">
           <.link patch={~p"/finance/share/transaction/#{transaction.id}"} replace={true}>
