@@ -494,7 +494,7 @@ defmodule Purple.Finance do
   def category_mappings do
     Enum.map(
       Ecto.Enum.mappings(Transaction, :category),
-      fn {label, value} -> {Purple.titleize(label), value} end
+      fn {value, label} -> {Purple.titleize(label), value} end
     )
   end
 
@@ -541,11 +541,26 @@ defmodule Purple.Finance do
     } = params
 
     Repo.transaction(fn ->
+      merchant = Repo.preload(get_or_create_merchant!(transaction_params.merchant), :tags)
+
+      category =
+        Enum.find(
+          Ecto.Enum.mappings(Transaction, :category),
+          {:OTHER, "OTHER"},
+          fn {_, label} ->
+            Enum.find(
+              merchant.tags,
+              fn tag -> String.downcase(label) == String.downcase(tag.name) end
+            )
+          end
+        )
+
       transaction =
         Repo.insert!(%Transaction{
           cents: transaction_params.cents,
           description: "",
-          merchant: get_or_create_merchant!(transaction_params.merchant),
+          category: elem(category, 0),
+          merchant: merchant,
           notes: transaction_params.notes,
           payment_method: get_or_create_payment_method!(transaction_params.payment_method),
           timestamp: transaction_params.timestamp,

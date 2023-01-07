@@ -21,6 +21,7 @@ defmodule Purple.Finance.Transaction do
         :HOME,
         :OTHER,
         :RESTAURANT,
+        :SOFTWARE,
         :TREATS,
         :UTILITIES,
         :VACATION
