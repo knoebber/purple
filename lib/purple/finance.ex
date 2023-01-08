@@ -25,6 +25,7 @@ defmodule Purple.Finance do
   alias Purple.TransactionParser
 
   @dollar_amount_fragment "CONCAT('$', ROUND(cents/100.00,2))"
+  @yyyy_mm "to_char(\"timestamp\", 'YYYY-MM')"
 
   def change_transaction(%Transaction{} = transaction, attrs \\ %{}) do
     Transaction.changeset(transaction, attrs)
@@ -310,6 +311,34 @@ defmodule Purple.Finance do
     |> order_by(^order_by)
     |> preload([_, m, pm, stx], merchant: m, payment_method: pm, shared_transaction: stx)
     |> Repo.paginate(filter)
+  end
+
+  def sum_transactions_by_category(filter) do
+    query =
+      Transaction
+      |> group_by([tx], [tx.category, fragment(@yyyy_mm)])
+      |> select([tx], %{
+        cents: sum(tx.cents),
+        category: tx.category,
+        month: fragment(@yyyy_mm)
+      })
+      |> order_by(fragment(@yyyy_mm))
+
+    query =
+      if Map.has_key?(filter, :user_id) do
+        user_filter(query, filter)
+      else
+        query
+      end
+
+    query =
+      if Map.has_key?(filter, :category) do
+        where(query, [tx], tx.category == ^filter.category)
+      else
+        query
+      end
+
+    Repo.all(query)
   end
 
   def list_shared_budget_adjustments(filter) do

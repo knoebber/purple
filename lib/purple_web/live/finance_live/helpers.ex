@@ -17,6 +17,10 @@ defmodule PurpleWeb.FinanceLive.Helpers do
           %{
             label: "Payment Methods",
             to: ~p"/finance/payment_methods"
+          },
+          %{
+            label: "Categories",
+            to: ~p"/finance/categories"
           }
         ]
       },
