@@ -4,7 +4,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
   use PurpleWeb, :live_view
 
   defp assign_data(socket, merchant_id) do
-    merchant = Finance.get_merchant!(merchant_id)
+    merchant = Finance.get_merchant!(merchant_id, :transactions)
 
     socket
     |> assign(:page_title, merchant.name)
@@ -57,6 +57,14 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
           </.link>
           <.link :if={@is_editing} patch={~p"/finance/merchants/#{@merchant.id}"} replace={true}>
             Cancel
+          </.link>
+          <.link
+            :if={length(@merchant.transactions) > 0}
+            navigate={~p"/finance?merchant_id=#{@merchant.id}"}
+          >
+            <%= length(@merchant.transactions) %> transaction<span :if={
+              length(@merchant.transactions) > 1
+            }>s</span>
           </.link>
         </div>
         <.timestamp model={@merchant} />

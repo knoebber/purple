@@ -143,6 +143,12 @@ defmodule Purple.Finance do
     Repo.get!(Merchant, id)
   end
 
+  def get_merchant!(id, :transactions) do
+    Merchant
+    |> Repo.get!(id)
+    |> Repo.preload(:transactions)
+  end
+
   def get_merchant!(id, :tags) do
     Repo.one!(
       from(m in Merchant,
@@ -316,13 +322,15 @@ defmodule Purple.Finance do
   def sum_transactions_by_category(filter) do
     query =
       Transaction
-      |> group_by([tx], [tx.category, fragment(@yyyy_mm)])
-      |> select([tx], %{
+      |> join(:inner, [tx], user in assoc(tx, :user))
+      |> group_by([tx, user], [user.email, tx.category, fragment(@yyyy_mm)])
+      |> select([tx, user], %{
+        email: user.email,
         cents: sum(tx.cents),
         category: tx.category,
         month: fragment(@yyyy_mm)
       })
-      |> order_by(fragment(@yyyy_mm))
+      |> order_by([tx, user], [desc: fragment(@yyyy_mm), asc: tx.category, asc: user.email])
 
     query =
       if Map.has_key?(filter, :user_id) do

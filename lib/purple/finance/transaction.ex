@@ -12,19 +12,23 @@ defmodule Purple.Finance.Transaction do
       values: [
         :ACTIVITIES,
         :CAR,
+        :COFFEE,
         :CLOTHES,
         :CONSTRUCTION,
+        :DRINKS,
         :GAS,
         :GIFT,
         :GROCERIES,
         :HEALTH,
         :HOME,
+        :MAKEUP,
         :OTHER,
         :RESTAURANT,
         :SOFTWARE,
         :TREATS,
         :UTILITIES,
-        :VACATION
+        :VACATION,
+        :WORK
       ],
       default: :OTHER
 

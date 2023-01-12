@@ -133,4 +133,8 @@ defmodule Purple.Date do
   def format(%Date{} = d, :dayname) do
     Calendar.strftime(d, "%a %m/%d/%Y")
   end
+
+  def format(%Date{} = d, :month) do
+    Calendar.strftime(d, "%B, %Y")
+  end
 end

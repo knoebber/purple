@@ -4,7 +4,11 @@ defmodule PurpleWeb.FinanceLive.CategoryReport do
   import PurpleWeb.FinanceLive.Helpers
 
   alias Purple.Finance
-  alias Purple.Finance.PaymentMethod
+
+  defp parse_month(month_string) do 
+    [year, month] = String.split(month_string, "-")
+    Date.new!(Purple.parse_int!(year), Purple.parse_int!(month), 1)
+  end
 
   defp assign_data(socket) do
     assign(
@@ -35,14 +39,14 @@ defmodule PurpleWeb.FinanceLive.CategoryReport do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
     <.table rows={@report}>
-      <:col :let={row} label="Total">
-        <%= Finance.Transaction.format_cents(row.cents) %>
-      </:col>
       <:col :let={row} label="Category">
         <%= Purple.titleize(row.category) %>
       </:col>
       <:col :let={row} label="Month">
-        <%= Purple.titleize(row.month) %>
+        <%= Purple.Date.format(parse_month(row.month), :month) %>
+      </:col>
+      <:col :let={row} label="Total">
+        <%= Finance.Transaction.format_cents(row.cents) %>
       </:col>
     </.table>
     """
