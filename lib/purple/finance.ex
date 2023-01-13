@@ -262,6 +262,18 @@ defmodule Purple.Finance do
     where(q, [tx], tx.user_id == ^user_id)
   end
 
+  defp month_filter(q, %{month: month}) do
+    where(q, [tx], fragment(@yyyy_mm) == ^month)
+  end
+
+  defp month_filter(q, _), do: q
+
+  defp category_filter(q, %{category: category}) do
+    where(q, [tx], ilike(tx.category, ^category))
+  end
+
+  defp category_filter(q, _), do: q
+
   defp merchant_filter(q, %{merchant_id: id}) do
     where(q, [_, m], m.id == ^id)
   end
@@ -314,6 +326,8 @@ defmodule Purple.Finance do
     |> shared_budget_filter(filter)
     |> transaction_text_search(filter)
     |> user_filter(filter)
+    |> month_filter(filter)
+    |> category_filter(filter)
     |> order_by(^order_by)
     |> preload([_, m, pm, stx], merchant: m, payment_method: pm, shared_transaction: stx)
     |> Repo.paginate(filter)

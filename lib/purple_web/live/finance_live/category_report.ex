@@ -5,7 +5,7 @@ defmodule PurpleWeb.FinanceLive.CategoryReport do
 
   alias Purple.Finance
 
-  defp parse_month(month_string) do 
+  defp parse_month(month_string) do
     [year, month] = String.split(month_string, "-")
     Date.new!(Purple.parse_int!(year), Purple.parse_int!(month), 1)
   end
@@ -40,13 +40,19 @@ defmodule PurpleWeb.FinanceLive.CategoryReport do
     <h1 class="mb-2"><%= @page_title %></h1>
     <.table rows={@report}>
       <:col :let={row} label="Category">
-        <%= Purple.titleize(row.category) %>
+        <.link navigate={~p"/finance?category=#{row.category}"}>
+          <%= Purple.titleize(row.category) %>
+        </.link>
       </:col>
       <:col :let={row} label="Month">
-        <%= Purple.Date.format(parse_month(row.month), :month) %>
+        <.link navigate={~p"/finance?month=#{row.month}"}>
+          <%= Purple.Date.format(parse_month(row.month), :month) %>
+        </.link>
       </:col>
       <:col :let={row} label="Total">
-        <%= Finance.Transaction.format_cents(row.cents) %>
+        <.link navigate={~p"/finance?category=#{row.category}&month=#{row.month}"}>
+          <%= Finance.Transaction.format_cents(row.cents) %>
+        </.link>
       </:col>
     </.table>
     """

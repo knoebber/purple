@@ -7,7 +7,9 @@ defmodule PurpleWeb.FinanceLive.Index do
   require Logger
 
   @filter_types %{
+    category: :string,
     merchant_id: :integer,
+    month: :string,
     payment_method_id: :integer
   }
 
