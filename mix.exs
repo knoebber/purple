@@ -39,6 +39,7 @@ defmodule Purple.MixProject do
       {:ecto_psql_extras, "~> 0.7.4"},
       {:ecto_sql, "~> 3.9.0"},
       {:esbuild, "~> 0.5.0", runtime: Mix.env() == :dev},
+      {:fast_rss, "~> 0.4.4"},
       {:floki, ">= 0.33.1"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.4.0"},

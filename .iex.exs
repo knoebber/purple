@@ -2,6 +2,7 @@ alias Purple.{
   Accounts,
   Activities,
   Board,
+  Feed,
   Filter,
   Finance,
   Gmail,
