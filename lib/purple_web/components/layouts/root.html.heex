@@ -17,6 +17,7 @@
       <%= if @current_user do %>
         <.link navigate={~p"/board"}>Board</.link>
         <.link navigate={~p"/finance"}>Bean Counter</.link>
+        <.link navigate={~p"/feed"}>Feed</.link>
         <.link navigate={~p"/runs"}>Runs</.link>
         <.link navigate={~p"/users/settings"}><%= @current_user.email %></.link>
         <.link href={~p"/users/log_out"} method="delete">Log out</.link>

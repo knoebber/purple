@@ -4,7 +4,7 @@ defmodule Purple.Feed do
   """
   alias Purple.Feed
   alias Purple.Repo
-  # import Ecto.Query
+  import Ecto.Query
 
   def parse_rss_feed(url) when is_binary(url) do
     with {:ok, content} <- HTTPoison.get(url),
@@ -38,5 +38,12 @@ defmodule Purple.Feed do
         link: Map.get(item, "link")
       })
     end)
+  end
+
+  def list_items(filter \\ %{}) do
+    Feed.Item
+    |> join(:inner, [item], source in assoc(item, :source))
+    |> preload([_, source], source: source)
+    |> Repo.paginate(filter)
   end
 end
