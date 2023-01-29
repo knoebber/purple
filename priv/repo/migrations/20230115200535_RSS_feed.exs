@@ -15,6 +15,7 @@ defmodule Purple.Repo.Migrations.RSSfeed do
       add :link, :string, null: false
       add :title, :string, null: false
       add :description, :text, null: false
+      add :pub_date, :naive_datetime, null: false
       add :rss_feed_id, references(:rss_feeds, on_delete: :delete_all), null: false
 
       timestamps()

@@ -40,21 +40,14 @@ defmodule PurpleWeb.FeedLive.Index do
 
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
-    {:ok, assign(socket, :side_nav, [])}
+    {:ok, assign(socket, :side_nav, nil)}
   end
 
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1><%= @page_title %></h1>
-    <.filter_form :let={f}>
-      <.input
-        field={{f, :query}}
-        value={Map.get(@filter, :query, "")}
-        placeholder="Search..."
-        phx-debounce="200"
-        class="lg:w-1/4"
-      />
+    <.filter_form>
       <.page_links
         filter={@filter}
         first_page={~p"/feed?#{first_page(@filter)}"}
@@ -68,10 +61,10 @@ defmodule PurpleWeb.FeedLive.Index do
           <%= item.source.title %>
         </:col>
         <:col :let={item} label="Title">
-          <%= item.title %>
+          <.link href={item.link} target="_blank"><%= item.title %></.link>
         </:col>
-        <:col :let={item} label="Link">
-          <.link href={item.link}><%= item.link %></.link>
+        <:col :let={item} label="Published">
+          <%= Purple.Date.format(item.pub_date, :time) %>
         </:col>
       </.table>
       <.page_links

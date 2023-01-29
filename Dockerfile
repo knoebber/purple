@@ -25,6 +25,13 @@ FROM ${BUILDER_IMAGE} as builder
 RUN apt-get update -y && apt-get install -y build-essential git npm \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
+# install rustup
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV RUSTUP_HOME=/root/.rustup \
+    RUSTFLAGS="-C target-feature=-crt-static" \
+    CARGO_HOME=/root/.cargo  \
+    PATH="/root/.cargo/bin:$PATH"
+
 # prepare build dir
 WORKDIR /app
 

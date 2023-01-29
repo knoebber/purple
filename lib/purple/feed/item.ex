@@ -6,6 +6,7 @@ defmodule Purple.Feed.Item do
     field :link, :string
     field :title, :string
     field :description, :string, default: ""
+    field :pub_date, :naive_datetime
 
     belongs_to :source, Purple.Feed.Source, source: :rss_feed_id
 

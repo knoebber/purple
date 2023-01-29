@@ -59,6 +59,7 @@ defmodule Purple.MixProject do
       {:tailwind, "~> 0.1.8", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
+      {:timex, "~> 3.7.9"},
       {:tzdata, "~> 1.1"},
       {:oauth2, "~> 2.0"}
     ]

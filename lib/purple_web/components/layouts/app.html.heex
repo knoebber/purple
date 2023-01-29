@@ -1,5 +1,5 @@
 <div class="content-flex">
-  <nav>
+  <nav :if={@side_nav != nil}>
     <%= for link <- @side_nav || [] do %>
       <.link navigate={link.to}><%= link.label %></.link>
       <%= if Map.has_key?(link, :children) and length(link.children) > 0 do %>
@@ -11,7 +11,7 @@
       <% end %>
     <% end %>
   </nav>
-  <main>
+  <main class={if @side_nav == nil, do: "w-full"}>
     <.flash kind={:info} title="Success!" flash={@flash} />
     <.flash kind={:error} title="Error!" flash={@flash} />
     <.flash

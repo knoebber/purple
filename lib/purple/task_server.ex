@@ -6,6 +6,7 @@ defmodule Purple.TaskServer do
   require Logger
   use GenServer
   alias Purple.Accounts
+  alias Purple.Feed
   alias Purple.Finance
 
   def start_link(_) do
@@ -24,6 +25,7 @@ defmodule Purple.TaskServer do
   def handle_info(:work, state) do
     Logger.info("task server is starting work")
 
+    Logger.info("importing transactions")
     Enum.each(
       Accounts.list_user_oauth_tokens(),
       fn %{user_id: user_id} ->
@@ -37,6 +39,9 @@ defmodule Purple.TaskServer do
         end
       end
     )
+
+    Logger.info("parsing RSS feeds")
+    Enum.each(Feed.list_sources(), &Feed.save_items_from_source/1)
 
     schedule_work()
 
