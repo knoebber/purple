@@ -200,15 +200,21 @@ defmodule Purple.Finance do
     )
   end
 
-  def get_shared_budget_adjustment!(id) do
-    Repo.one!(
-      from(adjustment in SharedBudgetAdjustment,
+  defp shared_budget_adjustment_query(id) do 
+    from(adjustment in SharedBudgetAdjustment,
         select_merge: %{dollars: fragment(@dollar_amount_fragment)},
         join: u in assoc(adjustment, :user),
         where: adjustment.id == ^id,
         preload: [user: u]
       )
-    )
+  end
+
+  def get_shared_budget_adjustment(id) do
+    Repo.one(shared_budget_adjustment_query(id))
+  end
+
+  def get_shared_budget_adjustment!(id) do
+    Repo.one!(shared_budget_adjustment_query(id))
   end
 
   def get_shared_budget_adjustment!(id, :tags) do

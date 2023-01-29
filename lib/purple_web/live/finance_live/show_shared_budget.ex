@@ -3,6 +3,32 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   import PurpleWeb.FinanceLive.Helpers
   alias Purple.Finance
 
+  @behaviour PurpleWeb.FancyLink
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_type do
+    "🧍‍💵🧍"
+  end
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_title(params) do
+    case params do
+      %{"adjustment_id" => id} ->
+        adjustment = Finance.get_shared_budget_adjustment(id)
+
+        if adjustment do
+          adjustment.dollars <> " adjustment"
+        end
+
+      %{"id" => id} ->
+        shared_budget = Finance.get_shared_budget(id)
+
+        if shared_budget do
+          shared_budget.name
+        end
+    end
+  end
+
   defp map_user_transactions(user_id, shared_budget_id) do
     Enum.map(
       Finance.list_transactions(%{
