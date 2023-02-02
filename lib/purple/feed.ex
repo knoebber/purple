@@ -22,7 +22,7 @@ defmodule Purple.Feed do
       )
 
     if datetime do
-      if Timex.before?(datetime, Timex.shift(Timex.today, days: -3)) do 
+      if Timex.before?(datetime, Timex.shift(Timex.today(), days: -3)) do
         {:error, :stale}
       else
         {:ok, datetime}
@@ -77,23 +77,29 @@ defmodule Purple.Feed do
         |> Enum.reject(fn item_map -> Map.get(link_map, Map.get(item_map, "link")) end)
         |> Enum.each(fn item_map ->
           with {:ok, item_struct} <- make_item(source.id, item_map),
-               {:ok, item_record} <- Repo.insert(item_struct) do
+               {:ok, item_record} <- Repo.insert(Feed.Item.changeset(item_struct)) do
             Logger.info("inserted rss item record #{inspect(item_record)}")
           else
             {:error, :stale} ->
-            Logger.info(
-                "skipping [#{Map.get(item_map, "link")}]: stale"
-              )
+              Logger.info("skipping [#{Map.get(item_map, "link")}]: stale")
+
             {:error, reason} ->
-              Logger.error(
-                "failed to create rss item for [#{source.url}] from #{inspect(item_map)}: [#{reason}]"
-              )
+              Logger.error("failed to create rss item for [#{source.url}]: #{inspect(reason)}")
           end
         end)
 
       {:error, reason} ->
         Logger.error("failed to parse feed for #{source.url}: #{reason}")
     end
+  end
+
+  def delete_old_items() do
+    Feed.Item
+    |> where(
+      [i],
+      i.pub_date < ^Purple.Date.to_naive_datetime(Timex.shift(Timex.now(), days: -15))
+    )
+    |> Repo.delete_all()
   end
 
   def create_source(url) do
@@ -111,7 +117,7 @@ defmodule Purple.Feed do
 
   defp source_filter(query, _), do: query
 
-  def list_sources() do 
+  def list_sources() do
     Repo.all(Feed.Source)
   end
 
@@ -119,7 +125,7 @@ defmodule Purple.Feed do
     Feed.Item
     |> join(:inner, [item], source in assoc(item, :source))
     |> source_filter(filter)
-    |> order_by([item, _], [desc: item.pub_date])
+    |> order_by([item, _], desc: item.pub_date)
     |> preload([_, source], source: source)
     |> Repo.paginate(filter)
   end

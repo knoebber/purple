@@ -26,6 +26,7 @@ defmodule Purple.TaskServer do
     Logger.info("task server is starting work")
 
     Logger.info("importing transactions")
+
     Enum.each(
       Accounts.list_user_oauth_tokens(),
       fn %{user_id: user_id} ->
@@ -42,6 +43,7 @@ defmodule Purple.TaskServer do
 
     Logger.info("parsing RSS feeds")
     Enum.each(Feed.list_sources(), &Feed.save_items_from_source/1)
+    Logger.info("deleted old items #{inspect(Feed.delete_old_items())}")
 
     schedule_work()
 
