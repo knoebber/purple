@@ -121,11 +121,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
             Notes 👇
           </p>
         </div>
-        <.markdown
-          content={@transaction.notes}
-          link_type={:finance}
-          fancy_link_map={@fancy_link_map}
-        />
+        <.markdown content={@transaction.notes} link_type={:finance} fancy_link_map={@fancy_link_map} />
       <% end %>
     </.section>
     """

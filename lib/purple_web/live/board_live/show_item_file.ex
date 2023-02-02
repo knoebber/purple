@@ -53,7 +53,12 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
     </h1>
     <div class="flex justify-between bg-purple-300 p-1 border rounded border-purple-500">
       <div class="inline-links">
-        <.link target="_blank" href={~p"/files/#{@file_ref}/open/#{@file_ref.file_name}" <> @file_ref.extension}>Open</.link>
+        <.link
+          target="_blank"
+          href={~p"/files/#{@file_ref}/open/#{@file_ref.file_name}" <> @file_ref.extension}
+        >
+          Open
+        </.link>
         <span>|</span>
         <.link href={~p"/files/#{@file_ref}/download"}>Download</.link>
         <span>|</span>

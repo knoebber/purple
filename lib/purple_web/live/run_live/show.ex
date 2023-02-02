@@ -4,7 +4,6 @@ defmodule PurpleWeb.RunLive.Show do
   import PurpleWeb.RunLive.Helpers
   use PurpleWeb, :live_view
 
-
   @behaviour PurpleWeb.FancyLink
 
   @impl PurpleWeb.FancyLink

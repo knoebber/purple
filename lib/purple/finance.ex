@@ -200,13 +200,13 @@ defmodule Purple.Finance do
     )
   end
 
-  defp shared_budget_adjustment_query(id) do 
+  defp shared_budget_adjustment_query(id) do
     from(adjustment in SharedBudgetAdjustment,
-        select_merge: %{dollars: fragment(@dollar_amount_fragment)},
-        join: u in assoc(adjustment, :user),
-        where: adjustment.id == ^id,
-        preload: [user: u]
-      )
+      select_merge: %{dollars: fragment(@dollar_amount_fragment)},
+      join: u in assoc(adjustment, :user),
+      where: adjustment.id == ^id,
+      preload: [user: u]
+    )
   end
 
   def get_shared_budget_adjustment(id) do
@@ -350,7 +350,7 @@ defmodule Purple.Finance do
         category: tx.category,
         month: fragment(@yyyy_mm)
       })
-      |> order_by([tx, user], [desc: fragment(@yyyy_mm), asc: tx.category, asc: user.email])
+      |> order_by([tx, user], desc: fragment(@yyyy_mm), asc: tx.category, asc: user.email)
 
     query =
       if Map.has_key?(filter, :user_id) do

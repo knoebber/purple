@@ -101,12 +101,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     <div class={@class}>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
-          <.input
-            field={{f, :description}}
-            label="Description"
-            phx-hook="AutoFocus"
-            rows={@rows}
-          />
+          <.input field={{f, :description}} label="Description" phx-hook="AutoFocus" rows={@rows} />
           <.input
             field={{f, :category}}
             label="Category"

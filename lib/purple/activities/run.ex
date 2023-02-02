@@ -78,7 +78,7 @@ defmodule Purple.Activities.Run do
     end
   end
 
-  def to_string(%__MODULE__{} = run) do 
+  def to_string(%__MODULE__{} = run) do
     "#{run.miles} miles@#{format_pace(run)} in #{format_duration(run)}"
   end
 
