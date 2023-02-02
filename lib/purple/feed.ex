@@ -12,7 +12,10 @@ defmodule Purple.Feed do
   def parse_pub_date(pub_date) when is_binary(pub_date) do
     datetime =
       Enum.find_value(
-        ["{RFC1123}"],
+        [
+        "{RFC1123}",
+        "{WDshort}, {D} {Mshort} {YYYY} {h24}:{m} {Zabbr}",
+        ],
         fn format ->
           case Timex.parse(pub_date, format) do
             {:ok, datetime} -> datetime
