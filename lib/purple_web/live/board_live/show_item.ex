@@ -235,7 +235,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <div class="flex flex-col mb-2">
         <.input field={{f, :item_id}} type="hidden" value={@item_id} />
         <.input field={{f, :is_collapsed}} type="hidden" value={false} />
-        <.input field={{f, :content}} type="textarea" rows={@rows} phx-hook="AutoFocus" />
+        <.input field={{f, :content}} type="textarea" rows={@rows} phx-hook="MarkdownTextarea" />
       </div>
       <.button phx-disable-with="Saving...">Save</.button>
     </.form>

@@ -1,5 +1,5 @@
 export default {
-    mounted() {
-      this.el.focus();
-    }
+  mounted() {
+    this.el.focus();
+  }
 }

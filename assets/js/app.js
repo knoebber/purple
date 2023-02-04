@@ -23,6 +23,7 @@ import topbar from '../vendor/topbar';
 
 import AutoFocus from './hooks/autofocus';
 import CopyMarkdownImage from './hooks/copy_markdown_image';
+import MarkdownTextarea from './hooks/markdown_textarea';
 import PDF from './hooks/pdf';
 import Sortable from './hooks/sortable';
 
@@ -37,6 +38,7 @@ const liveSocket = new LiveSocket(
     hooks: {
       AutoFocus,
       CopyMarkdownImage,
+      MarkdownTextarea,
       PDF,
       Sortable,
     },

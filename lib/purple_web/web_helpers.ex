@@ -35,7 +35,7 @@ defmodule PurpleWeb.WebHelpers do
   end
 
   def get_num_textarea_rows(content) do
-    max(3, length(String.split(content, "\n")) + 1)
+    max(8, length(String.split(content, "\n")) + 1)
   end
 
   def assign_fancy_link_map(socket, content) when is_binary(content) do
