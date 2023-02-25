@@ -89,7 +89,6 @@ defmodule PurpleWeb.Router do
       live "/board/item/create", BoardLive.CreateItem, :create
       live "/board/item/:id", BoardLive.ShowItem, :show
       live "/board/item/:id/edit", BoardLive.ShowItem, :edit_item
-      live "/board/item/:id/entry/new", BoardLive.ShowItem, :create_entry
       live "/board/item/:id/entry/:entry_id", BoardLive.ShowItem, :edit_entry
       live "/board/item/:id/files/:file_id", BoardLive.ShowItemFile, :show
       live "/board/item/:id/files/:file_id/edit", BoardLive.ShowItemFile, :edit

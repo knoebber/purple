@@ -43,18 +43,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   defp apply_action(socket, :edit_entry, %{"id" => item_id, "entry_id" => entry_id}) do
     socket = assign_default_params(socket, item_id)
-
-    editable_entry = get_entry(socket, entry_id)
-
-    socket
-    |> assign(:editable_entry, editable_entry)
-    |> assign(:entry_update_changeset, Board.change_item_entry(editable_entry))
-  end
-
-  defp apply_action(socket, :create_entry, %{"id" => item_id}) do
-    socket
-    |> assign_default_params(item_id)
-    |> assign(:new_entry_changeset, Board.change_item_entry(%ItemEntry{}))
+    assign(socket, :editable_entry, editable_entry = get_entry(socket, entry_id))
   end
 
   defp apply_action(socket, _, %{"id" => item_id}) do
@@ -65,14 +54,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     Enum.find(socket.assigns.entries, %ItemEntry{}, fn entry ->
       Integer.to_string(entry.id) == entry_id
     end)
-  end
-
-  defp save_entry(socket, :create_entry, params) do
-    Board.create_item_entry(params, socket.assigns.item.id)
-  end
-
-  defp save_entry(socket, :edit_entry, params) do
-    Board.update_item_entry(socket.assigns.editable_entry, params)
   end
 
   defp make_checkbox_map(entry) do
@@ -104,6 +85,15 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("create_entry", _, socket) do
+    item_id = socket.assigns.item.id
+    {:ok, new_entry} = Board.create_item_entry(%{content: "# New Entry"}, item_id)
+
+    {:noreply,
+     push_patch(socket, to: ~p"/board/item/#{item_id}/entry/#{new_entry.id}", replace: true)}
   end
 
   @impl Phoenix.LiveView
@@ -146,7 +136,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   @impl Phoenix.LiveView
   def handle_event("save_entry", %{"item_entry" => params}, socket) do
-    case save_entry(socket, socket.assigns.live_action, params) do
+    case Board.update_item_entry(socket.assigns.editable_entry, params) do
       {:ok, entry} ->
         {
           :noreply,
@@ -229,19 +219,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     """
   end
 
-  defp entry_form(assigns) do
-    ~H"""
-    <.form :let={f} for={@changeset} phx-submit={@action} phx-change="validate_entry" class="p-4">
-      <div class="flex flex-col mb-2">
-        <.input field={{f, :item_id}} type="hidden" value={@item_id} />
-        <.input field={{f, :is_collapsed}} type="hidden" value={false} />
-        <.input field={{f, :content}} type="textarea" rows={@rows} phx-hook="MarkdownTextarea" />
-      </div>
-      <.button phx-disable-with="Saving...">Save</.button>
-    </.form>
-    """
-  end
-
   defp entry_header(assigns) do
     ~H"""
     <div class="cursor-move flex justify-between bg-purple-300 p-1">
@@ -313,7 +290,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             Delete
           </a>
           <span>|</span>
-          <.link patch={~p"/board/item/#{@item}/entry/new"} replace={true}>
+          <.link href="#" phx-click="create_entry">
             Create Entry
           </.link>
         </div>
@@ -395,26 +372,18 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         <% end %>
       <% end %>
     </.section>
-    <.section :if={@live_action == :create_entry} class="mt-2 mb-2">
-      <div class="flex justify-between bg-purple-300 p-1">
-        <div class="inline-links">
-          <strong>New Entry</strong>
-          <span>|</span>
-          <.cancel_link item={@item} socket={@socket} />
-        </div>
-      </div>
-      <.entry_form rows={5} action="save_entry" changeset={@new_entry_changeset} item_id={@item.id} />
-    </.section>
     <div id="entry-container" phx-hook="Sortable">
       <%= for entry <- @entries do %>
         <.section class="mt-2 mb-2 js-sortable-item" id={Integer.to_string(entry.id)}>
           <%= if @live_action == :edit_entry and @editable_entry.id == entry.id do %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
-            <.entry_form
-              rows={get_num_textarea_rows(entry.content)}
-              action="save_entry"
-              changeset={@entry_update_changeset}
+            <.live_component
+              module={PurpleWeb.BoardLive.EntryForm}
+              id={@editable_entry.id}
+              entry={@editable_entry}
               item_id={@item.id}
+              return_to={~p"/board/item/#{@item}"}
+              num_rows={get_num_textarea_rows(@editable_entry.content)}
             />
           <% else %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
