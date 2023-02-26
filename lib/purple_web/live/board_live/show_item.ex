@@ -43,7 +43,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   defp apply_action(socket, :edit_entry, %{"id" => item_id, "entry_id" => entry_id}) do
     socket = assign_default_params(socket, item_id)
-    assign(socket, :editable_entry, editable_entry = get_entry(socket, entry_id))
+    assign(socket, :editable_entry, get_entry(socket, entry_id))
   end
 
   defp apply_action(socket, _, %{"id" => item_id}) do
