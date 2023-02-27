@@ -33,7 +33,6 @@ defmodule PurpleWeb.BoardLive.EntryForm do
 
   @impl Phoenix.LiveComponent
   def handle_event("autosave", %{"item_entry" => params}, socket) do
-    # TODO: on cancel, revert to last version.
     {:noreply, save(socket, params)}
   end
 

@@ -81,6 +81,15 @@ defmodule Purple.Board do
     end)
   end
 
+  @doc """
+  Updates an item entries content without item post processing.
+  """
+  def update_item_entry_content!(entry_id, content) do
+    ItemEntry
+    |> where([ie], ie.id == ^entry_id)
+    |> Repo.update_all(set: [content: content])
+  end
+
   def update_item_entry(%ItemEntry{} = entry, params) do
     changeset = ItemEntry.changeset(entry, params)
 

@@ -183,14 +183,26 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
-    Board.get_item!(id)
-    |> Board.delete_item!()
+    Board.delete_item!(Board.get_item!(id))
 
     {
       :noreply,
       socket
       |> put_flash(:info, "Deleted item")
       |> push_redirect(to: ~p"/board", replace: true)
+    }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("cancel_entry_edit", _, socket) do
+    Board.update_item_entry_content!(
+      socket.assigns.editable_entry.id,
+      socket.assigns.editable_entry.content
+    )
+
+    {
+      :noreply,
+      push_redirect(socket, to: ~p"/board/item/#{socket.assigns.item}", replace: true)
     }
   end
 
@@ -213,12 +225,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     {:ok, assign_side_nav(socket)}
   end
 
-  defp cancel_link(assigns) do
-    ~H"""
-    <.link patch={~p"/board/item/#{@item}"} replace={true}>Cancel</.link>
-    """
-  end
-
   defp entry_header(assigns) do
     ~H"""
     <div class="cursor-move flex justify-between bg-purple-300 p-1">
@@ -228,7 +234,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             Edit
           </strong>
           <span>|</span>
-          <.cancel_link item={@item} socket={@socket} />
+          <.link href="#" phx-click="cancel_entry_edit">Cancel</.link>
         <% else %>
           <a
             href="#"
@@ -277,7 +283,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           <%= if @live_action == :edit_item do %>
             <strong>Edit</strong>
             <span>|</span>
-            <.cancel_link item={@item} socket={@socket} />
+            <.link patch={~p"/board/item/#{@item}"} replace={true}>Cancel</.link>
           <% else %>
             <strong><%= @item.status %></strong>
             <span>|</span>
@@ -297,7 +303,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         <.timestamp model={@item} />
       </div>
       <%= if @live_action == :edit_item do %>
-        <div class="m-2 p-2 border border-purplength(@image_refs) + length(@file_refs)le-500 bg-purple-50 rounded">
+        <div class="m-2 p-2 border border-purple bg-purple-50 rounded">
           <.live_component
             module={PurpleWeb.BoardLive.UpdateItem}
             id={@item.id}
@@ -387,14 +393,13 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             />
           <% else %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
-            <%= unless entry.is_collapsed do %>
-              <.markdown
-                checkbox_map={make_checkbox_map(entry)}
-                content={entry.content}
-                fancy_link_map={@fancy_link_map}
-                link_type={:board}
-              />
-            <% end %>
+            <.markdown
+              :if={entry.is_collapsed == false}
+              checkbox_map={make_checkbox_map(entry)}
+              content={entry.content}
+              fancy_link_map={@fancy_link_map}
+              link_type={:board}
+            />
           <% end %>
         </.section>
       <% end %>
