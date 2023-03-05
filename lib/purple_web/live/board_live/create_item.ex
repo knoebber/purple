@@ -63,18 +63,15 @@ defmodule PurpleWeb.BoardLive.CreateItem do
         Map.reject(params["entries"], fn {_, entry} -> entry["content"] == "" end)
       )
 
-    case Board.create_item(params) do
+    case Board.create_item(params) |> dbg do
       {:ok, item} ->
         {:noreply, push_redirect(socket, to: ~p"/board/item/#{item}")}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{data: %Board.Item{}} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
 
-      {:error, :rollback} ->
-        {:noreply,
-         socket
-         |> assign(:changeset, Board.change_item(%Item{}, params))
-         |> put_flash(:error, "Failed to create item")}
+      {:error, %Ecto.Changeset{data: %Board.ItemEntry{}}} ->
+        {:noreply, put_flash(socket, :error, "Failed to create item. Check entry content")}
     end
   end
 
@@ -103,9 +100,9 @@ defmodule PurpleWeb.BoardLive.CreateItem do
           options={Board.item_status_mappings()}
           label="Status"
         />
-        <%= Phoenix.HTML.Form.inputs_for f, :entries, fn entry -> %>
-          <.input field={{entry, :content}} type="textarea" rows="3" label="Entry" />
-        <% end %>
+        <.inputs_for :let={fp} field={f[:entries]}>
+          <.input field={{fp, :content}} type="textarea" rows="3" label="Entry" />
+        </.inputs_for>
       </div>
       <.button phx-disable-with="Saving...">Save</.button>
     </.form>

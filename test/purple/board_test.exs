@@ -35,11 +35,11 @@ defmodule Purple.BoardTest do
 
       assert {:ok, item_with_children} =
                create_item(%{
-                 description: "i have #children 👶",
-                 entries: [
-                   %{content: "# entry!\n\n- x 1\n- x 2\n\n :)"},
-                   %{content: "- x 1\n- x 2\n\n (dupe #checkboxes are ok between siblings"}
-                 ]
+                 "description" => "i have #children 👶",
+                 "entries" => %{
+                   "0" => %{content: "# entry!\n\n- x 1\n- x 2\n\n :)"},
+                   "1" => %{content: "- x 1\n- x 2\n\n (dupe #checkboxes are ok between siblings"}
+                 }
                })
 
       assert [entry1, entry2] = list_item_entries(item_with_children.id, :checkboxes)
@@ -51,10 +51,15 @@ defmodule Purple.BoardTest do
 
       assert {:error, %Ecto.Changeset{valid?: false}} =
                create_item(%{
-                 description: "entry has dupe #rollback",
-                 entries: [
-                   %{content: "# #invalid entry!\n\n- x create item test \n- x create item test"}
-                 ]
+                 "description" => "hm",
+                 "entries" => %{
+                   "0" => %{"content" => "- x dupe\n- x dupe"},
+                   "1" => %{
+                     "content" => "http://localhost:4000/board/26 - #invalid #rollback"
+                   }
+                 },
+                 "priority" => "3",
+                 "status" => "TODO"
                })
 
       # Tags were not created as tx was rolled back

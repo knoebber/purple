@@ -163,14 +163,23 @@ defmodule Purple.Board do
   end
 
   defp post_process_item(%Item{} = item) do
-    case if(is_list(item.entries), do: item.entries, else: [])
-         |> Enum.map(&sync_entry_checkboxes(&1))
-         |> Enum.find(&match?({:error, _}, &1)) do
+    error_tuple_or_nil =
+      Enum.find_value(
+        if(is_list(item.entries), do: item.entries, else: []),
+        fn entry ->
+          case sync_entry_checkboxes(entry) do
+            {:error, changeset} -> {:error, changeset}
+            _ -> nil
+          end
+        end
+      )
+
+    case error_tuple_or_nil do
       nil ->
         {:ok, _} = Purple.Tags.sync_tags(item.id, :item)
         {:ok, Map.put(item, :last_active_at, set_item_last_active_at(item.id))}
 
-      {:error, changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
     end
   end
