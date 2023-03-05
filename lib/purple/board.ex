@@ -50,11 +50,11 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, item} <- Repo.insert(changeset),
-           {:ok, last_active_at} <-
+           {:ok, item} <-
              item
              |> set_empty_item_children()
              |> post_process_item() do
-        Map.put(item, :last_active_at, last_active_at)
+        item
       end
     end)
   end
@@ -64,8 +64,8 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, item} <- Repo.update(changeset),
-           {:ok, last_active_at} <- post_process_item(item) do
-        Map.put(item, :last_active_at, last_active_at)
+           {:ok, item} <- post_process_item(item) do
+        item
       end
     end)
   end
@@ -75,19 +75,10 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, entry} <- Repo.insert(changeset),
-           {:ok, entry} <- post_process_item(Map.put(entry, :checkboxes, [])) do
+           {:ok, entry} <- post_process_entry(Map.put(entry, :checkboxes, []), true) do
         entry
       end
     end)
-  end
-
-  @doc """
-  Updates an item entries content without item post processing.
-  """
-  def update_item_entry_content!(entry_id, content) do
-    ItemEntry
-    |> where([ie], ie.id == ^entry_id)
-    |> Repo.update_all(set: [content: content])
   end
 
   def update_item_entry(%ItemEntry{} = entry, params) do
@@ -95,16 +86,28 @@ defmodule Purple.Board do
 
     item_transaction(fn ->
       with {:ok, entry} <- Repo.update(changeset),
-           {:ok, entry} <- post_process_item(Repo.preload(entry, :checkboxes)) do
+           {:ok, entry} <-
+             post_process_entry(
+               Repo.preload(entry, :checkboxes),
+               changeset.changes != %{}
+             ) do
         entry
       end
     end)
   end
 
-  def delete_entry!(%ItemEntry{item_id: item_id} = item_entry) when is_integer(item_id) do
+  def delete_entry!(%ItemEntry{item_id: item_id} = entry) when is_integer(item_id) do
     item_transaction(fn ->
-      Repo.delete!(item_entry)
-      {:ok, _} = post_process_item(item_entry)
+      entry_has_checkboxes = Repo.exists?(where(EntryCheckbox, [x], x.item_entry_id == ^entry.id))
+      Repo.delete!(entry)
+
+      {:ok, _} =
+        post_process_entry(
+          # FK cascade will cleanup checkboxes. Set them as nil here to avoid attempting to sync.
+          Map.put(entry, :checkboxes, nil),
+          entry_has_checkboxes
+        )
+
       :ok
     end)
   end
@@ -132,15 +135,21 @@ defmodule Purple.Board do
     )
   end
 
-  def sync_entry_checkboxes(%ItemEntry{checkboxes: checkboxes} = entry)
-      when is_list(checkboxes) do
-    entry
-    |> Ecto.Changeset.change()
-    |> Ecto.Changeset.put_assoc(:checkboxes, get_entry_checkbox_changes(entry))
-    |> Repo.update()
+  defp sync_entry_checkboxes(%ItemEntry{checkboxes: checkboxes} = entry)
+       when is_list(checkboxes) do
+    changeset =
+      entry
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.put_assoc(:checkboxes, get_entry_checkbox_changes(entry))
+
+    if changeset.changes == %{} do
+      {:noop, entry}
+    else
+      Repo.update(changeset)
+    end
   end
 
-  def sync_entry_checkboxes(%ItemEntry{} = entry), do: {:ok, ItemEntry.changeset(entry)}
+  defp sync_entry_checkboxes(%ItemEntry{} = entry), do: {:noop, entry}
 
   defp set_item_last_active_at(item_id) do
     last_active_at = Purple.Date.utc_now()
@@ -154,20 +163,35 @@ defmodule Purple.Board do
   end
 
   defp post_process_item(%Item{} = item) do
-    item_last_active_at = set_item_last_active_at(item.id)
-    {:ok, _} = Purple.Tags.sync_tags(item.id, :item)
+    case if(is_list(item.entries), do: item.entries, else: [])
+         |> Enum.map(&sync_entry_checkboxes(&1))
+         |> Enum.find(&match?({:error, _}, &1)) do
+      nil ->
+        {:ok, _} = Purple.Tags.sync_tags(item.id, :item)
+        {:ok, Map.put(item, :last_active_at, set_item_last_active_at(item.id))}
 
-    if is_list(item.entries) do
-      Enum.each(item.entries, &sync_entry_checkboxes(&1))
+      {:error, changeset} ->
+        {:error, changeset}
     end
-
-    {:ok, item_last_active_at}
   end
 
-  defp post_process_item(%ItemEntry{} = entry) do
-    set_item_last_active_at(entry.item_id)
-    {:ok, _} = Purple.Tags.sync_tags(entry.item_id, :item)
-    sync_entry_checkboxes(entry)
+  defp post_process_entry(%ItemEntry{} = entry, should_set_last_active_at) do
+    {:ok, tag_result} = Purple.Tags.sync_tags(entry.item_id, :item)
+
+    {sync_entry_atom, entry} = sync_entry_checkboxes(entry)
+
+    case sync_entry_atom do
+      :error ->
+        {:error, entry}
+
+      _ ->
+        unless should_set_last_active_at == false and sync_entry_atom == :noop and
+                 Tags.noop?(tag_result) do
+          set_item_last_active_at(entry.item_id)
+        end
+
+        {:ok, entry}
+    end
   end
 
   def get_item(id) do
@@ -186,6 +210,10 @@ defmodule Purple.Board do
         where: i.id == ^id,
         preload: [entries: e, tags: t]
     )
+  end
+
+  def get_entry!(id) do
+    Repo.get!(ItemEntry, id)
   end
 
   def get_entry_checkbox!(id) do

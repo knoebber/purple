@@ -6,6 +6,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   use PurpleWeb, :live_view
 
   @behaviour PurpleWeb.FancyLink
+  @new_entry_content "# New Entry"
 
   defp assign_uploads(socket, item_id) do
     files = Uploads.get_files_by_item(item_id)
@@ -90,7 +91,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   @impl Phoenix.LiveView
   def handle_event("create_entry", _, socket) do
     item_id = socket.assigns.item.id
-    {:ok, new_entry} = Board.create_item_entry(%{content: "# New Entry"}, item_id)
+    {:ok, new_entry} = Board.create_item_entry(%{content: @new_entry_content}, item_id)
 
     {:noreply,
      push_patch(socket, to: ~p"/board/item/#{item_id}/entry/#{new_entry.id}", replace: true)}
@@ -177,11 +178,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("validate_entry", _, socket) do
-    {:noreply, socket}
-  end
-
-  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     Board.delete_item!(Board.get_item!(id))
 
@@ -195,10 +191,15 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   @impl Phoenix.LiveView
   def handle_event("cancel_entry_edit", _, socket) do
-    Board.update_item_entry_content!(
-      socket.assigns.editable_entry.id,
-      socket.assigns.editable_entry.content
-    )
+    editable_entry = Board.get_entry!(socket.assigns.editable_entry.id)
+
+    if editable_entry.content == @new_entry_content do
+      Board.delete_entry!(editable_entry)
+    else
+      if editable_entry.content != socket.assigns.editable_entry.content do
+        Board.update_item_entry(editable_entry, %{content: socket.assigns.editable_entry.content})
+      end
+    end
 
     {
       :noreply,

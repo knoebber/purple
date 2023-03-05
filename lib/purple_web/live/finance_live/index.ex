@@ -200,7 +200,7 @@ defmodule PurpleWeb.FinanceLive.Index do
       <%= live_redirect(to: ~p"/finance/transactions/create") do %>
         <.button class="h-full" type="button">Create</.button>
       <% end %>
-      <.form for={:import} phx-submit="import">
+      <.form for={%{}} phx-submit="import">
         <.button
           class="pl-4 pr-4 text-lg bg-purple-200 border-collapse border-purple-400 border rounded h-full"
           phx-click="import"

@@ -8,6 +8,20 @@ defmodule Purple.BoardFixtures do
   alias Purple.Board
   import Ecto.Query
 
+  def reset_item_timestamps(%Board.Item{id: id} = item) when is_integer(id) do
+    past_timestamp = NaiveDateTime.new!(2022, 09, 11, 12, 53, 0)
+
+    Board.Item
+    |> where([i], i.id == ^item.id)
+    |> Repo.update_all(
+      set: [
+        inserted_at: past_timestamp,
+        last_active_at: past_timestamp,
+        updated_at: past_timestamp
+      ]
+    )
+  end
+
   def valid_item_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
       description: "Test Item 🌞",
@@ -28,24 +42,13 @@ defmodule Purple.BoardFixtures do
   def item_fixture(attrs \\ %{}) do
     {:ok, item} = Board.create_item(valid_item_attributes(attrs))
 
-    past_timestamp = NaiveDateTime.new!(2022, 09, 11, 12, 53, 0)
-
     {:ok, _} =
       Board.create_item_entry(
         valid_entry_attributes(Map.get(attrs, :entry, %{})),
         item.id
       )
 
-    Board.Item
-    |> where([i], i.id == ^item.id)
-    |> Repo.update_all(
-      set: [
-        inserted_at: past_timestamp,
-        last_active_at: past_timestamp,
-        updated_at: past_timestamp
-      ]
-    )
-
+    reset_item_timestamps(item)
     Board.get_item!(item.id, :entries, :tags)
   end
 

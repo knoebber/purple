@@ -1,11 +1,12 @@
 defmodule Purple.BoardTest do
   use Purple.DataCase
   alias Purple.Board.{ItemEntry}
+  alias Purple.Tags.Tag
 
   import Purple.Board
   import Purple.BoardFixtures
 
-  describe "item and entry crud" do
+  describe "item, entry, and checkbox crud" do
     test "fixture is expected" do
       item = item_fixture()
 
@@ -34,10 +35,10 @@ defmodule Purple.BoardTest do
 
       assert {:ok, item_with_children} =
                create_item(%{
-                 description: "i have children 👶",
+                 description: "i have #children 👶",
                  entries: [
                    %{content: "# entry!\n\n- x 1\n- x 2\n\n :)"},
-                   %{content: "- x 1\n- x 2\n\n (dupe checkboxes are ok between siblings"}
+                   %{content: "- x 1\n- x 2\n\n (dupe #checkboxes are ok between siblings"}
                  ]
                })
 
@@ -45,13 +46,20 @@ defmodule Purple.BoardTest do
       assert [%{description: "2"}, %{description: "1"}] = entry1.checkboxes
       assert [%{description: "2"}, %{description: "1"}] = entry2.checkboxes
 
-      assert {:error, :rollback} =
+      assert ["children", "checkboxes"] ==
+               Enum.map(Repo.preload(item_with_children, :tags).tags, & &1.name)
+
+      assert {:error, %Ecto.Changeset{valid?: false}} =
                create_item(%{
-                 description: "entry has dupe checkboxes",
+                 description: "entry has dupe #rollback",
                  entries: [
-                   %{content: "# invalid entry!\n\n- x create item test \n- x create item test"}
+                   %{content: "# #invalid entry!\n\n- x create item test \n- x create item test"}
                  ]
                })
+
+      # Tags were not created as tx was rolled back
+      refute Repo.exists?(where(Tag, [t], t.name == "rollback"))
+      refute Repo.exists?(where(Tag, [t], t.name == "invalid"))
 
       assert {:ok, item} = create_item(%{description: "info", status: :INFO})
       assert is_nil(item.priority)
@@ -145,10 +153,8 @@ defmodule Purple.BoardTest do
 
       assert %{checkboxes: [%{description: "a checkbox!"}]} = entry
 
-      assert {:error, changeset} =
+      assert {:error, %Ecto.Changeset{valid?: false}} =
                create_item_entry(%{content: "# duplicate checkbox\n\n- x a\n- x a"}, item.id)
-
-      assert !changeset.valid?
     end
 
     test "update_item_entry/2" do
@@ -164,8 +170,10 @@ defmodule Purple.BoardTest do
 
       assert {:ok, %{checkboxes: [new_checkbox, exists2, exists1]}} =
                update_item_entry(entry, %{
-                 content: "+ x checkbox1 \n+ x checkbox2\n+ x checkbox 3️⃣! "
+                 content: "+ x checkbox1 \n+ x checkbox2\n+ x checkbox 3️⃣! \n\nand a #purpletag"
                })
+
+      assert Enum.any?(get_item!(entry.item_id, :entries, :tags).tags, &(&1.name == "purpletag"))
 
       assert [entry] = list_item_entries(entry.item_id, :checkboxes)
       assert length(entry.checkboxes) == 3
@@ -176,16 +184,70 @@ defmodule Purple.BoardTest do
       assert new_checkbox.description == "checkbox 3️⃣!"
       assert !exists1.is_done and !exists2.is_done and !new_checkbox.is_done
 
-      assert {:error, changeset} =
+      assert {:error, %Ecto.Changeset{valid?: false}} =
                update_item_entry(entry, %{content: "+ x duplicate\n+ x duplicate"})
-
-      assert !changeset.valid?
     end
 
     test "delete_entry/2" do
       entry = entry_fixture()
       delete_entry!(entry)
       assert Repo.get(ItemEntry, entry.id) == nil
+    end
+
+    test "🚥 side effects" do
+      item = item_fixture()
+
+      get_last_active_at = fn ->
+        get_item!(item.id).last_active_at
+      end
+
+      # This should be the value of item.last_active_at after calling reset_item_timestamps/1
+      original_last_active_at = item.last_active_at
+
+      [entry] = item.entries
+
+      # updating an entry with same content doesn't change last_active_at
+      update_item_entry(entry, %{content: entry.content})
+      assert original_last_active_at == get_last_active_at.()
+
+      # updating an entry with new content changes last_active_at
+      reset_item_timestamps(item)
+      update_item_entry(entry, %{content: "new content, no checkbox or tag"})
+      assert NaiveDateTime.compare(original_last_active_at, get_last_active_at.()) == :lt
+
+      # deleting an entry that has no checkboxes or entries doesn't update last_active_at
+      reset_item_timestamps(item)
+      delete_entry!(entry)
+      assert original_last_active_at == get_last_active_at.()
+
+      # Last active is updated after creating new entry
+      {:ok, new_entry_1} = create_item_entry(%{content: "new entry 1"}, item.id)
+      assert NaiveDateTime.compare(original_last_active_at, get_last_active_at.()) == :lt
+
+      # Last active is updated after updating an entry, and new tags are set.
+      reset_item_timestamps(item)
+      {:ok, entry_with_tag} = update_item_entry(new_entry_1, %{content: "#purpletag"})
+      assert NaiveDateTime.compare(original_last_active_at, get_last_active_at.()) == :lt
+
+      assert Enum.any?(get_item!(entry.item_id, :entries, :tags).tags, &(&1.name == "purpletag"))
+
+      # Last active is updated after updating an entry, and new checkbox is set.
+      {:ok, new_entry_2} = create_item_entry(%{content: "new entry 2"}, item.id)
+      reset_item_timestamps(item)
+      {:ok, entry_with_checkbox} = update_item_entry(new_entry_2, %{content: "+ x acheckbox"})
+      assert ["acheckbox"] == Enum.map(entry_with_checkbox.checkboxes, & &1.description)
+      assert NaiveDateTime.compare(original_last_active_at, get_last_active_at.()) == :lt
+
+      # Last active is updated after deleting an entry that has tags, and tag is deleted
+      reset_item_timestamps(item)
+      delete_entry!(entry_with_tag)
+      assert NaiveDateTime.compare(original_last_active_at, get_last_active_at.()) == :lt
+      refute Enum.any?(get_item!(entry.item_id, :entries, :tags).tags, &(&1.name == "purpletag"))
+
+      # Last active is updated after deleting an entry that has checkbox.
+      reset_item_timestamps(item)
+      delete_entry!(entry_with_checkbox)
+      assert NaiveDateTime.compare(original_last_active_at, get_last_active_at.()) == :lt
     end
   end
 end

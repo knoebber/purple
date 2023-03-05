@@ -272,4 +272,11 @@ defmodule Purple.Tags do
         )
     ]
   end
+
+  @doc """
+  Determines whether the result of sync_tags was a non-op.
+  """
+  def noop?(add: {num_added, _}, remove: {num_deleted, _}) do
+    num_added == 0 and num_deleted == 0
+  end
 end
