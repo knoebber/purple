@@ -6,6 +6,25 @@ defmodule PurpleWeb.BoardLive.EntryForm do
   use PurpleWeb, :live_component
   alias Purple.Board
 
+  defp get_checkbox_error(changeset) do
+    invalid_checkbox_changeset =
+      Enum.find(
+        Map.get(changeset.changes, :checkboxes, []),
+        &(&1.valid? == false)
+      )
+
+    case invalid_checkbox_changeset do
+      %Ecto.Changeset{data: data, errors: [{_, {message, []}}]} ->
+        "Checkbox '#{data.description}' #{message}"
+
+      %Ecto.Changeset{valid?: false} ->
+        "Checkbox is invalid"
+
+      nil ->
+        nil
+    end
+  end
+
   @impl Phoenix.LiveComponent
   def update(%{entry: entry} = assigns, socket) do
     {
@@ -13,6 +32,7 @@ defmodule PurpleWeb.BoardLive.EntryForm do
       socket
       |> assign(assigns)
       |> assign(:changeset, Board.change_item_entry(entry))
+      |> assign(:checkbox_error, nil)
     }
   end
 
@@ -20,8 +40,13 @@ defmodule PurpleWeb.BoardLive.EntryForm do
   def handle_event("done", %{"item_entry" => params}, socket) do
     socket =
       case Board.update_item_entry(socket.assigns.entry, params) do
-        {:ok, _} -> push_patch(socket, to: socket.assigns.return_to, replace: true)
-        {:error, changeset} -> assign(socket, :changeset, changeset)
+        {:ok, _} ->
+          push_patch(socket, to: socket.assigns.return_to, replace: true)
+
+        {:error, changeset} ->
+          socket
+          |> assign(:changeset, changeset)
+          |> assign(:checkbox_error, get_checkbox_error(changeset))
       end
 
     {:noreply, socket}
@@ -35,9 +60,12 @@ defmodule PurpleWeb.BoardLive.EntryForm do
           socket
           |> assign(:changeset, Board.change_item_entry(entry))
           |> assign(:entry, entry)
+          |> assign(:checkbox_error, nil)
 
         {:error, changeset} ->
-          assign(socket, :changeset, changeset)
+          socket
+          |> assign(:changeset, changeset)
+          |> assign(:checkbox_error, get_checkbox_error(changeset))
       end
 
     {:noreply, socket}
@@ -65,6 +93,7 @@ defmodule PurpleWeb.BoardLive.EntryForm do
             rows={@num_rows}
             type="textarea"
           />
+          <.error :if={@checkbox_error}><%= @checkbox_error %></.error>
         </div>
         <.button>Done</.button>
       </.form>
