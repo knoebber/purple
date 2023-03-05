@@ -20,10 +20,10 @@ defmodule PurpleWeb.UserLoginLive do
       <h1>Login</h1>
       <.form
         :let={f}
-        id="login_form"
-        for={:user}
-        action={~p"/users/log_in"}
+        for={%{}}
         as={:user}
+        id="login_form"
+        action={~p"/users/log_in"}
         phx-update="ignore"
       >
         <.input field={{f, :email}} type="email" label="Email" required />

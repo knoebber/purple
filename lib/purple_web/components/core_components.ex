@@ -322,7 +322,7 @@ defmodule PurpleWeb.CoreComponents do
     <.form
       :let={f}
       class="flex flex-col md:flex-row gap-1 mb-2"
-      for={:filter}
+      for={%{}}
       method="get"
       phx-change="search"
       phx-submit="search"

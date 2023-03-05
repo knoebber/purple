@@ -83,7 +83,7 @@ defmodule PurpleWeb.UserSettingsLive do
       <%= if @has_google_token do %>
         <strong class="text-purple-400">Authorized</strong>
       <% else %>
-        <.form for={:form} phx-submit="get_oauth_token">
+        <.form for={%{}} phx-submit="get_oauth_token">
           <.button>OAuth</.button>
         </.form>
       <% end %>
