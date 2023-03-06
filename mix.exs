@@ -45,7 +45,7 @@ defmodule Purple.MixProject do
       {:jason, "~> 1.4.0"},
       {:mail, "~> 0.2"},
       {:mogrify, "~> 0.9.2"},
-      {:phoenix, "~> 1.7.0"},
+      {:phoenix, "~> 1.7.1"},
       {:phoenix_ecto, "~> 4.4"},
       {:phoenix_html, "~> 3.2"},
       {:heroicons, "~> 0.5"},
