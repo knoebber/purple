@@ -305,22 +305,24 @@ defmodule PurpleWeb.CoreComponents do
           <% end %>
         </tr>
       </thead>
-      <%= for row <- @rows do %>
-        <tr>
-          <%= for col <- @col do %>
-            <td><%= render_slot(col, row) %></td>
-          <% end %>
-        </tr>
-      <% end %>
+      <tbody>
+        <%= for row <- @rows do %>
+          <tr>
+            <%= for col <- @col do %>
+              <td><%= render_slot(col, row) %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
     </table>
     """
   end
 
   def filter_form(assigns) do
-    # TODO: add as table slot
     ~H"""
     <.form
       :let={f}
+      as={:filter}
       class="flex flex-col md:flex-row gap-1 mb-2"
       for={%{}}
       method="get"

@@ -159,7 +159,7 @@ defmodule PurpleWeb.BoardLive.Index do
         <.button type="button">Create</.button>
       </.link>
       <.input
-        field={{f, :query}}
+        field={f[:query]}
         value={Map.get(@filter, :query, "")}
         placeholder="Search..."
         phx-debounce="200"
@@ -167,7 +167,7 @@ defmodule PurpleWeb.BoardLive.Index do
       />
       <.input
         :if={length(@tag_options) > 0}
-        field={{f, :tag}}
+        field={f[:tag]}
         type="select"
         options={@tag_options}
         value={Map.get(@filter, :tag, "")}
