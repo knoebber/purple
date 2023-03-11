@@ -101,11 +101,11 @@ defmodule PurpleWeb.UserSettingsLive do
         phx-trigger-action={@trigger_submit}
       >
         <div class="flex flex-col mb-2">
-          <.input field={{f, :email}} type="hidden" value={@current_user.email} />
-          <.input field={{f, :password}} type="password" label="New password" required />
-          <.input field={{f, :password_confirmation}} type="password" label="Confirm new password" />
+          <.input field={f[:email]} type="hidden" value={@current_user.email} />
+          <.input field={f[:password]} type="password" label="New password" required />
+          <.input field={f[:password_confirmation]} type="password" label="Confirm new password" />
           <.input
-            field={{f, :current_password}}
+            field={f[:current_password]}
             name="current_password"
             type="password"
             label="Current password"

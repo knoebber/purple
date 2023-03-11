@@ -26,8 +26,8 @@ defmodule PurpleWeb.UserLoginLive do
         action={~p"/users/log_in"}
         phx-update="ignore"
       >
-        <.input field={{f, :email}} type="email" label="Email" required />
-        <.input field={{f, :password}} type="password" label="Password" required />
+        <.input field={f[:email]} type="email" label="Email" required />
+        <.input field={f[:password]} type="password" label="Password" required />
         <.button class="mt-2" phx-disable-with="Logging in...">
           Login →
         </.button>
