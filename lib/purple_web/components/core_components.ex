@@ -14,10 +14,6 @@ defmodule PurpleWeb.CoreComponents do
 
   defp select_class, do: @select_class
 
-  defp input_equals?(val1, val2) do
-    Phoenix.HTML.html_escape(val1) == Phoenix.HTML.html_escape(val2)
-  end
-
   @doc """
   Translates an error message using gettext.
   """
@@ -467,68 +463,70 @@ defmodule PurpleWeb.CoreComponents do
 
   ## Examples
 
-      <.input field={{f, :email}} type="email" />
+      <.input field={@form[:email]} type="email" />
       <.input name="my-input" errors={["oh no!"]} />
   """
-  attr :id, :any
+  attr :id, :any, default: nil
   attr :name, :any
   attr :label, :string, default: nil
+  attr :value, :any
 
   attr :type, :string,
     default: "text",
     values: ~w(checkbox color date datetime-local email file hidden month number password
                range radio search select tel text textarea time url week)
 
-  attr :value, :any
-  attr :field, :any, doc: "a %Phoenix.HTML.Form{}/field name tuple, for example: {f, :email}"
-  attr :errors, :list
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :errors, :list, default: []
   attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
-  attr :rest, :global, include: ~w(autocomplete disabled form max maxlength min minlength
+  attr :rest, :global, include: ~w(autocomplete cols disabled form max maxlength min minlength
                                    pattern placeholder readonly required rows size step)
   slot :inner_block
 
-  def input(%{field: {f, field}} = assigns) do
+  def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     assigns
-    |> assign(field: nil)
-    |> assign_new(:name, fn ->
-      name = Phoenix.HTML.Form.input_name(f, field)
-      if assigns.multiple, do: name <> "[]", else: name
-    end)
-    |> assign_new(:id, fn -> Phoenix.HTML.Form.input_id(f, field) end)
-    |> assign_new(:value, fn -> Phoenix.HTML.Form.input_value(f, field) end)
-    |> assign_new(:errors, fn -> translate_errors(f.errors || [], field) end)
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign(:errors, Enum.map(field.errors, &translate_error(&1)))
+    |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
+    |> assign_new(:value, fn -> field.value end)
     |> input()
   end
 
-  def input(%{type: "checkbox"} = assigns) do
-    assigns = assign_new(assigns, :checked, fn -> input_equals?(assigns.value, "true") end)
+  def input(%{type: "checkbox", value: value} = assigns) do
+    assigns =
+      assign_new(assigns, :checked, fn -> Phoenix.HTML.Form.normalize_value("checkbox", value) end)
 
     ~H"""
-    <label phx-feedback-for={@name} class="flex items-center gap-4 text-sm">
-      <input type="hidden" name={@name} value="false" />
-      <input
-        type="checkbox"
-        id={@id || @name}
-        name={@name}
-        value="true"
-        checked={@checked}
-        class="mt-2 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
-        {@rest}
-      />
-      <%= @label %>
-    </label>
+    <div phx-feedback-for={@name}>
+      <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
+        <input type="hidden" name={@name} value="false" />
+        <input
+          type="checkbox"
+          id={@id || @name}
+          name={@name}
+          value="true"
+          checked={@checked}
+          class="mt-2 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+          {@rest}
+        />
+        <%= @label %>
+      </label>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
     """
   end
 
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label :if={@label} for={@id}><%= @label %></.label>
+      <.label for={@id}><%= @label %></.label>
       <select id={@id} name={@name} class={select_class()} multiple={@multiple} {@rest}>
-        <option :if={@prompt}><%= @prompt %></option>
+        <option :if={@prompt} value=""><%= @prompt %></option>
         <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
       </select>
       <.error :for={msg <- @errors}><%= msg %></.error>
@@ -550,7 +548,7 @@ defmodule PurpleWeb.CoreComponents do
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
         ]}
         {@rest}
-      ><%= @value %></textarea>
+      ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
@@ -564,7 +562,7 @@ defmodule PurpleWeb.CoreComponents do
         type={@type}
         name={@name}
         id={@id || @name}
-        value={@value}
+        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
           input_border(@errors),
           "block w-full rounded-lg border-zinc-300 py-[7px] px-[11px]",
