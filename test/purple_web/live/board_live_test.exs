@@ -1,4 +1,4 @@
-defmodule PurpleWeb.UserBoardLiveTest do
+defmodule PurpleWeb.BoardLiveTest do
   use PurpleWeb.ConnCase
 
   import Phoenix.LiveViewTest
@@ -69,6 +69,31 @@ defmodule PurpleWeb.UserBoardLiveTest do
 
       assert result =~ "apple"
       refute result =~ "grape"
+    end
+  end
+
+  describe "create page" do
+    test "ok", %{conn: conn} do
+      assert {:ok, _, html} =
+               conn
+               |> log_in_user(user_fixture())
+               |> live(~p"/board/item/create")
+
+      html =~ "entry"
+    end
+  end
+
+  describe "show item" do
+    test "edit entry", %{conn: conn} do
+      item = item_fixture()
+      [entry] = item.entries
+
+      assert {:ok, _, html} =
+               conn
+               |> log_in_user(user_fixture())
+               |> live(~p"/board/item/#{item.id}/entry/#{entry.id}")
+
+      html =~ "Save"
     end
   end
 end

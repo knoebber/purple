@@ -86,22 +86,22 @@ defmodule PurpleWeb.BoardLive.CreateItem do
     <h1 class="mb-2"><%= @page_title %></h1>
     <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate">
       <div class="flex flex-col mb-2 w-full xl:w-1/2">
-        <.input field={{f, :description}} phx-hook="AutoFocus" label="Description" />
+        <.input field={f[:description]} phx-hook="AutoFocus" label="Description" />
         <.input
           :if={Ecto.Changeset.get_field(@changeset, :status) == :TODO}
-          field={{f, :priority}}
+          field={f[:priority]}
           label="Priority"
           options={1..5}
           type="select"
         />
         <.input
-          field={{f, :status}}
+          field={f[:status]}
           type="select"
           options={Board.item_status_mappings()}
           label="Status"
         />
         <.inputs_for :let={fp} field={f[:entries]}>
-          <.input field={{fp, :content}} type="textarea" rows="3" label="Entry" />
+          <.input field={fp[:content]} type="textarea" rows="3" label="Entry" />
         </.inputs_for>
       </div>
       <.button phx-disable-with="Saving...">Save</.button>
