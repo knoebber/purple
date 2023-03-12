@@ -44,8 +44,8 @@ defmodule PurpleWeb.UpdateFileRef do
         phx-change="validate"
         phx-target={@myself}
       >
-        <.input field={{f, :file_name}} phx-hook="AutoFocus" label="File Name" />
-        <.input field={{f, :extension}} label="Extension" readonly />
+        <.input field={f[:file_name]} phx-hook="AutoFocus" label="File Name" />
+        <.input field={f[:extension]} label="Extension" readonly />
         <.button class="mt-2" phx-disable-with="Saving...">Save</.button>
       </.form>
     </div>

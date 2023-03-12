@@ -82,16 +82,11 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetAdjustmentForm do
     <div>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
-          <.input field={{f, :description}} label="Description" phx-hook="AutoFocus" />
-          <.input field={{f, :dollars}} label="Amount" />
-          <.input
-            field={{f, :type}}
-            type="select"
-            options={Finance.share_type_mappings()}
-            label="Type"
-          />
-          <.input field={{f, :user_id}} type="select" label="User" options={@user_mappings} />
-          <.input field={{f, :notes}} label="Notes" type="textarea" rows={@rows} />
+          <.input field={f[:description]} label="Description" phx-hook="AutoFocus" />
+          <.input field={f[:dollars]} label="Amount" />
+          <.input field={f[:type]} type="select" options={Finance.share_type_mappings()} label="Type" />
+          <.input field={f[:user_id]} type="select" label="User" options={@user_mappings} />
+          <.input field={f[:notes]} label="Notes" type="textarea" rows={@rows} />
         </div>
         <div class="flex justify-between mb-2">
           <.button phx-disable-with="Saving...">Save</.button>

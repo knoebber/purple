@@ -101,30 +101,30 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     <div class={@class}>
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="flex flex-col mb-2">
-          <.input field={{f, :description}} label="Description" phx-hook="AutoFocus" rows={@rows} />
+          <.input field={f[:description]} label="Description" phx-hook="AutoFocus" rows={@rows} />
           <.input
-            field={{f, :category}}
+            field={f[:category]}
             label="Category"
             type="select"
             options={Finance.category_mappings()}
           />
-          <.input field={{f, :dollars}} label="Amount" />
+          <.input field={f[:dollars]} label="Amount" />
           <%= datetime_select_group(f, :timestamp) %>
           <.input
             class="w-5/6"
-            field={{f, :merchant_id}}
+            field={f[:merchant_id]}
             label="Merchant"
             options={@merchant_options}
             type="select"
           />
           <.input
             class="w-5/6"
-            field={{f, :payment_method_id}}
+            field={f[:payment_method_id]}
             label="Payment Method"
             options={@payment_method_options}
             type="select"
           />
-          <.input field={{f, :notes}} label="Notes" rows={@rows} type="textarea" />
+          <.input field={f[:notes]} label="Notes" rows={@rows} type="textarea" />
         </div>
         <div class="flex justify-between">
           <.button phx-disable-with="Saving...">Save</.button>

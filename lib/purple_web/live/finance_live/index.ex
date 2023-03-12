@@ -212,14 +212,14 @@ defmodule PurpleWeb.FinanceLive.Index do
       </.form>
       <.filter_form :let={f}>
         <.input
-          field={{f, :query}}
+          field={f[:query]}
           value={Map.get(@filter, :query, "")}
           placeholder="Search..."
           phx-debounce="200"
           class="lg:w-1/4"
         />
         <.input
-          field={{f, :tag}}
+          field={f[:tag]}
           type="select"
           options={@tag_options}
           value={Map.get(@filter, :tag, "")}

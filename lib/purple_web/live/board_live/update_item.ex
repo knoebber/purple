@@ -51,16 +51,16 @@ defmodule PurpleWeb.BoardLive.UpdateItem do
       <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <.input
-            field={{f, :status}}
+            field={f[:status]}
             type="select"
             options={Board.item_status_mappings()}
             label="Status"
           />
-          <.input field={{f, :description}} phx-hook="AutoFocus" label="Description" />
+          <.input field={f[:description]} phx-hook="AutoFocus" label="Description" />
           <.input
             :if={Ecto.Changeset.get_field(@changeset, :status) == :TODO}
             label="Priority"
-            field={{f, :priority}}
+            field={f[:priority]}
             type="select"
             options={1..5}
           />
