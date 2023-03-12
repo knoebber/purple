@@ -62,4 +62,20 @@ defmodule Purple.BoardFixtures do
       entry
     end
   end
+
+  def user_board_fixture(attrs \\ %{}) do
+    [tag | _] = item_fixture().tags
+    {user, attrs} = Map.pop(attrs, "user", Purple.AccountsFixtures.user_fixture())
+
+    attrs =
+      Enum.into(attrs, %{
+        "name" => "Purple Board",
+        "show_done" => true,
+        "tags" => [tag]
+      })
+
+    {:ok, %Board.UserBoard{} = ub} = Board.create_user_board(attrs, user.id)
+
+    ub
+  end
 end

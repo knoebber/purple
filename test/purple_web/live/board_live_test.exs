@@ -96,4 +96,29 @@ defmodule PurpleWeb.BoardLiveTest do
       html =~ "Save"
     end
   end
+
+  describe "user board" do
+    test "show board", %{conn: conn} do
+      user_board_fixture(%{"name" => "An Example Board Name!"})
+
+      assert {:ok, _, html} =
+               conn
+               |> log_in_user(user_fixture())
+               |> live(~p"/board/settings")
+
+      html =~ "An Example Board Name!"
+    end
+
+    test "edit board", %{conn: conn} do
+      user = user_fixture()
+      user_board = user_board_fixture(%{"name" => "Editable board", "user" => user})
+
+      assert {:ok, _, html} =
+               conn
+               |> log_in_user(user)
+               |> live(~p"/board/settings/#{user_board}")
+
+      html =~ "Editable Board"
+    end
+  end
 end

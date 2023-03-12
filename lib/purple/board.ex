@@ -387,36 +387,29 @@ defmodule Purple.Board do
     |> Repo.update()
   end
 
+  defp get_user_board_query(id) do
+    from ub in UserBoard,
+      left_join: t in assoc(ub, :tags),
+      where: ub.id == ^id,
+      preload: [tags: t]
+  end
+
   def get_user_board(id) do
-    Repo.one(
-      from ub in UserBoard,
-        left_join: t in assoc(ub, :tags),
-        where: ub.id == ^id,
-        preload: [tags: t]
-    )
+    Repo.one(get_user_board_query(id))
   end
 
-  def add_user_board_tag(user_board_id, tag_id) do
-    Repo.insert(%UserBoardTag{
-      tag_id: tag_id,
-      user_board_id: user_board_id
-    })
-  end
-
-  def delete_user_board_tag!(user_board_id, tag_id) do
-    Repo.one!(
-      from ubt in UserBoardTag,
-        where: ubt.user_board_id == ^user_board_id and ubt.tag_id == ^tag_id
-    )
-    |> Repo.delete!()
+  def get_user_board!(id) do
+    Repo.one!(get_user_board_query(id))
   end
 
   def change_user_board(%UserBoard{} = user_board, attrs \\ %{}) do
     UserBoard.changeset(user_board, attrs)
   end
 
-  def create_user_board(%UserBoard{} = user_board) do
-    Repo.insert(user_board)
+  def create_user_board(params, user_id) when is_map(params) and is_integer(user_id) do
+    %UserBoard{user_id: user_id}
+    |> UserBoard.changeset(params)
+    |> Repo.insert()
   end
 
   def update_user_board(%UserBoard{} = user_board, params) do
@@ -425,8 +418,12 @@ defmodule Purple.Board do
     |> Repo.update()
   end
 
-  def delete_user_board!(id) do
-    Repo.delete!(%UserBoard{id: Purple.parse_int!(id)})
+  def delete_user_board!(id) when is_binary(id) do
+    delete_user_board!(Purple.parse_int!(id))
+  end
+
+  def delete_user_board!(id) when is_integer(id) do
+    Repo.delete!(%UserBoard{id: id})
   end
 
   def item_status_mappings do

@@ -8,53 +8,76 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
   alias Purple.{Board, Tags}
 
   defp save_board(socket, :edit_board, params) do
-    Board.update_user_board(socket.assigns.user_board, params)
+    Board.update_user_board(
+      socket.assigns.user_board,
+      Map.put(params, "tags", Ecto.Changeset.fetch_field!(socket.assigns.changeset, :tags))
+    )
+  end
+
+  defp assign_available_tags(socket) do
+    assign(
+      socket,
+      :available_tags,
+      Tags.list_tags_not_in(
+        Enum.map(Ecto.Changeset.fetch_field!(socket.assigns.changeset, :tags), & &1.name)
+      )
+    )
   end
 
   @impl Phoenix.LiveComponent
   def update(%{user_board: user_board} = assigns, socket) do
-    changeset = Board.change_user_board(user_board)
-
-    available_tags =
-      Enum.reject(
-        Tags.list_tags(:item),
-        fn new_tag ->
-          Enum.find(
-            user_board.tags,
-            fn existing_tag -> existing_tag.id == new_tag.id end
-          )
-        end
-      )
-
     {
       :ok,
       socket
       |> assign(assigns)
-      |> assign(:changeset, changeset)
-      |> assign(:available_tags, available_tags)
+      |> assign(:changeset, Board.change_user_board(user_board, %{"tags" => user_board.tags}))
+      |> assign_available_tags()
     }
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("add_tag", params, socket) do
-    user_board_id = socket.assigns.user_board.id
-    tag_id = Purple.int_from_map(params, "tag_id")
+  def handle_event("add_tag", %{"id" => id}, socket) do
+    current_tags = Ecto.Changeset.fetch_field!(socket.assigns.changeset, :tags)
+    id_to_add = Purple.parse_int!(id)
 
-    if is_integer(tag_id) do
-      Board.add_user_board_tag(user_board_id, tag_id)
-      send(self(), {:tag_change, user_board_id})
-    end
+    tag_to_add =
+      Enum.find(
+        socket.assigns.available_tags,
+        &(&1.id == id_to_add)
+      )
 
-    {:noreply, socket}
+    {
+      :noreply,
+      socket
+      |> assign(
+        :changeset,
+        Board.change_user_board(socket.assigns.user_board, %{
+          "tags" => [tag_to_add | current_tags]
+        })
+      )
+      |> assign_available_tags
+    }
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("remove_tag", params, socket) do
-    user_board_id = socket.assigns.user_board.id
-    tag_id = Purple.int_from_map(params, "id")
-    Board.delete_user_board_tag!(user_board_id, tag_id)
-    send(self(), {:tag_change, user_board_id})
-    {:noreply, socket}
+  def handle_event("remove_tag", %{"id" => id}, socket) do
+    current_tags = Ecto.Changeset.fetch_field!(socket.assigns.changeset, :tags)
+    id_to_remove = Purple.parse_int!(id)
+
+    {
+      :noreply,
+      socket
+      |> assign(
+        :changeset,
+        Board.change_user_board(
+          socket.assigns.user_board,
+          %{
+            "tags" => Enum.reject(current_tags, &(&1.id == id_to_remove))
+          }
+        )
+      )
+      |> assign_available_tags()
+    }
   end
 
   @impl Phoenix.LiveComponent
@@ -73,37 +96,34 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
   def render(assigns) do
     ~H"""
     <div>
-      <%= if length(@available_tags) > 0 do %>
-        <form class="flex flex-row mb-2" phx-submit="add_tag" phx-target={@myself}>
-          <.input
-            id="tag_select"
-            name="tag_id"
-            errors={[]}
-            options={for tag <- @available_tags, do: {tag.name, tag.id}}
-            prompt="🏷 Select a tag"
-            type="select"
-            value=""
-          />
-          <.button class="ml-3">Add</.button>
-        </form>
-      <% end %>
-      <%= if length(@user_board.tags) > 0 do %>
-        <ul class="ml-4">
-          <%= for tag <- @user_board.tags do %>
-            <li>
-              <code class="inline">#<%= tag.name %></code>
-              <.link href="#" phx-click="remove_tag" phx-target={@myself} phx-value-id={tag.id}>
-                ❌
-              </.link>
-            </li>
-          <% end %>
-        </ul>
-      <% end %>
-
       <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
-        <div class="flex flex-col mb-2">
-          <.input field={{f, :name}} phx-hook="AutoFocus" label="Name" />
-          <.input field={{f, :show_done}} type="checkbox" label="Show Done?" />
+        <div class="flex flex-col gap-4 mb-4">
+          <.input field={f[:name]} phx-hook="AutoFocus" label="Name" />
+          <.input field={f[:show_done]} type="checkbox" label="Show Done?" />
+          <div class="flex flex-wrap text-xs font-mono gap-1 h-48 overflow-auto">
+            <.button
+              :for={tag <- @available_tags}
+              phx-click="add_tag"
+              phx-value-id={tag.id}
+              phx-target={@myself}
+              type="button"
+            >
+              <%= tag.name %>
+            </.button>
+          </div>
+          <.inputs_for :let={tag} field={f[:tags]} skip_hidden={true}>
+            <div class="flex gap-4">
+              <.input field={tag[:name]} readonly />
+              <button
+                phx-click="remove_tag"
+                phx-value-id={tag[:id].value}
+                phx-target={@myself}
+                type="button"
+              >
+                ❌
+              </button>
+            </div>
+          </.inputs_for>
         </div>
         <.button phx-disable-with="Saving...">Save</.button>
       </.form>

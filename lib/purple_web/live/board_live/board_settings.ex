@@ -4,7 +4,6 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
   """
 
   alias Purple.Board
-  alias Purple.Board.UserBoard
   import PurpleWeb.BoardLive.Helpers
   use PurpleWeb, :live_view
 
@@ -13,15 +12,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
   end
 
   def apply_action(socket, :edit, %{"id" => id}) do
-    user_board_id = Purple.parse_int!(id)
-
-    assign(
-      socket,
-      :editable_board,
-      Enum.find(socket.assigns.user_boards, nil, fn ub ->
-        ub.id == user_board_id
-      end)
-    )
+    assign(socket, :editable_board, Board.get_user_board!(id))
   end
 
   def assign_data(socket) do
@@ -47,10 +38,7 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
   @impl Phoenix.LiveView
   def handle_event("new", _, socket) do
     {:ok, new_board} =
-      Board.create_user_board(%UserBoard{
-        name: "<New board>",
-        user_id: socket.assigns.current_user.id
-      })
+      Board.create_user_board(%{name: "<New board>"}, socket.assigns.current_user.id)
 
     {:noreply, push_patch(socket, to: ~p"/board/settings/#{new_board}", replace: true)}
   end
@@ -75,16 +63,6 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
       socket
       |> push_patch(to: ~p"/board/settings", replace: true)
       |> put_flash(:info, "Board saved")
-    }
-  end
-
-  @impl Phoenix.LiveView
-  def handle_info({:tag_change, _}, socket) do
-    {
-      :noreply,
-      socket
-      |> put_flash(:info, "Updated tags")
-      |> assign_data()
     }
   end
 

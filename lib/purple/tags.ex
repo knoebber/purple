@@ -2,10 +2,8 @@ defmodule Purple.Tags do
   @moduledoc """
   Functions for parsing and saving tags.
   """
-
   alias Purple.Repo
   alias Purple.Tags.{ItemTag, RunTag, Tag, MerchantTag, TransactionTag, SharedBudgetAdjustmentTag}
-
   import Ecto.Query
 
   def tag_pattern, do: ~r/#([a-zA-Z0-9]{2,})/
@@ -86,7 +84,7 @@ defmodule Purple.Tags do
       names,
       [],
       fn name, acc ->
-        case Tag.changeset(%{name: name}) do
+        case Tag.changeset(%Tag{}, %{name: name}) do
           %{valid?: false} -> acc
           changeset -> acc ++ [changeset]
         end
@@ -236,6 +234,14 @@ defmodule Purple.Tags do
 
   def list_tags do
     Repo.all(Tag)
+  end
+
+  def list_tags_not_in(tag_names) do
+    Repo.all(
+      Tag
+      |> where([t], t.name not in ^tag_names)
+      |> order_by([t], t.name)
+    )
   end
 
   def list_tags(atom), do: list_tags(atom, %{})

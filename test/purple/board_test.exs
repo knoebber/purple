@@ -1,10 +1,10 @@
 defmodule Purple.BoardTest do
-  use Purple.DataCase
-  alias Purple.Board.{ItemEntry}
+  alias Purple.Board.{ItemEntry, UserBoard}
   alias Purple.Tags.Tag
-
+  import Ecto.Query
   import Purple.Board
   import Purple.BoardFixtures
+  use Purple.DataCase
 
   describe "item, entry, and checkbox crud" do
     test "fixture is expected" do
@@ -253,6 +253,93 @@ defmodule Purple.BoardTest do
       reset_item_timestamps(item)
       delete_entry!(entry_with_checkbox)
       assert NaiveDateTime.compare(original_last_active_at, get_last_active_at.()) == :lt
+    end
+  end
+
+  describe "user board crud" do
+    test "fixture works" do
+      ub = user_board_fixture()
+      assert length(ub.tags) > 0
+    end
+
+    test "create_user_board/2" do
+      item = item_fixture()
+      [tag | _] = item.tags
+
+      assert_raise Ecto.ConstraintError, ~r/user_id_fkey/, fn ->
+        create_user_board(%{"name" => "invalid", "tags" => [tag]}, 0)
+      end
+
+      user = Purple.AccountsFixtures.user_fixture()
+
+      {:error, changeset} =
+        create_user_board(
+          %{"name" => "invalid", "tags" => [%{id: 1, name: "i dont exist"}]},
+          user.id
+        )
+
+      refute changeset.valid?
+
+      {:ok, %UserBoard{tags: []}} =
+        create_user_board(
+          %{"name" => "invalid", "tags" => []},
+          user.id
+        )
+
+      {:ok, ub} =
+        create_user_board(
+          %{"name" => "valid", "tags" => [tag]},
+          user.id
+        )
+
+      assert ub.tags == [tag]
+    end
+
+    test "update_user_board/2" do
+      ub = user_board_fixture()
+
+      {:error, changeset} =
+        update_user_board(ub, %{"name" => "invalid", "tags" => [%{id: 1, name: "i dont exist"}]})
+
+      refute changeset.valid?
+
+      {:error, changeset} =
+        update_user_board(ub, %{"name" => "invalid", "tags" => [%{id: 1, name: "i dont exist"}]})
+
+      refute changeset.valid?
+
+      {:ok, %UserBoard{} = ub} = update_user_board(ub, %{"name" => "ok", "tags" => []})
+      assert ub.name == "ok"
+
+      {:ok, %UserBoard{} = ub} = update_user_board(ub, %{"name" => "new name", "tags" => ub.tags})
+      assert ub.name == "new name"
+
+      item_fixture(%{description: "#newtagforuserboard"})
+      new_tag = Repo.one!(where(Purple.Tags.Tag, [t], t.name == ^"newtagforuserboard"))
+
+      {:ok, %UserBoard{} = ub} = update_user_board(ub, %{"tags" => [new_tag]})
+      assert ub.tags == [new_tag]
+    end
+
+    test "delete_user_board!/1" do
+      item_fixture(%{description: "#tagfordelete"})
+      ub = user_board_fixture()
+      new_tag = Repo.one!(where(Purple.Tags.Tag, [t], t.name == ^"tagfordelete"))
+
+      {:ok, %UserBoard{} = ub} =
+        update_user_board(ub, %{"name" => "whatever.", "tags" => [new_tag]})
+
+      assert ub.tags == [new_tag]
+      assert ub.name == "whatever."
+      delete_user_board!(ub.id)
+      # The UB is deleted
+      refute Repo.exists?(where(UserBoard, [b], b.id == ^ub.id))
+
+      # The join ref is deleted
+      refute Repo.exists?(where(Purple.Tags.UserBoardTag, [ubt], ubt.tag_id == ^new_tag.id))
+
+      # The tag ref still exists
+      assert Repo.exists?(where(Purple.Tags.Tag, [t], t.id == ^new_tag.id))
     end
   end
 end

@@ -3,8 +3,10 @@ defmodule Purple.Board.UserBoard do
   Schema for boards - lets users save filters for viewing items.
   """
 
-  use Ecto.Schema
+  alias Purple.Repo
   import Ecto.Changeset
+  import Ecto.Query
+  use Ecto.Schema
 
   schema "user_boards" do
     field :name, :string, default: ""
@@ -13,12 +15,25 @@ defmodule Purple.Board.UserBoard do
     timestamps()
 
     belongs_to :user, Purple.Accounts.User
-    many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.UserBoardTag
+
+    many_to_many :tags, Purple.Tags.Tag,
+      join_through: Purple.Tags.UserBoardTag,
+      on_replace: :delete,
+      unique: true
   end
 
-  def changeset(board, attrs) do
-    board
-    |> cast(attrs, [:name, :show_done])
-    |> validate_required([:name])
+  def changeset(board, %{"tags" => tags} = attrs) do
+    changeset =
+      board
+      |> cast(attrs, [:name, :show_done])
+      |> validate_required([:name])
+
+    tag_ids = Enum.map(tags, & &1.id)
+
+    if tags == [] or Repo.exists?(where(Purple.Tags.Tag, [t], t.id in ^tag_ids)) do
+      put_assoc(changeset, :tags, tags)
+    else
+      add_error(changeset, :tags, "tags must already exist")
+    end
   end
 end
