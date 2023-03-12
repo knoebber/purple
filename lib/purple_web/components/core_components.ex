@@ -9,7 +9,7 @@ defmodule PurpleWeb.CoreComponents do
 
   @select_class ~s"""
   block w-full py-2 px-3 pr-7 border border-gray-300 bg-white rounded-md shadow-sm 
-  focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm"
+  focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm
   """
 
   defp select_class, do: @select_class
@@ -474,7 +474,7 @@ defmodule PurpleWeb.CoreComponents do
   attr :type, :string,
     default: "text",
     values: ~w(checkbox color date datetime-local email file hidden month number password
-               range radio search select tel text textarea time url week)
+               range radio readonly search select tel text textarea time url week)
 
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
