@@ -7,10 +7,22 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
 
   alias Purple.{Board, Tags}
 
-  defp save_board(socket, :edit_board, params) do
+  defp update_param_tags(params, changeset) do
+    # Form sends tags param in a different format than changeset expects
+    Map.put(params, "tags", Ecto.Changeset.fetch_field!(changeset, :tags))
+  end
+
+  defp save_board(socket, :edit, params) do
     Board.update_user_board(
       socket.assigns.user_board,
-      Map.put(params, "tags", Ecto.Changeset.fetch_field!(socket.assigns.changeset, :tags))
+      update_param_tags(params, socket.assigns.changeset)
+    )
+  end
+
+  defp save_board(socket, :create, params) do
+    Board.create_user_board(
+      update_param_tags(params, socket.assigns.changeset),
+      socket.assigns.current_user.id
     )
   end
 
@@ -33,7 +45,6 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
         :tags,
         new_tags
       )
-      |> dbg
     )
   end
 
@@ -89,7 +100,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
         :changeset,
         Board.change_user_board(
           socket.assigns.user_board,
-          Map.put(params, "tags", Ecto.Changeset.fetch_field!(socket.assigns.changeset, :tags))
+          update_param_tags(params, socket.assigns.changeset)
         )
       )
     }
@@ -97,7 +108,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
 
   @impl Phoenix.LiveComponent
   def handle_event("save", %{"user_board" => params}, socket) do
-    case save_board(socket, :edit_board, params) do
+    case save_board(socket, socket.assigns.action, params) do
       {:ok, board} ->
         send(self(), {:saved_board, board.id})
         {:noreply, socket}
@@ -122,6 +133,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
         <div class="flex flex-col gap-4 mb-4">
           <.input field={f[:name]} phx-hook="AutoFocus" label="Name" />
           <.input field={f[:show_done]} type="checkbox" label="Show Done?" />
+          <.label>Tags</.label>
           <div class="flex flex-wrap text-xs font-mono gap-1 h-48 overflow-auto">
             <.button
               :for={tag <- @available_tags}

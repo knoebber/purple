@@ -15,6 +15,14 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
     assign(socket, :editable_board, Board.get_user_board!(id))
   end
 
+  def apply_action(socket, :create, _) do
+    new_board = %Board.UserBoard{tags: []}
+
+    socket
+    |> assign(:editable_board, new_board)
+    |> assign(:user_boards, [new_board | socket.assigns.user_boards])
+  end
+
   def assign_data(socket) do
     assign(socket, :user_boards, Board.list_user_boards(socket.assigns.current_user.id))
   end
@@ -33,14 +41,6 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
       |> apply_action(socket.assigns.live_action, params)
       |> assign(:page_title, "Board Settings")
     }
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("new", _, socket) do
-    {:ok, new_board} =
-      Board.create_user_board(%{name: "<New board>"}, socket.assigns.current_user.id)
-
-    {:noreply, push_patch(socket, to: ~p"/board/settings/#{new_board}", replace: true)}
   end
 
   @impl Phoenix.LiveView
@@ -70,24 +70,22 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
-    <form phx-submit="new" class="sm:w-1/3">
-      <.button class="mb-2">
+    <div class="mb-2">
+      <.link navigate={~p"/board/settings/new"}>
         Add Board
-      </.button>
-    </form>
+      </.link>
+    </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <%= for user_board <- @user_boards do %>
         <.section class="mb-2">
           <div class="bg-purple-300 inline-links">
             <h2 class="ml-2 mb-2 inline"><%= user_board.name %></h2>
-            <.link navigate={~p"/board/#{user_board.id}"}>View</.link>
-            <span>|</span>
-            <.link patch={~p"/board/settings/#{user_board}"}>
-              <%= if(@editable_board && @editable_board.id == user_board.id,
-                do: "Cancel",
-                else: "Edit"
-              ) %>
-            </.link>
+            <.link :if={user_board.id != nil} navigate={~p"/board/#{user_board.id}"}>View</.link>
+            <%= if @editable_board && @editable_board.id == user_board.id do %>
+              <.link patch={~p"/board/settings"} replace={true}>Cancel</.link>
+            <% else %>
+              <.link patch={~p"/board/settings/#{user_board}"} replace={true}>Edit</.link>
+            <% end %>
             <span>|</span>
             <.link
               href="#"
@@ -102,8 +100,10 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
             <div class="m-2 p-2 border border-purple-500 bg-purple-50 rounded">
               <.live_component
                 module={PurpleWeb.BoardLive.UserBoardForm}
-                id={user_board.id}
+                id={user_board.id || :new}
                 user_board={user_board}
+                action={@live_action}
+                current_user={@current_user}
               />
             </div>
           <% else %>
@@ -113,9 +113,9 @@ defmodule PurpleWeb.BoardLive.BoardSettings do
                 <%= if length(user_board.tags) == 0 do %>
                   All
                 <% else %>
-                  <%= for tag <- user_board.tags do %>
-                    <code class="inline">#<%= tag.name %></code>
-                  <% end %>
+                  <div class="flex flex-wrap gap-1">
+                    <code :for={tag <- user_board.tags} class="inline">#<%= tag.name %></code>
+                  </div>
                 <% end %>
               </div>
               <div class="mb-2">
