@@ -84,10 +84,10 @@ defmodule PurpleWeb.BoardLive.EntryForm do
         class="p-4"
       >
         <div class="flex flex-col mb-2">
-          <.input field={{f, :item_id}} type="hidden" value={@item_id} />
-          <.input field={{f, :is_collapsed}} type="hidden" value={false} />
+          <.input field={f[:item_id]} type="hidden" value={@item_id} />
+          <.input field={f[:is_collapsed]} type="hidden" value={false} />
           <.input
-            field={{f, :content}}
+            field={f[:content]}
             phx-debounce="1000"
             phx-hook="MarkdownTextarea"
             rows={@num_rows}
