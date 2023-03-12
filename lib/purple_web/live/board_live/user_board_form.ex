@@ -24,6 +24,19 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
     )
   end
 
+  defp assign_changeset_tag_assoc(socket, new_tags) do
+    assign(
+      socket,
+      :changeset,
+      Ecto.Changeset.put_assoc(
+        socket.assigns.changeset,
+        :tags,
+        new_tags
+      )
+      |> dbg
+    )
+  end
+
   @impl Phoenix.LiveComponent
   def update(%{user_board: user_board} = assigns, socket) do
     {
@@ -49,12 +62,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
     {
       :noreply,
       socket
-      |> assign(
-        :changeset,
-        Board.change_user_board(socket.assigns.user_board, %{
-          "tags" => [tag_to_add | current_tags]
-        })
-      )
+      |> assign_changeset_tag_assoc([tag_to_add | current_tags])
       |> assign_available_tags
     }
   end
@@ -67,16 +75,23 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
     {
       :noreply,
       socket
-      |> assign(
+      |> assign_changeset_tag_assoc(Enum.reject(current_tags, &(&1.id == id_to_remove)))
+      |> assign_available_tags()
+    }
+  end
+
+  @impl Phoenix.LiveComponent
+  def handle_event("validate", %{"user_board" => params}, socket) do
+    {
+      :noreply,
+      assign(
+        socket,
         :changeset,
         Board.change_user_board(
           socket.assigns.user_board,
-          %{
-            "tags" => Enum.reject(current_tags, &(&1.id == id_to_remove))
-          }
+          Map.put(params, "tags", Ecto.Changeset.fetch_field!(socket.assigns.changeset, :tags))
         )
       )
-      |> assign_available_tags()
     }
   end
 
@@ -96,7 +111,14 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
   def render(assigns) do
     ~H"""
     <div>
-      <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
+      <.form
+        :let={f}
+        for={@changeset}
+        phx-submit="save"
+        phx-target={@myself}
+        phx-change="validate"
+        phx-debounce="500"
+      >
         <div class="flex flex-col gap-4 mb-4">
           <.input field={f[:name]} phx-hook="AutoFocus" label="Name" />
           <.input field={f[:show_done]} type="checkbox" label="Show Done?" />
