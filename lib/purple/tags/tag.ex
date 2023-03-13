@@ -4,6 +4,7 @@ defmodule Purple.Tags.Tag do
 
   schema "tags" do
     field :name, :string
+    many_to_many :items, Purple.Board.Item, join_through: Purple.Tags.ItemTag
 
     timestamps(updated_at: false)
   end

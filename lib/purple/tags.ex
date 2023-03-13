@@ -232,16 +232,18 @@ defmodule Purple.Tags do
     )
   end
 
-  def list_tags do
-    Repo.all(Tag)
-  end
-
-  def list_tags_not_in(tag_names) do
+  def list_tags_not_in(:item, tag_names) do
     Repo.all(
       Tag
-      |> where([t], t.name not in ^tag_names)
-      |> order_by([t], t.name)
+      |> distinct(true)
+      |> join(:inner, [tag], board_tag in assoc(tag, :items))
+      |> where([tag], tag.name not in ^tag_names)
+      |> order_by([tag], tag.name)
     )
+  end
+
+  def list_tags do
+    Repo.all(Tag)
   end
 
   def list_tags(atom), do: list_tags(atom, %{})

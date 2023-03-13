@@ -31,6 +31,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
       socket,
       :available_tags,
       Tags.list_tags_not_in(
+        :item,
         Enum.map(Ecto.Changeset.fetch_field!(socket.assigns.changeset, :tags), & &1.name)
       )
     )
@@ -134,7 +135,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
           <.input field={f[:name]} phx-hook="AutoFocus" label="Name" />
           <.input field={f[:show_done]} type="checkbox" label="Show Done?" />
           <.label>Tags</.label>
-          <div class="flex flex-wrap text-xs font-mono gap-1 h-48 overflow-auto">
+          <div class="flex flex-wrap text-xs font-mono gap-1 max-h-48 overflow-auto">
             <.button
               :for={tag <- @available_tags}
               phx-click="add_tag"
