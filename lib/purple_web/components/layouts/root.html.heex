@@ -12,7 +12,8 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}></script>
   </head>
   <body class="bg-fuchsia-200">
-    <nav>
+    <.hamburger_menu selector=".js-main-nav" />
+    <nav class="js-main-nav">
       <.link href="/">Home</.link>
       <%= if @current_user do %>
         <.link navigate={~p"/board"}>Board</.link>

@@ -677,4 +677,16 @@ defmodule PurpleWeb.CoreComponents do
     |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
     |> JS.pop_focus()
   end
+
+  def hamburger_menu(assigns) do
+    ~H"""
+    <button
+      class="sm:hidden text-xl w-full bg-purple-300 border-purple-400 border"
+      type="button"
+      phx-click={JS.dispatch("purple:hamburger", to: @selector)}
+    >
+      🍔
+    </button>
+    """
+  end
 end
