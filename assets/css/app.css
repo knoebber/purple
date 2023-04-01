@@ -2,13 +2,13 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* =============================================== */
-/* | Layout structure:                           | */
-/* |                                             | */
-/* | body > nav                                  | */
-/* |     > div.content-flex > nav                | */
-/* |                        > main > app content | */
-/* =============================================== */
+/* ================================================ */
+/* | Layout structure:                            | */
+/* |                                              | */
+/* | body > nav                                   | */
+/* |      > div.content-flex > nav                | */
+/* |                         > main > app content | */
+/* ================================================ */
 
 @layer base {
     html {
