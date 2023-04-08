@@ -12,16 +12,16 @@ function onPaste(e) {
       target.value = `${value.substring(0, selectionStart)}[${selection}](${uri})${value.substring(selectionEnd)}`;
     } catch(e) {
       if (!(e instanceof TypeError)) {
-        // Type error is raised when url is invalid, which is expected.
-        console.error(e);
+	// Type error is raised when url is invalid, which is expected.
+	console.error(e);
       }
     }
   }
 }
 
 export default {
-	mounted() {
+  mounted() {
     this.el.focus();
-		this.el.addEventListener('paste', onPaste);
-	}
+    this.el.addEventListener('paste', onPaste);
+  }
 }

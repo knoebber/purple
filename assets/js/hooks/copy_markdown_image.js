@@ -11,8 +11,8 @@ export default {
   mounted() {
     this.el.addEventListener('click', () => {
       copyMarkdownToClipboard(
-        this.el.getAttribute('name'),
-        this.el.getAttribute('value'),
+	this.el.getAttribute('name'),
+	this.el.getAttribute('value'),
       );
     });
   },

@@ -26,8 +26,8 @@ function renderPDF(canvas) {
     canvas.classList.add('border', 'border-purple-500', 'rounded');
 
     const transform = outputScale !== 1 
-    ? [outputScale, 0, 0, outputScale, 0, 0] 
-    : null;
+	  ? [outputScale, 0, 0, outputScale, 0, 0] 
+	  : null;
 
     let renderContext = {
       canvasContext: context,
@@ -39,7 +39,7 @@ function renderPDF(canvas) {
 
     async function onPrevPage() {
       if (currentPageNum <= 1) {
-        return;
+	return;
       }
       currentPageNum -= 1;
       page = await pdf.getPage(currentPageNum);
@@ -48,7 +48,7 @@ function renderPDF(canvas) {
 
     async function onNextPage() {
       if (currentPageNum >= pdf.numPages) {
-        return;
+	return;
       }
       currentPageNum += 1;
       page = await pdf.getPage(currentPageNum);
@@ -72,7 +72,7 @@ function renderPDF(canvas) {
 
 export default {
   mounted() {
-  	renderPDF(this.el);
+    renderPDF(this.el);
   },
   updated() {
     renderPDF(this.el);
