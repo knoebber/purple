@@ -1,16 +1,10 @@
 <div class="content-flex">
-  <nav :if={@side_nav != nil}>
-    <%= for link <- @side_nav || [] do %>
-      <.link navigate={link.to}><%= link.label %></.link>
-      <%= if Map.has_key?(link, :children) and length(link.children) > 0 do %>
-        <div class="side-link-group">
-          <%= for child <- link.children do %>
-            <.link navigate={child.to}><%= child.label %></.link>
-          <% end %>
-        </div>
-      <% end %>
-    <% end %>
-  </nav>
+  <.live_component
+    current_user={@current_user}
+    id="side-nav"
+    module={PurpleWeb.Components.SideNav}
+    side_nav={@side_nav}
+  />
   <main class={if @side_nav == nil, do: "w-full"}>
     <.flash kind={:info} title="Success!" flash={@flash} />
     <.flash kind={:error} title="Error!" flash={@flash} />

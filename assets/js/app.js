@@ -26,6 +26,7 @@ import AutoFocus from './hooks/autofocus';
 import CopyMarkdownImage from './hooks/copy_markdown_image';
 import MarkdownTextarea from './hooks/markdown_textarea';
 import PDF from './hooks/pdf';
+import SideNav from './hooks/side_nav';
 import Sortable from './hooks/sortable';
 
 const params = {
@@ -41,6 +42,7 @@ const liveSocket = new LiveSocket(
       CopyMarkdownImage,
       MarkdownTextarea,
       PDF,
+      SideNav,
       Sortable,
     },
     params,

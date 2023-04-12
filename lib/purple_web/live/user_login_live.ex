@@ -1,6 +1,7 @@
 defmodule PurpleWeb.UserLoginLive do
   use PurpleWeb, :live_view
 
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     email = live_flash(socket.assigns.flash, :email)
 
@@ -8,12 +9,13 @@ defmodule PurpleWeb.UserLoginLive do
       :ok,
       socket
       |> assign(:page_title, "Login")
-      |> assign(:side_nav, [])
+      |> assign(:side_nav, nil)
       |> assign(email: email),
       temporary_assigns: [email: nil]
     }
   end
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="lg:w-1/3">

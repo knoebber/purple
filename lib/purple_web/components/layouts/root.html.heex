@@ -14,7 +14,7 @@
   <body class="bg-fuchsia-200">
     <.hamburger_menu selector=".js-main-nav" />
     <nav class="js-main-nav">
-      <.link href="/">Home</.link>
+      <.link navigate="/">Home</.link>
       <%= if @current_user do %>
         <.link navigate={~p"/board"}>Board</.link>
         <.link navigate={~p"/finance"}>Bean Counter</.link>
@@ -23,7 +23,7 @@
         <.link navigate={~p"/users/settings"}><%= @current_user.email %></.link>
         <.link href={~p"/users/log_out"} method="delete">Log out</.link>
       <% else %>
-        <.link href={~p"/users/log_in"}>Log in</.link>
+        <.link navigate={~p"/users/log_in"}>Log in</.link>
       <% end %>
     </nav>
     <%= @inner_content %>

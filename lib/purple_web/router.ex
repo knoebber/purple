@@ -41,6 +41,15 @@ defmodule PurpleWeb.Router do
     get "/files/:id/open/:filename", FileController, :show
   end
 
+  ## Unprotected live routes
+  scope "/", PurpleWeb do
+    pipe_through [:browser]
+
+    live_session :fetch_current_user, on_mount: [{PurpleWeb.UserAuth, :mount_current_user}] do
+      live "/", HomeLive, :show
+    end
+  end
+
   ## Protected live routes
   scope "/", PurpleWeb do
     pipe_through [:browser, :require_authenticated_user]
@@ -101,7 +110,6 @@ defmodule PurpleWeb.Router do
   scope "/", PurpleWeb do
     pipe_through [:browser]
 
-    get "/", PageController, :home
     delete "/users/log_out", UserSessionController, :delete
   end
 end
