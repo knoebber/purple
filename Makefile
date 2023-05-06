@@ -14,6 +14,9 @@ format:
 test:
 	mix test
 
+reset_test:
+	MIX_ENV=test mix ecto.reset
+
 hex:
 	mix local.hex --force
 
