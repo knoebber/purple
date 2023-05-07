@@ -70,6 +70,11 @@ defmodule PurpleWeb.BoardLive.Index do
     end
   end
 
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_title(_) do
+    nil
+  end
+
   @impl Phoenix.LiveView
   def handle_params(params, _, socket) do
     board_id = Purple.int_from_map(params, "user_board_id")

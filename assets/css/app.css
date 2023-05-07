@@ -24,8 +24,18 @@
         @apply items-center;
     }
 
-    nav > a {
+    nav > a, strong {
         @apply p-2;
+    }
+
+    nav > .history {
+	@apply flex;
+	@apply flex-col;
+	@apply gap-2;
+    }
+
+    .history > a {
+	@apply text-sm;
     }
 
     .content-flex {
@@ -76,14 +86,8 @@
             min-height: calc(100vh - theme('height.24'));
         }
 
-        .content-flex > nav > a {
+        .content-flex > nav > a, strong {
             @apply ml-4;
-        }
-
-        .side-link-group {
-        }
-
-        .side-link-group > a {
         }
 
         main {

@@ -276,7 +276,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <.link navigate={~p"/board"}>
         Board
       </.link>
-      / <%= "Item #{@item.id}" %>
+      / <%= @item.description %>
     </h1>
     <.section class="mt-2 mb-2">
       <div class="flex justify-between bg-purple-300 p-1">

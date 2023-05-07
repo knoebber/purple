@@ -100,7 +100,7 @@ defmodule PurpleWeb.FancyLink do
   end
 
   def get_fancy_link_title(module, params) when is_atom(module) and is_map(params) do
-    if __MODULE__.implemented_by?(module) do
+    if implemented_by?(module) do
       title = module.get_fancy_link_title(params)
 
       if title do

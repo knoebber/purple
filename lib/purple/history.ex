@@ -61,4 +61,10 @@ defmodule Purple.History do
     |> order_by(desc: :id)
     |> Repo.all()
   end
+
+  def delete_history(user_id) when is_integer(user_id) do
+    ViewedUrl
+    |> where([vu], vu.user_id == ^user_id)
+    |> Repo.delete_all()
+  end
 end

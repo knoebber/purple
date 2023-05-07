@@ -6,7 +6,7 @@ defmodule PurpleWeb.HomeLive do
     {
       :ok,
       socket
-      |> assign(:side_nav, nil)
+      |> assign(:side_nav, if(socket.assigns.current_user, do: [], else: nil))
       |> assign(:page_title, "Home")
     }
   end

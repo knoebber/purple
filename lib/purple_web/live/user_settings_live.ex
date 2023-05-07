@@ -89,6 +89,12 @@ defmodule PurpleWeb.UserSettingsLive do
       <% end %>
     </.section>
     <.section class="lg:w-1/2 md:w-full mt-2 mb-2 p-4">
+      <h2>History</h2>
+      <.form for={%{}} phx-submit="delete_history" phx-target="#js-side-nav">
+        <.button>Delete history</.button>
+      </.form>
+    </.section>
+    <.section class="lg:w-1/2 md:w-full mt-2 mb-2 p-4">
       <h2>Change password</h2>
       <.form
         :let={f}
