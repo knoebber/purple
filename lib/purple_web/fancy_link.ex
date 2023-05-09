@@ -4,7 +4,7 @@ defmodule PurpleWeb.FancyLink do
 
   defp host, do: Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host]
 
-  def implemented_by?(module) do
+  defp implemented_by?(module) do
     module.module_info()[:attributes]
     |> Keyword.get_values(:behaviour)
     |> Enum.any?(&(&1 == [PurpleWeb.FancyLink]))
@@ -99,7 +99,33 @@ defmodule PurpleWeb.FancyLink do
     )
   end
 
+  def build_fancy_link_groups(route_tuples) when is_list(route_tuples) do
+    Enum.reduce(
+      route_tuples,
+      %{},
+      fn {url, module, params}, fancy_link_groups ->
+        # TODO: batch queries
+        title = get_fancy_link_title(module, params)
+
+        if title do
+          type = module.get_fancy_link_type()
+          group = Map.get(fancy_link_groups, type, [])
+          Map.put(fancy_link_groups, type, [{url, title} | group])
+        else
+          fancy_link_groups
+        end
+      end
+    )
+  end
+
   def get_fancy_link_title(module, params) when is_atom(module) and is_map(params) do
+    if implemented_by?(module) do
+      module.get_fancy_link_title(params)
+    end
+  end
+
+  def get_formatted_fancy_link_type_and_title(module, params)
+      when is_atom(module) and is_map(params) do
     if implemented_by?(module) do
       title = module.get_fancy_link_title(params)
 
@@ -114,7 +140,7 @@ defmodule PurpleWeb.FancyLink do
       route_tuples,
       %{},
       fn {url, module, params}, fancy_link_map ->
-        title = get_fancy_link_title(module, params)
+        title = get_formatted_fancy_link_type_and_title(module, params)
 
         if title do
           Map.put(fancy_link_map, url, title)

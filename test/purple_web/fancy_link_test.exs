@@ -1,4 +1,5 @@
 defmodule PurpleWeb.FancyLinkTest do
+  import Purple.ActivitiesFixtures
   import Purple.BoardFixtures
   import PurpleWeb.FancyLink
   use Purple.DataCase
@@ -92,6 +93,33 @@ defmodule PurpleWeb.FancyLinkTest do
 
       title = get_fancy_link_title(PurpleWeb, %{})
       assert title == nil
+    end
+
+    test "build_fancy_link_groups/1" do
+      item = item_fixture()
+      item_2 = item_fixture(%{description: "fancy links", status: :DONE})
+      run = run_fixture()
+
+      route_tuples =
+        extract_routes_from_markdown(~s"""
+        http://localhost:4000/board/item/#{item.id}
+        http://localhost:4000/board/item/#{item_2.id}
+        nil
+        http://localhost:4000/board/item/nil
+        http://localhost:4000/board
+        example.com
+        http://localhost:4000/runs/#{run.id}
+        """)
+
+      fancy_link_groups = build_fancy_link_groups(route_tuples)
+
+      assert fancy_link_groups == %{
+               "🌻" => [
+                 {"http://localhost:4000/board/item/#{item_2.id}", "fancy links (DONE)"},
+                 {"http://localhost:4000/board/item/#{item.id}", "Test Item 🌞 (TODO)"}
+               ],
+               "🏃" => [{"http://localhost:4000/runs/#{run.id}", "120.5 miles@N/A in N/A"}]
+             }
     end
 
     test "build_fancy_link_map/1" do

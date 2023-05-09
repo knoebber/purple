@@ -8,9 +8,7 @@ defmodule PurpleWeb.Components.SideNav do
     |> Enum.map(fn viewed_url_record ->
       FancyLink.build_route_tuple(viewed_url_record.url)
     end)
-    |> Enum.map(fn {path, module, params} ->
-      {path, FancyLink.get_fancy_link_title(module, params)}
-    end)
+    |> FancyLink.build_fancy_link_groups()
   end
 
   defp get_history(nil) do
@@ -33,8 +31,7 @@ defmodule PurpleWeb.Components.SideNav do
       socket
       |> assign(assigns)
       |> assign(:side_nav, side_nav || [])
-      |> assign(:should_hide, is_nil(side_nav))
-      |> assign(:history, get_history(assigns.current_user))
+      |> assign(:history, get_history(assigns.current_user) |> dbg)
 
     {:ok, socket}
   end
@@ -46,17 +43,12 @@ defmodule PurpleWeb.Components.SideNav do
         [url_without_params | _] = String.split(to, "?")
         {_, module, params} = FancyLink.build_route_tuple(url_without_params)
 
-        new_title = FancyLink.get_fancy_link_title(module, params)
-
-        if new_title do
+        if FancyLink.get_fancy_link_title(module, params) do
           socket.assigns.current_user.id
           |> History.save_url(url_without_params)
           |> build_formatted_history()
-          |> dbg
         end
       end
-
-    dbg(new_history)
 
     {:noreply, assign(socket, :history, new_history || socket.assigns.history)}
   end
@@ -70,7 +62,7 @@ defmodule PurpleWeb.Components.SideNav do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <nav class={if @should_hide, do: "hidden"} phx-hook="SideNav" id="js-side-nav">
+    <nav class={unless @side_nav, do: "hidden"} phx-hook="SideNav" id="js-side-nav">
       <%= for link <- @side_nav do %>
         <.link navigate={link.to}><%= link.label %></.link>
         <div :if={Map.has_key?(link, :children) and length(link.children) > 0} class="side-link-group">
@@ -80,9 +72,14 @@ defmodule PurpleWeb.Components.SideNav do
         </div>
       <% end %>
       <%= if @history do %>
-        <strong>History</strong>
-        <div class="side-link-group history">
-          <.link :for={{path, title} <- @history} navigate={path}><%= title %></.link>
+        <div class="history">
+          <h4 class="history-header">History</h4>
+          <div :for={{group_name, link_pairs} <- @history} class="history-group">
+            <div class="side-link-group history">
+              <span><%= group_name %></span>
+              <.link :for={{path, title} <- link_pairs} navigate={path}><%= title %></.link>
+            </div>
+          </div>
         </div>
       <% end %>
     </nav>
