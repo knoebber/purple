@@ -63,7 +63,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
         Map.reject(params["entries"], fn {_, entry} -> entry["content"] == "" end)
       )
 
-    case Board.create_item(params) |> dbg do
+    case Board.create_item(params) do
       {:ok, item} ->
         {:noreply, push_redirect(socket, to: ~p"/board/item/#{item}")}
 

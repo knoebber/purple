@@ -31,7 +31,7 @@ defmodule PurpleWeb.Components.SideNav do
       socket
       |> assign(assigns)
       |> assign(:side_nav, side_nav || [])
-      |> assign(:history, get_history(assigns.current_user) |> dbg)
+      |> assign(:history, get_history(assigns.current_user))
 
     {:ok, socket}
   end
