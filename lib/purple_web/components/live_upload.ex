@@ -19,17 +19,7 @@ defmodule PurpleWeb.LiveUpload do
     end
   end
 
-  defp update_client_name(%UploadConfig{} = conf, entry_ref, new_name) do
-    if new_name == "" do
-      conf
-    else
-      UploadConfig.update_entry(conf, entry_ref, fn entry ->
-        Map.put(entry, :client_name, new_name <> Path.extname(entry.client_name))
-      end)
-    end
-  end
-
-  defp upload(socket) do
+  defp get_upload_map(socket) do
     consume_uploaded_entries(socket, :files, fn %{path: path}, entry ->
       params =
         Uploads.make_upload_params(
@@ -67,18 +57,6 @@ defmodule PurpleWeb.LiveUpload do
     )
   end
 
-  defp set_files_to_socket(socket, files) do
-    assign(
-      socket,
-      :uploads,
-      Map.put(
-        socket.assigns.uploads,
-        :files,
-        files
-      )
-    )
-  end
-
   @impl Phoenix.LiveComponent
   def update(assigns, socket) do
     {
@@ -95,34 +73,21 @@ defmodule PurpleWeb.LiveUpload do
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("upload", _, socket) do
-    result = upload(socket)
+  def handle_event("finish", _, socket) do
+    upload_map = get_upload_map(socket)
 
+    # Send upload result to parent LV.
     send(
       self(),
       {:upload_result,
        %{
-         uploaded_files: result.uploaded_files,
-         num_uploaded: length(result.uploaded_files),
-         num_attempted: length(result.uploaded_files) + result.error_count
+         uploaded_files: upload_map.uploaded_files,
+         num_uploaded: length(upload_map.uploaded_files),
+         num_attempted: length(upload_map.uploaded_files) + result.error_count
        }}
     )
 
-    {:noreply, set_files_to_socket(socket, result.upload_config)}
-  end
-
-  @impl Phoenix.LiveComponent
-  def handle_event("update_client_name", params, socket) do
-    %{"_target" => [entry_ref | _]} = params
-    new_name = params[entry_ref]
-
-    {
-      :noreply,
-      set_files_to_socket(
-        socket,
-        update_client_name(socket.assigns.uploads.files, entry_ref, new_name)
-      )
-    }
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveComponent
@@ -162,19 +127,6 @@ defmodule PurpleWeb.LiveUpload do
                 Cancel
               </a>
               <.live_img_preview entry={entry} />
-              <form
-                class="w-5/6 self-start flex items-end"
-                phx-change="update_client_name"
-                phx-target={@myself}
-              >
-                <input
-                  class="p-0 text-sm w-5/6 mt-2"
-                  name={entry.ref}
-                  type="text"
-                  value={Path.basename(entry.client_name, Path.extname(entry.client_name))}
-                />
-                <strong><%= Path.extname(entry.client_name) %></strong>
-              </form>
               <%= for err <- upload_errors(@uploads.files, entry) do %>
                 <div class="alert alert-danger">
                   <%= error_to_string(err) %>
