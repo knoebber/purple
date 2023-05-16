@@ -140,13 +140,28 @@ defmodule Purple.Uploads do
     |> Repo.update!()
   end
 
+  defp get_or_create_file_upload(params) do
+    existing_ref =
+      FileRef
+      |> where([ref], ref.sha_hash == ^params.sha_hash)
+      |> Repo.one()
+
+    case existing_ref do
+      nil -> Repo.insert(FileRef.changeset(%FileRef{}, params))
+      _ -> {:exists, existing_ref}
+    end
+  end
+
   def save_file_upload(source_path, params) do
-    case Repo.insert(FileRef.changeset(%FileRef{}, params)) do
+    case get_or_create_file_upload(params) do
       {:ok, file_ref} ->
         file_ref
         |> write_upload!(source_path)
         |> write_thumbnail!()
         |> post_process_file!
+
+      {:exists, file_ref} ->
+        file_ref
 
       {:error, changeset} ->
         {:error, changeset}

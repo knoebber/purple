@@ -2,22 +2,11 @@ defmodule PurpleWeb.LiveUpload do
   use PurpleWeb, :live_component
   alias Purple.Uploads
   alias Purple.Uploads.FileRef
-  alias Phoenix.LiveView.UploadConfig
 
   defp error_to_string(:too_large), do: "Too large"
   defp error_to_string(:too_many_files), do: "You have selected too many files"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
   defp error_to_string(message), do: message
-
-  defp put_errors(%UploadConfig{} = conf, _, []), do: conf
-
-  defp put_errors(%UploadConfig{} = conf, entry_ref, [head | tail]) do
-    if {entry_ref, head} in conf.errors do
-      put_errors(conf, entry_ref, tail)
-    else
-      put_errors(UploadConfig.put_error(conf, entry_ref, head), entry_ref, tail)
-    end
-  end
 
   defp get_upload_map(socket) do
     consume_uploaded_entries(socket, :files, fn %{path: path}, entry ->
@@ -39,19 +28,17 @@ defmodule PurpleWeb.LiveUpload do
     end)
     |> Enum.reduce(
       %{
-        error_count: 0,
-        upload_config: socket.assigns.uploads.files,
+        error_messages: [],
         uploaded_files: []
       },
       fn
         %FileRef{} = file_ref, acc ->
           %{acc | uploaded_files: acc.uploaded_files ++ [file_ref]}
 
-        {entry_ref, errors}, acc when is_list(errors) ->
+        {_, errors}, acc when is_list(errors) ->
           %{
             acc
-            | error_count: acc.error_count + 1,
-              upload_config: put_errors(acc.upload_config, entry_ref, errors)
+            | error_messages: acc.error_messages ++ errors
           }
       end
     )
@@ -73,21 +60,25 @@ defmodule PurpleWeb.LiveUpload do
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("finish", _, socket) do
-    upload_map = get_upload_map(socket)
+  def handle_event("upload", _, socket) do
+    %{uploaded_files: uploaded_files, error_messages: error_messages} =
+      get_upload_map(socket) |> dbg
+
+    num_uploaded = length(uploaded_files)
+    num_attempted = length(uploaded_files) + length(error_messages)
 
     # Send upload result to parent LV.
     send(
       self(),
       {:upload_result,
        %{
-         uploaded_files: upload_map.uploaded_files,
-         num_uploaded: length(upload_map.uploaded_files),
-         num_attempted: length(upload_map.uploaded_files) + result.error_count
+         flash_kind: if(num_uploaded == num_attempted, do: :info, else: :error),
+         flash_message: "Uploaded #{num_uploaded}/#{num_attempted} files",
+         uploaded_files: uploaded_files
        }}
     )
 
-    {:noreply, socket}
+    {:noreply, assign(socket, :save_errors, error_messages)}
   end
 
   @impl Phoenix.LiveComponent
@@ -127,23 +118,19 @@ defmodule PurpleWeb.LiveUpload do
                 Cancel
               </a>
               <.live_img_preview entry={entry} />
-              <%= for err <- upload_errors(@uploads.files, entry) do %>
-                <div class="alert alert-danger">
-                  <%= error_to_string(err) %>
-                </div>
-              <% end %>
+              <div :for={err <- upload_errors(@uploads.files, entry)}>
+                <%= error_to_string(err) %>
+              </div>
               <progress class="self-start mt-1 w-full" value={entry.progress} max="100">
                 <%= entry.progress %>%
               </progress>
             </div>
           <% end %>
         </div>
-        <%= for err <- upload_errors(@uploads.files) do %>
-          <div class="alert alert-danger"><%= error_to_string(err) %></div>
-        <% end %>
-        <%= for err <- @save_errors do %>
-          <div class="alert alert-danger"><%= err %></div>
-        <% end %>
+        <div :for={err <- upload_errors(@uploads.files)}>
+          <%= error_to_string(err) %>
+        </div>
+        <div :for={err <- @save_errors}><%= err %></div>
       <% end %>
     </div>
     """
