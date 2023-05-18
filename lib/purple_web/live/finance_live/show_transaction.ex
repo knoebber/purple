@@ -1,5 +1,6 @@
 defmodule PurpleWeb.FinanceLive.ShowTransaction do
   alias Purple.Finance
+  alias Purple.Uploads
   import PurpleWeb.FinanceLive.Helpers
   use PurpleWeb, :live_view
 
@@ -7,9 +8,12 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
 
   defp assign_data(socket, transaction_id) do
     transaction = Finance.get_transaction!(transaction_id)
+    files = Uploads.get_file_refs_by_model(transaction)
 
     socket
     |> assign(:transaction, transaction)
+    |> assign(:file_refs, Enum.reject(files, fn f -> Uploads.image?(f) end))
+    |> assign(:image_refs, Enum.filter(files, fn f -> Uploads.image?(f) end))
     |> assign(:page_title, Finance.Transaction.to_string(transaction))
     |> assign_fancy_link_map(transaction.notes)
   end
@@ -74,6 +78,16 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
   end
 
   @impl Phoenix.LiveView
+  def handle_info({:upload_result, result}, socket) do
+    {
+      :noreply,
+      socket
+      |> assign_data(socket.assigns.transaction.id)
+      |> put_flash(result.flash_kind, result.flash_message)
+    }
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <h1 class="mb-2">
@@ -99,6 +113,53 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
         </div>
         <.timestamp model={@transaction} />
       </div>
+      <div class="m-2 p-2">
+        <.live_component
+          accept={:any}
+          dir={"transaction/#{@transaction.id}"}
+          id={"transaction-#{@transaction.id}-upload"}
+          max_entries={20}
+          model={@transaction}
+          module={PurpleWeb.LiveUpload}
+          return_to={~p"/finance/transactions/#{@transaction}"}
+        />
+      </div>
+      <div :for={ref <- @image_refs} class="inline">
+        <div class="inline-flex flex-col">
+          <div
+            id={"copy-markdown-#{ref.id}"}
+            phx-hook="CopyMarkdownImage"
+            name={Uploads.FileRef.title(ref)}
+            value={~p"/files/#{ref}"}
+            class="cursor-pointer w-1/6"
+          >
+            🔗
+          </div>
+          <.link
+            class="no-underline"
+            navigate={~p"/finance/transactions/#{@transaction}/files/#{ref}"}
+          >
+            <img
+              id={"thumbnail-#{ref.id}"}
+              class="inline border border-purple-500 m-1"
+              width="150"
+              height="150"
+              src={~p"/files/#{ref}/thumbnail"}
+            />
+          </.link>
+        </div>
+      </div>
+      <div :if={length(@file_refs) > 0} class="p-3">
+        <strong>Files</strong>
+        <ul class="ml-8">
+          <li :for={ref <- @file_refs}>
+            <.link navigate={~p"/finance/transactions/#{@transaction}/files/#{ref}"}>
+              <%= Uploads.FileRef.title(ref) %>
+            </.link>
+          </li>
+        </ul>
+      </div>
+
       <%= if @is_editing do %>
         <.live_component
           action={:edit_transaction}

@@ -17,7 +17,7 @@ defmodule Purple.Uploads.ItemFile do
       item_id: item_id
     }
 
-    %Purple.Uploads.ItemFile{}
+    %__MODULE__{}
     |> cast(params, [:item_id, :file_upload_id])
     |> validate_required([:item_id, :file_upload_id])
     |> assoc_constraint(:item)

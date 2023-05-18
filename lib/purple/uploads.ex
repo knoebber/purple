@@ -1,8 +1,6 @@
 defmodule Purple.Uploads do
-  alias Purple.Board.Item
   alias Purple.Repo
-  alias Purple.Uploads.FileRef
-  alias Purple.Uploads.ItemFile
+  alias Purple.Uploads.{FileRef, ItemFile, TransactionFile}
   import Ecto.Query
   require Logger
 
@@ -195,7 +193,8 @@ defmodule Purple.Uploads do
     end
   end
 
-  defp get_ref_model(%Item{}), do: ItemFile
+  defp get_ref_model(%Purple.Board.Item{}), do: ItemFile
+  defp get_ref_model(%Purple.Finance.Transaction{}), do: TransactionFile
 
   def save_model_association(%FileRef{} = file_ref, %{id: model_id} = model) do
     Repo.insert(get_ref_model(model).changeset(file_ref.id, model_id))
