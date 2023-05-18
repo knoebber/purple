@@ -13,6 +13,10 @@ defmodule Purple.Uploads.FileRef do
 
     field :file_name, :string, virtual: true
 
+    many_to_many :items, Purple.Board.Item,
+      join_through: Purple.Uploads.ItemFile,
+      join_keys: [file_upload_id: :id, item_id: :id]
+
     timestamps()
   end
 

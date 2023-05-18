@@ -9,6 +9,8 @@ defmodule Purple.Uploads.ItemFile do
     timestamps()
   end
 
+  def join_col, do: :item_id
+
   def changeset(file_ref_id, item_id) do
     params = %{
       file_upload_id: file_ref_id,
@@ -20,5 +22,9 @@ defmodule Purple.Uploads.ItemFile do
     |> validate_required([:item_id, :file_upload_id])
     |> assoc_constraint(:item)
     |> assoc_constraint(:file_ref)
+    |> unique_constraint([:item_id, :file_ref_id],
+      message: "Item already has this file uploaded",
+      name: "item_file_uploads_item_id_file_upload_id_index"
+    )
   end
 end

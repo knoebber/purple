@@ -5,11 +5,13 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => item_id}, _url, socket) do
+    item = Purple.Board.get_item!(item_id)
+
     {
       :noreply,
       socket
-      |> assign(:item_id, item_id)
-      |> assign(:image_refs, Uploads.get_images_by_item(item_id))
+      |> assign(:item, item)
+      |> assign(:image_refs, Uploads.get_image_refs_by_model(item))
       |> assign(:page_title, "Item #{item_id} gallery")
       |> PurpleWeb.BoardLive.Helpers.assign_side_nav()
     }
@@ -20,15 +22,15 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
     ~H"""
     <h1>
       Board /
-      <.link navigate={~p"/board/item/#{@item_id}"}>
-        Item <%= @item_id %>
+      <.link navigate={~p"/board/item/#{@item}"}>
+        <%= @item.description %>
       </.link>
       / Gallery
     </h1>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-1">
       <.link
         :for={ref <- @image_refs}
-        navigate={~p"/board/item/#{@item_id}/files/#{ref}"}
+        navigate={~p"/board/item/#{@item}/files/#{ref}"}
         class="no-underline"
       >
         <img

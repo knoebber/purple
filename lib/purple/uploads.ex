@@ -31,19 +31,20 @@ defmodule Purple.Uploads do
   end
 
   def pdf?(%FileRef{} = file_ref) do
-    file_ref.extension == ".pdf"
+    String.downcase(file_ref.extension) == ".pdf"
   end
 
   def get_file_info(source_path, client_name) do
     try do
       # Throws when source_path isn't an image or doesn't exist.
       info = Mogrify.identify(source_path)
+      format = String.downcase(info.format)
 
-      if info.format == "pdf" do
+      if format == "pdf" do
         %{extension: ".pdf"}
       else
         %{
-          extension: "." <> String.downcase(info.format),
+          extension: "." <> format,
           image_height: info.height,
           image_width: info.width
         }
@@ -108,7 +109,7 @@ defmodule Purple.Uploads do
     )
   end
 
-  defp post_process_file!(%FileRef{} = file_ref) do
+  defp post_process_file(%FileRef{} = file_ref) do
     converted = convert_file_type(file_ref)
 
     if image?(file_ref) do
@@ -137,7 +138,7 @@ defmodule Purple.Uploads do
 
     file_ref
     |> FileRef.changeset(params)
-    |> Repo.update!()
+    |> Repo.update()
   end
 
   defp get_or_create_file_upload(params) do
@@ -152,19 +153,34 @@ defmodule Purple.Uploads do
     end
   end
 
-  def save_file_upload(source_path, params) do
+  defp get_ref_model(%Item{}), do: ItemFile
+
+  def save_model_association(%FileRef{} = file_ref, %{id: model_id} = model) do
+    Repo.insert(get_ref_model(model).changeset(file_ref.id, model_id))
+  end
+
+  defp save_file_ref(source_path, params) do
     case get_or_create_file_upload(params) do
       {:ok, file_ref} ->
         file_ref
         |> write_upload!(source_path)
         |> write_thumbnail!()
-        |> post_process_file!
+        |> post_process_file
 
       {:exists, file_ref} ->
-        file_ref
+        {:ok, file_ref}
 
       {:error, changeset} ->
         {:error, changeset}
+    end
+  end
+
+  def save_file_upload(source_path, params, model) do
+    with {:ok, %FileRef{} = file_ref} <- save_file_ref(source_path, params),
+         {:ok, _} <- save_model_association(file_ref, model) do
+      {:ok, file_ref}
+    else
+      {:error, changeset} -> {:error, changeset}
     end
   end
 
@@ -189,14 +205,17 @@ defmodule Purple.Uploads do
     |> delete_file_upload!
   end
 
-  def delete_file_uploads_in_item!(item_id) do
-    Enum.each(get_files_by_item(item_id), fn file ->
-      delete_file_upload!(file)
-    end)
-  end
+  def delete_model_references!(%{id: model_id} = model) do
+    model_ref = get_ref_model(model)
 
-  def add_file_to_item!(%FileRef{} = file_ref, %Item{} = item) do
-    Repo.insert!(ItemFile.changeset(file_ref.id, item.id))
+    where_clause = [{model_ref.join_col(), model_id}]
+
+    model_ref
+    |> where(^where_clause)
+    |> Repo.delete_all()
+
+    # file_refs = get_file_refs_by_model(model)
+    # todo: cleanup orphaned files by inspecting all references to model.
   end
 
   defp set_file_name(file_ref) do
@@ -211,21 +230,22 @@ defmodule Purple.Uploads do
     FileRef |> Repo.get!(id) |> set_file_name()
   end
 
-  defp get_files_by_item_query(item_id) do
+  defp get_file_refs_by_model_query(%{id: model_id} = model) do
+    model_ref = get_ref_model(model)
+
+    inner_where = [{model_ref.join_col(), model_id}]
+
     from(f in FileRef,
-      where:
-        f.id in subquery(
-          from(i in ItemFile, select: i.file_upload_id, where: i.item_id == ^item_id)
-        )
+      where: f.id in subquery(from(m in model_ref, select: m.file_upload_id, where: ^inner_where))
     )
   end
 
-  def get_files_by_item(item_id) do
-    Repo.all(get_files_by_item_query(item_id))
+  def get_file_refs_by_model(model) do
+    Repo.all(get_file_refs_by_model_query(model))
   end
 
-  def get_images_by_item(item_id) do
-    get_files_by_item_query(item_id)
+  def get_image_refs_by_model(model) do
+    get_file_refs_by_model_query(model)
     |> where([f], f.image_width > 0)
     |> Repo.all()
   end

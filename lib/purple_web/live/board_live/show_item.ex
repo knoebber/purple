@@ -8,8 +8,8 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   @behaviour PurpleWeb.FancyLink
   @new_entry_content "# New Entry"
 
-  defp assign_uploads(socket, item_id) do
-    files = Uploads.get_files_by_item(item_id)
+  defp assign_uploads(socket, item) do
+    files = Uploads.get_file_refs_by_model(item)
 
     socket
     |> assign(:file_refs, Enum.reject(files, fn f -> Uploads.image?(f) end))
@@ -36,7 +36,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     item = Board.get_item!(item_id)
 
     socket
-    |> assign_uploads(item_id)
+    |> assign_uploads(item)
     |> assign(:page_title, item.description)
     |> assign(:item, item)
     |> assign_entries()
@@ -209,15 +209,11 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
   @impl Phoenix.LiveView
   def handle_info({:upload_result, result}, socket) do
-    Enum.each(result.uploaded_files, fn file_ref ->
-      Uploads.add_file_to_item!(file_ref, socket.assigns.item)
-    end)
-
     {
       :noreply,
       socket
-      |> assign_uploads(socket.assigns.item.id)
-      |> put_flash(:info, "Uploaded #{result.num_uploaded}/#{result.num_attempted} files")
+      |> assign_uploads(socket.assigns.item)
+      |> put_flash(result.flash_kind, result.flash_message)
     }
   end
 
@@ -337,6 +333,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             dir={"item/#{@item.id}"}
             id={"item-#{@item.id}-upload"}
             max_entries={20}
+            model={@item}
             module={PurpleWeb.LiveUpload}
             return_to={~p"/board/item/#{@item}"}
           />

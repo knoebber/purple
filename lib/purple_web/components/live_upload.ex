@@ -8,7 +8,7 @@ defmodule PurpleWeb.LiveUpload do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
   defp error_to_string(message), do: message
 
-  defp get_upload_map(socket) do
+  defp upload_files(socket) do
     consume_uploaded_entries(socket, :files, fn %{path: path}, entry ->
       params =
         Uploads.make_upload_params(
@@ -18,9 +18,9 @@ defmodule PurpleWeb.LiveUpload do
           entry.client_size
         )
 
-      case Uploads.save_file_upload(path, params) do
-        %FileRef{} = file_ref ->
-          {:ok, file_ref}
+      case Uploads.save_file_upload(path, params, socket.assigns.model) do
+        {:ok, %FileRef{}} = result ->
+          result
 
         {:error, changeset} ->
           {:postpone, {entry.ref, changeset_to_reason_list(changeset)}}
@@ -61,8 +61,7 @@ defmodule PurpleWeb.LiveUpload do
 
   @impl Phoenix.LiveComponent
   def handle_event("upload", _, socket) do
-    %{uploaded_files: uploaded_files, error_messages: error_messages} =
-      get_upload_map(socket) |> dbg
+    %{uploaded_files: uploaded_files, error_messages: error_messages} = upload_files(socket)
 
     num_uploaded = length(uploaded_files)
     num_attempted = length(uploaded_files) + length(error_messages)

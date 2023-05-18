@@ -430,7 +430,7 @@ defmodule Purple.Board do
   end
 
   def delete_item!(%Item{} = item) do
-    Purple.Uploads.delete_file_uploads_in_item!(item.id)
+    Purple.Uploads.delete_model_references!(item)
 
     Repo.transaction(fn ->
       ItemEntry
