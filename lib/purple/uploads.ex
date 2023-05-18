@@ -34,6 +34,48 @@ defmodule Purple.Uploads do
     String.downcase(file_ref.extension) == ".pdf"
   end
 
+  def video?(%FileRef{} = file_ref) do
+    String.downcase(file_ref.extension) in [
+      ".3g2",
+      ".3gp",
+      ".amv",
+      ".asf",
+      ".avi",
+      ".f4a",
+      ".f4b",
+      ".f4p",
+      ".f4v",
+      ".flv",
+      ".flv",
+      ".gifv",
+      ".m4p",
+      ".m4v",
+      ".mkv",
+      ".mng",
+      ".mod",
+      ".mov",
+      ".mp2",
+      ".mp4",
+      ".mpe",
+      ".mpeg",
+      ".mpg",
+      ".mpv",
+      ".mxf",
+      ".nsv",
+      ".ogg",
+      ".ogv",
+      ".qt",
+      ".rm",
+      ".roq",
+      ".rrc",
+      ".svi",
+      ".vob",
+      ".webm",
+      ".wmv",
+      ".yuv"
+    ]
+  end
+
   def get_file_info(source_path, client_name) do
     try do
       # Throws when source_path isn't an image or doesn't exist.
@@ -205,13 +247,21 @@ defmodule Purple.Uploads do
     |> delete_file_upload!
   end
 
+  def delete_model_reference!(%FileRef{} = file_ref, %{id: model_id} = model) do
+    model_ref = get_ref_model(model)
+
+    {1, nil} =
+      model_ref
+      |> where(^[{:file_upload_id, file_ref.id}])
+      |> where(^[{model_ref.join_col(), model_id}])
+      |> Repo.delete_all()
+  end
+
   def delete_model_references!(%{id: model_id} = model) do
     model_ref = get_ref_model(model)
 
-    where_clause = [{model_ref.join_col(), model_id}]
-
     model_ref
-    |> where(^where_clause)
+    |> where(^[{model_ref.join_col(), model_id}])
     |> Repo.delete_all()
 
     # file_refs = get_file_refs_by_model(model)

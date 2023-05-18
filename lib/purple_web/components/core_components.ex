@@ -339,8 +339,7 @@ defmodule PurpleWeb.CoreComponents do
     ~H"""
     <%= if not Map.has_key?(@filter, :query) do %>
       <%= if Filter.current_page(@filter) > 1 && @first_page do %>
-        <.link patch={@first_page}>First page</.link>
-        &nbsp;
+        <.link patch={@first_page}>First page</.link> &nbsp;
       <% end %>
       <%= if @num_rows >= Filter.current_limit(@filter) && @next_page do %>
         <.link patch={@next_page}>Next page</.link>
@@ -687,6 +686,57 @@ defmodule PurpleWeb.CoreComponents do
     >
       🍔
     </button>
+    """
+  end
+
+  attr :file_ref, Purple.Uploads.FileRef, required: true
+  attr :edit_url, :string, required: true
+
+  def file_ref_header(assigns) do
+    ~H"""
+    <div class="flex justify-between bg-purple-300 p-1 border rounded border-purple-500">
+      <div class="inline-links">
+        <.link
+          target="_blank"
+          href={~p"/files/#{@file_ref}/open/#{@file_ref.file_name}" <> @file_ref.extension}
+        >
+          Open
+        </.link>
+        <span>|</span>
+        <.link href={~p"/files/#{@file_ref}/download"}>Download</.link>
+        <span>|</span>
+        <.link patch={@edit_url}>Edit</.link>
+        <span>|</span>
+        <.link href="#" phx-click="delete" data-confirm="Are you sure?">Delete</.link>
+        <span>|</span>
+        <strong><%= Purple.Uploads.FileRef.size_string(@file_ref) %></strong>
+      </div>
+      <.timestamp model={@file_ref} />
+    </div>
+    """
+  end
+
+  attr :file_ref, Purple.Uploads.FileRef, required: true
+
+  def render_file_ref(assigns) do
+    ~H"""
+    <img
+      :if={Purple.Uploads.image?(@file_ref)}
+      class="inline border border-purple-500 m-1"
+      width={@file_ref.image_width}
+      height={@file_ref.image_height}
+      src={~p"/files/#{@file_ref}"}
+    />
+    <video :if={Purple.Uploads.video?(@file_ref)} controls src={~p"/files/#{@file_ref}"}></video>
+    <%= if Purple.Uploads.pdf?(@file_ref) do %>
+      <div class="flex justify-between w-full mt-2">
+        <.button class="js-prev" type="button">Prev</.button>
+        <input class="js-zoom" type="range" value="1.5" min="0" max="2" step=".1" />
+        <.button class="js-next" type="button">Next</.button>
+      </div>
+      <canvas class="mt-1" phx-hook="PDF" id="pdf-canvas" data-path={~p"/files/#{@file_ref}"}>
+      </canvas>
+    <% end %>
     """
   end
 end
