@@ -28,6 +28,10 @@
         @apply p-2;
     }
 
+    nav a {
+	@apply text-sm;
+    }
+
     nav > .history {
 	@apply flex;
 	@apply flex-col;
@@ -40,10 +44,6 @@
 
     .history span {
 	@apply text-xl;
-    }
-
-    .history a {
-	@apply text-sm;
     }
 
     .content-flex {
