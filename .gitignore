@@ -45,3 +45,4 @@ creds.txt
 example_html/
 *.sublime-project
 *.sublime-workspace
+.elixir_ls/
