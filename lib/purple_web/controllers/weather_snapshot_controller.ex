@@ -10,14 +10,14 @@ defmodule PurpleWeb.WeatherSnapshotController do
     ws
   end
 
-  def create(conn, params) do
-    with {:ok, %WeatherSnapshot{} = weather_snapshot} <-
-           Weather.create_weather_snapshot(get_params(params)) do
-      conn
-      |> put_status(:created)
-      |> render(:show, weather_snapshot: weather_snapshot)
-    end
-  end
+  # def create(conn, params) do
+  #   with {:ok, %WeatherSnapshot{} = weather_snapshot} <-
+  #          Weather.create_weather_snapshot(get_params(params)) do
+  #     conn
+  #     |> put_status(:created)
+  #     |> render(:show, weather_snapshot: weather_snapshot)
+  #   end
+  # end
 
   def broadcast(conn, params) do
     with %Ecto.Changeset{valid?: true} = changeset <-
@@ -25,7 +25,7 @@ defmodule PurpleWeb.WeatherSnapshotController do
       Phoenix.PubSub.broadcast(
         Purple.PubSub,
         "weather_snapshot",
-        {:weather_snapshot, changeset.changes}
+        {:weather_snapshot, Map.drop(changeset.changes, [:unix_timestamp])}
       )
 
       conn
