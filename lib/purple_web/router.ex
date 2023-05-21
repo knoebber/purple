@@ -13,11 +13,22 @@ defmodule PurpleWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
   ## Live Dashboard
   scope "/" do
     pipe_through [:browser, :require_authenticated_user]
 
     live_dashboard "/dashboard", metrics: PurpleWeb.Telemetry
+  end
+
+  scope "/api", PurpleWeb do
+    pipe_through [:api]
+
+    post "/weather_snapshots", WeatherSnapshotController, :create
+    post "/weather_snapshots/broadcast", WeatherSnapshotController, :broadcast
   end
 
   ## Authentication routes

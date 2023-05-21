@@ -17,7 +17,7 @@ config :purple,
 # Configures the endpoint
 config :purple, PurpleWeb.Endpoint,
   url: [host: "localhost"],
-  render_errors: [view: PurpleWeb.ErrorHTML, accepts: ~w(html json), layout: false],
+  render_errors: [formats: [html: PurpleWeb.ErrorHTML, json: PurpleWeb.ErrorJSON], layout: false],
   pubsub_server: Purple.PubSub,
   live_view: [signing_salt: "Rr9+Wk+P"]
 
