@@ -123,6 +123,7 @@ defmodule PurpleWeb.FinanceLive.Index do
     # Replace the transaction category from the socket's list. 
     # This preserves the preloaded data.
     # Don't reload whole list from database because that can cause the order to change.
+    # TODO: use streams
     updated_transaction = Map.put(old_transaction, :category, transaction.category)
 
     {
@@ -141,28 +142,62 @@ defmodule PurpleWeb.FinanceLive.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("unshare_transaction", params, socket) do
-    Finance.remove_shared_transaction!(
-      socket.assigns.shared_budget.id,
-      Purple.int_from_map(params, "id")
-    )
+  def handle_event("cycle_share", params, socket) do
+    # N.B. this only works when there is a single shared budget for now.
+    shared_budgets = Finance.list_shared_budgets()
 
-    {
-      :noreply,
-      socket
-      |> put_flash(:info, "Removed transaction")
-      |> push_patch(to: ~p"/finance?#{socket.assigns.filter}", replace: true)
-    }
-  end
+    if length(shared_budgets) == 1 do
+      transaction =
+        Finance.get_transaction!(Purple.int_from_map(params, "id"), :shared_transaction)
 
-  @impl Phoenix.LiveView
-  def handle_info(:new_shared_transaction, socket) do
-    {
-      :noreply,
-      socket
-      |> put_flash(:info, "Shared transaction")
-      |> push_patch(to: ~p"/finance?#{socket.assigns.filter}", replace: true)
-    }
+      shared_budget = hd(shared_budgets)
+
+      shared_transactions =
+        case transaction.shared_transaction do
+          [] ->
+            {:ok, shared_transaction} =
+              Finance.create_shared_transaction(
+                shared_budget.id,
+                %{transaction_id: transaction.id, type: :SHARE}
+              )
+
+            [shared_transaction]
+
+          [%{type: :SHARE} = shared_transaction] ->
+            {:ok, shared_transaction} =
+              Finance.update_shared_transaction(shared_transaction, %{type: :CREDIT})
+
+            [shared_transaction]
+
+          [%{type: :CREDIT}] ->
+            Finance.remove_shared_transaction!(
+              shared_budget.id,
+              transaction.id
+            )
+
+            []
+        end
+
+      transactions = socket.assigns.transactions
+      tx_index = Enum.find_index(transactions, &(&1.id == transaction.id))
+      old_transaction = Enum.at(transactions, tx_index)
+      updated_transaction = Map.put(old_transaction, :shared_transaction, shared_transactions)
+
+      {
+        :noreply,
+        assign(
+          socket,
+          :transactions,
+          List.replace_at(
+            transactions,
+            tx_index,
+            updated_transaction
+          )
+        )
+      }
+    else
+      {:noreply, socket}
+    end
   end
 
   @impl Phoenix.LiveView
@@ -271,14 +306,14 @@ defmodule PurpleWeb.FinanceLive.Index do
           <%= Purple.Date.format(transaction.timestamp) %>
         </:col>
         <:col :let={transaction} label="Share">
-          <.link patch={~p"/finance/share/transaction/#{transaction.id}"} replace={true}>
+          <.link href="#" phx-click="cycle_share" class="text-xl" phx-value-id={transaction.id}>
             <%= if length(transaction.shared_transaction) == 0 do %>
               🙈
             <% else %>
               <%= if hd(transaction.shared_transaction).type == :SHARE do %>
                 🧍‍♀🧍
               <% else %>
-                🐡
+                🦋
               <% end %>
             <% end %>
           </.link>
