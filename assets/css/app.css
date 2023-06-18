@@ -38,6 +38,99 @@
 	@apply gap-2;
     }
 
+    .compass-wrapper {
+	height: 320px;
+	width: 320px;
+	position: relative;
+	margin-top: 30px;
+	margin-bottom: 30px;
+    }
+
+    .line-layer {
+	@apply grid;
+	@apply grid-cols-2;
+	@apply grid-rows-2;
+	height: 100%;
+	position: absolute;
+	width: 100%;
+    }
+
+    .line-layer > .nw {
+	@apply border-purple-400;
+	border-bottom-width: 0.5px;
+	border-right-width: 0.5px;
+    }
+
+    .line-layer > .ne {
+	@apply border-purple-400;
+	border-bottom-width: 0.5px;
+	border-left-width: 0.5px;
+    }
+
+    .line-layer > .sw {
+	@apply border-purple-400;
+	border-top-width: 0.5px;
+	border-right-width: 0.5px;
+    }
+
+    .line-layer > .se {
+	@apply border-purple-400;
+	border-top-width: 0.5px;
+	border-left-width: 0.5px;
+    }
+
+    .compass {
+	@apply border-purple-400;
+	@apply border;
+	@apply font-mono;
+	@apply text-xl;
+	border-radius: 50%;
+	height: 100%;
+	z-index: 1;
+    }
+
+    .compass > .n {
+	position: absolute;
+	left: 155px;
+	top: -25px;
+    }
+
+    .compass > .w {
+	position: absolute;
+	top: 147px;
+	left: -15px;
+    }
+
+    .compass > .e {
+	position: absolute;
+	top: 147px;
+	right: -15px;
+    }
+
+    .compass > .s {
+	position: absolute;
+	bottom: -25px;
+	left: 155px;
+    }
+
+    .arrow {
+	@apply bg-purple-400;
+	height: 50%;
+	left: 159px;
+	position: absolute;
+	top: 80px;
+	width: 3px;
+	z-index: 2;
+    }
+
+    .arrow > .icon {
+	@apply text-purple-400;
+	font-size: 35px;
+	position: absolute;
+	top: -23px; 
+	left: -12px;
+    }
+
     .history-header {
 	@apply mt-4;
     }

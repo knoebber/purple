@@ -25,7 +25,11 @@ defmodule PurpleWeb.WeatherSnapshotController do
       Phoenix.PubSub.broadcast(
         Purple.PubSub,
         "weather_snapshot",
-        {:weather_snapshot, Map.drop(changeset.changes, [:unix_timestamp])}
+        {
+          :weather_snapshot,
+          changeset.changes
+          |> Map.drop([:unix_timestamp])
+        }
       )
 
       conn

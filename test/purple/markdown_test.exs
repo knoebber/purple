@@ -57,19 +57,19 @@ defmodule Purple.MarkdownTest do
       <ul>
         <li>
           <span>
-            <input type="checkbox" phx-click="toggle-checkbox" phx-value-id="1"/>
+            <input type="checkbox" phx-click="toggle-checkbox" phx-value-id="1">
             task
           </span>
         </li>
         <li>
           <span>
-            <input checked="checked" type="checkbox" phx-click="toggle-checkbox" phx-value-id="2"/>
+            <input checked="checked" type="checkbox" phx-click="toggle-checkbox" phx-value-id="2">
             task2
           </span>
         </li>
         <li>
           <span>
-            <input checked="checked" type="checkbox" phx-click="toggle-checkbox" phx-value-id="3"/>
+            <input checked="checked" type="checkbox" phx-click="toggle-checkbox" phx-value-id="3">
             👍
           </span>
         </li>

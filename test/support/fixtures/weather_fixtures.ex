@@ -14,7 +14,7 @@ defmodule Purple.WeatherFixtures do
         humidity: 120.5,
         pressure: 120.5,
         temperature: 120.5,
-        timestamp: ~T[14:00:00]
+        unix_timestamp: 1_684_615_666
       })
       |> Purple.Weather.create_weather_snapshot()
 

@@ -27,7 +27,7 @@ defmodule PurpleWeb.Router do
   scope "/api", PurpleWeb do
     pipe_through [:api]
 
-    post "/weather_snapshots", WeatherSnapshotController, :create
+    # post "/weather_snapshots", WeatherSnapshotController, :create
     post "/weather_snapshots/broadcast", WeatherSnapshotController, :broadcast
   end
 
