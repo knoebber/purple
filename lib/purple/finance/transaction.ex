@@ -10,6 +10,7 @@ defmodule Purple.Finance.Transaction do
 
     field :category, Ecto.Enum,
       values: [
+        :PETS,
         :ACTIVITIES,
         :CAR,
         :CLOTHES,
