@@ -10,9 +10,12 @@ defmodule PurpleWeb.HomeLive do
     {
       :ok,
       socket
-      |> assign(:side_nav, if(socket.assigns.current_user, do: [], else: nil))
-      |> assign(:page_title, "Home")
       |> assign(:last_weather_snapshot, nil)
+      |> assign(:page_title, "Home")
+      |> assign(:should_show_logs, false)
+      |> assign(:side_nav, if(socket.assigns.current_user, do: [], else: nil))
+      |> stream_configure(:weather_logs, dom_id: &"log-#{elem(&1, 0)}")
+      |> stream(:weather_logs, [])
     }
   end
 
@@ -21,6 +24,17 @@ defmodule PurpleWeb.HomeLive do
     {
       :noreply,
       socket
+      |> stream_insert(
+        :weather_logs,
+        {
+          weather_snapshot.timestamp,
+          weather_snapshot
+          |> Jason.encode!()
+          |> Jason.Formatter.pretty_print(line_separator: "<br/>")
+        },
+        at: 0,
+        limit: 10
+      )
       |> assign(
         :last_weather_snapshot,
         Enum.reduce(weather_snapshot, %{}, fn {key, val}, result ->
@@ -36,6 +50,11 @@ defmodule PurpleWeb.HomeLive do
         end)
       )
     }
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("toggle_logs", _, socket) do
+    {:noreply, assign(socket, :should_show_logs, not socket.assigns.should_show_logs)}
   end
 
   @impl Phoenix.LiveView
@@ -87,7 +106,21 @@ defmodule PurpleWeb.HomeLive do
           </table>
         </div>
         <div class="flex-auto">
-          <pre></pre>
+          <.button phx-click="toggle_logs">📟</.button>
+          <div
+            :if={@should_show_logs}
+            phx-update="stream"
+            id="js-weather-log"
+            class="p-4 mt-3 bg-black border border-purple-400 rounded"
+          >
+            <code
+              :for={{dom_id, {_, log}} <- @streams.weather_logs}
+              id={dom_id}
+              class="text-xs text-green-400"
+            >
+              <%= raw(log) %>
+            </code>
+          </div>
         </div>
       </div>
     </section>
