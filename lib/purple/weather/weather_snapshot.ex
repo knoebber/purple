@@ -10,7 +10,7 @@ defmodule Purple.Weather.WeatherSnapshot do
 
     field :unix_timestamp, :integer, virtual: true
     field :wind_direction_degrees, :integer, virtual: true
-    field :wind_speed_ms, :float, virtual: true
+    field :wind_speed_mph, :float, virtual: true
     field :rain_millimeters, :float, virtual: true
   end
 
@@ -33,7 +33,7 @@ defmodule Purple.Weather.WeatherSnapshot do
       :temperature,
       :unix_timestamp,
       :wind_direction_degrees,
-      :wind_speed_ms
+      :wind_speed_mph
     ])
     |> validate_required([:humidity, :pressure, :temperature, :unix_timestamp])
     |> validate_number(:unix_timestamp, greater_than: 1_684_615_665)

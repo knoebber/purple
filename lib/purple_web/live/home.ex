@@ -89,7 +89,7 @@ defmodule PurpleWeb.HomeLive do
           <table class="text-center">
             <thead>
               <tr>
-                <th class="pt-0">Wind Speed m/s</th>
+                <th class="pt-0">Wind Speed MPH</th>
                 <th class="pt-0">Fahrenheit</th>
                 <th class="pt-0">Humidity</th>
                 <th class="pt-0">Pressure</th>
@@ -97,7 +97,7 @@ defmodule PurpleWeb.HomeLive do
             </thead>
             <tbody>
               <tr>
-                <td><%= @last_weather_snapshot.wind_speed_ms %></td>
+                <td><%= @last_weather_snapshot.wind_speed_mph %></td>
                 <td><%= @last_weather_snapshot.temperature %>°</td>
                 <td><%= @last_weather_snapshot.humidity %>%</td>
                 <td><%= @last_weather_snapshot.pressure %></td>
