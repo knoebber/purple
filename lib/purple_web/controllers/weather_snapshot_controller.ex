@@ -1,5 +1,6 @@
 defmodule PurpleWeb.WeatherSnapshotController do
   use PurpleWeb, :controller
+  require Logger
 
   alias Purple.Weather
   alias Purple.Weather.WeatherSnapshot
@@ -36,7 +37,9 @@ defmodule PurpleWeb.WeatherSnapshotController do
       |> put_status(:ok)
       |> render(:show, weather_snapshot: changeset)
     else
-      changeset -> {:error, changeset}
+      changeset ->
+        Logger.error("invalid weather snapshot: #{inspect(changeset)}")
+        {:error, changeset}
     end
   end
 end

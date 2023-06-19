@@ -28,7 +28,7 @@ defmodule PurpleWeb.HomeLive do
             result,
             key,
             if is_float(val) do
-              :erlang.float_to_binary(val, decimals: 3)
+              :erlang.float_to_binary(val, decimals: 1)
             else
               val
             end
@@ -43,50 +43,53 @@ defmodule PurpleWeb.HomeLive do
     ~H"""
     <section>
       <h1>Purple :)</h1>
-      <div class="flex">
-        <Heroicons.cloud :for={_ <- 1..10} />
-      </div>
-      <div class="flex">
-        <Heroicons.sun :for={_ <- 1..10} />
-      </div>
-      <div :if={@last_weather_snapshot} class="compass-wrapper">
-        <div class="line-layer">
-          <div class="nw"></div>
-          <div class="ne"></div>
-          <div class="sw"></div>
-          <div class="se"></div>
+      <div :if={@last_weather_snapshot} class="flex flex-wrap">
+        <div class="compass-wrapper flex-none">
+          <div class="line-layer">
+            <div class="nw"></div>
+            <div class="ne"></div>
+            <div class="sw"></div>
+            <div class="se"></div>
+          </div>
+          <div class="compass">
+            <div class="n">N</div>
+            <div class="w">W</div>
+            <div class="s">S</div>
+            <div class="e">E</div>
+          </div>
+          <div
+            class="arrow"
+            style={"transform: rotate(#{@last_weather_snapshot.wind_direction_degrees}deg)"}
+          >
+            <span class="icon">
+              &uarr;
+            </span>
+          </div>
         </div>
-        <div class="compass">
-          <div class="n">N</div>
-          <div class="w">W</div>
-          <div class="s">S</div>
-          <div class="e">E</div>
+        <div class="flex-none">
+          <table class="text-center">
+            <thead>
+              <tr>
+                <th class="pt-0">Wind Speed m/s</th>
+                <th class="pt-0">Fahrenheit</th>
+                <th class="pt-0">Humidity</th>
+                <th class="pt-0">Pressure</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><%= @last_weather_snapshot.wind_speed_ms %></td>
+                <td><%= @last_weather_snapshot.temperature %>°</td>
+                <td><%= @last_weather_snapshot.humidity %>%</td>
+                <td><%= @last_weather_snapshot.pressure %></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div
-          class="arrow"
-          style={"transform: rotate(#{@last_weather_snapshot.wind_direction_degrees}deg)"}
-        >
-          <span class="icon">
-            &uarr;
-          </span>
+        <div class="flex-auto">
+          <pre></pre>
         </div>
       </div>
-      <table :if={@last_weather_snapshot} class="border border-purple-400">
-        <thead>
-          <tr>
-            <th>Temperature</th>
-            <th>Humidity</th>
-            <th>Pressure</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><%= @last_weather_snapshot.temperature %>°</td>
-            <td><%= @last_weather_snapshot.humidity %>%</td>
-            <td><%= @last_weather_snapshot.pressure %></td>
-          </tr>
-        </tbody>
-      </table>
     </section>
     """
   end

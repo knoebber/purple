@@ -10,7 +10,7 @@ defmodule Purple.Weather.WeatherSnapshot do
 
     field :unix_timestamp, :integer, virtual: true
     field :wind_direction_degrees, :integer, virtual: true
-    field :wind_speed_ms, :integer, virtual: true
+    field :wind_speed_ms, :float, virtual: true
     field :rain_millimeters, :float, virtual: true
   end
 
