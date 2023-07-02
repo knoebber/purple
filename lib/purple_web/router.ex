@@ -3,6 +3,20 @@ defmodule PurpleWeb.Router do
   import Phoenix.LiveDashboard.Router
   import PurpleWeb.UserAuth
 
+  def require_api_secret(conn, _opts) do
+    api_secret = Application.fetch_env!(:purple, :api_secret)
+
+    case get_req_header(conn, "x-purple-api-secret") do
+      [^api_secret] ->
+        conn
+
+      _ ->
+        conn
+        |> send_resp(403, "API secret is required")
+        |> halt()
+    end
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -15,6 +29,7 @@ defmodule PurpleWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :require_api_secret
   end
 
   ## Live Dashboard
