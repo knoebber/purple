@@ -26,6 +26,8 @@ config :purple, PurpleWeb.Endpoint,
 # In test we don't send emails.
 config :purple, Purple.Mailer, adapter: Swoosh.Adapters.Test
 
+config :purple, :api_secret, "test secret"
+
 # Print only warnings and errors during test
 config :logger, level: :warn
 
