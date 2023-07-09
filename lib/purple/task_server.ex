@@ -3,11 +3,11 @@ defmodule Purple.TaskServer do
   Runs tasks periodically.
   """
 
-  require Logger
-  use GenServer
   alias Purple.Accounts
   alias Purple.Feed
   alias Purple.Finance
+  require Logger
+  use GenServer
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{})
