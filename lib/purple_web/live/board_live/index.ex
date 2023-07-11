@@ -7,72 +7,25 @@ defmodule PurpleWeb.BoardLive.Index do
   import PurpleWeb.BoardLive.Helpers
   use PurpleWeb, :live_view
 
-  @behaviour PurpleWeb.FancyLink
-
   @filter_types %{
     show_done: :boolean
   }
 
   defp assign_data(socket) do
-    assigns = socket.assigns
-    user_board = assigns.user_board
-
-    saved_tag_names =
-      user_board.tags
-      |> Purple.maybe_list()
-      |> Enum.map(& &1.name)
-
     filter =
       make_filter(
         socket.assigns.query_params,
-        %{
-          show_done: user_board.show_done
-        },
         @filter_types
       )
 
-    filter =
-      if is_nil(Map.get(filter, :tag)) and length(saved_tag_names) > 0 do
-        Map.put(filter, :tag, saved_tag_names)
-      else
-        filter
-      end
-
-    tag_options =
-      case saved_tag_names do
-        [] -> Purple.Tags.make_tag_choices(:item)
-        _ -> []
-      end
+    tag_options = Purple.Tags.make_tag_choices(:item)
 
     socket
     |> assign(:editable_item, nil)
     |> assign(:filter, filter)
     |> assign(:items, Board.list_items(filter))
-    |> assign(
-      :page_title,
-      if(user_board.name == "", do: "Default Board", else: user_board.name)
-    )
+    |> assign(:page_title, "All Items")
     |> assign(:tag_options, tag_options)
-  end
-
-  @impl PurpleWeb.FancyLink
-  def get_fancy_link_type do
-    "🧱"
-  end
-
-  @impl PurpleWeb.FancyLink
-  def get_fancy_link_title(%{"user_board_id" => board_id}) do
-    user_board = Board.get_user_board(board_id)
-
-    case user_board do
-      nil -> nil
-      _ -> user_board.name
-    end
-  end
-
-  @impl PurpleWeb.FancyLink
-  def get_fancy_link_title(_) do
-    nil
   end
 
   @impl Phoenix.LiveView

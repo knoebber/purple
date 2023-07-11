@@ -99,6 +99,21 @@ defmodule PurpleWeb.BoardLiveTest do
 
   describe "user board" do
     test "show board", %{conn: conn} do
+      user_board = user_board_fixture(%{"user" => user_fixture()})
+
+      assert {:ok, _, html} =
+               conn
+               |> log_in_user(user_fixture())
+               |> live(~p"/board/#{user_board.id}")
+
+      items = Purple.Board.list_items(%{tag: Enum.map(user_board.tags(& &1.name))})
+
+      List.each(items, fn item ->
+        assert html =~ item.description
+      end)
+    end
+
+    test "show board settings", %{conn: conn} do
       user_board_fixture(%{"name" => "An Example Board Name!"})
 
       assert {:ok, _, html} =
@@ -109,7 +124,7 @@ defmodule PurpleWeb.BoardLiveTest do
       html =~ "An Example Board Name!"
     end
 
-    test "edit board", %{conn: conn} do
+    test "edit board settings", %{conn: conn} do
       user = user_fixture()
       user_board = user_board_fixture(%{"name" => "Editable board", "user" => user})
 

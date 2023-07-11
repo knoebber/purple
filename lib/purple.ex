@@ -26,6 +26,11 @@ defmodule Purple do
     end
   end
 
+  def int_from_map!(params, key) do
+    {int, ""} = Integer.parse(Map.get(params, key))
+    int
+  end
+
   def scan_4_digits(string) do
     case Regex.run(~r/\d{4}/, string) do
       [four] -> four
