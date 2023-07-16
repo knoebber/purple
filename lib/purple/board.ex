@@ -248,36 +248,6 @@ defmodule Purple.Board do
     |> Repo.all()
   end
 
-  def set_item_complete!(%Item{} = item, is_complete) do
-    now = Purple.Date.utc_now()
-
-    params =
-      if is_complete do
-        %{
-          completed_at: now,
-          status: :DONE,
-          priority: nil
-        }
-      else
-        %{
-          completed_at: nil,
-          last_active_at: now,
-          status: :TODO,
-          priority: 3
-        }
-      end
-
-    item
-    |> Changeset.change(params)
-    |> Repo.update!()
-  end
-
-  def pin_item!(%Item{} = item, is_pinned) do
-    item
-    |> Changeset.change(is_pinned: is_pinned)
-    |> Repo.update!()
-  end
-
   def collapse_item_entries(entry_ids, is_collapsed) do
     ItemEntry
     |> where([ie], ie.id in ^entry_ids)
@@ -326,7 +296,7 @@ defmodule Purple.Board do
     if order_by do
       [{Filter.current_order(filter), order_by}]
     else
-      [desc: :is_pinned, asc: :priority, desc: :last_active_at]
+      [asc: :sort_order, desc: :last_active_at]
     end
   end
 
@@ -360,9 +330,36 @@ defmodule Purple.Board do
     |> Repo.paginate(filter)
   end
 
-  def list_user_board_items(user_board = %UserBoard{tags: tags} = user_board)
+  def list_user_board_items(%UserBoard{tags: tags} = user_board)
       when is_list(tags) do
-    list_items(%{tag: tags, show_done: user_board.show_done})
+    tag_names =
+      user_board.tags
+      |> Purple.maybe_list()
+      |> Enum.map(& &1.name)
+
+    list_items(%{tag: tag_names, show_done: user_board.show_done})
+  end
+
+  def get_user_board_item_status_map(user_board) do
+    transform_status = fn
+      :TODO -> :todo
+      :DONE -> :done
+      :INFO -> :info
+    end
+
+    Enum.reduce(
+      list_user_board_items(user_board),
+      %{
+        todo: [],
+        done: [],
+        info: []
+      },
+      fn item, acc ->
+        Map.put(acc, transform_status.(item.status), [
+          item | Map.get(acc, transform_status.(item.status))
+        ])
+      end
+    )
   end
 
   def list_user_boards(user_id) do

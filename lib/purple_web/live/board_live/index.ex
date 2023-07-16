@@ -7,43 +7,29 @@ defmodule PurpleWeb.BoardLive.Index do
   import PurpleWeb.BoardLive.Helpers
   use PurpleWeb, :live_view
 
-  @filter_types %{
-    show_done: :boolean
-  }
-
   defp assign_data(socket) do
-    filter =
-      make_filter(
-        socket.assigns.query_params,
-        @filter_types
-      )
+    filter = make_filter(socket.assigns.query_params)
 
-    tag_options = Purple.Tags.make_tag_choices(:item)
+    items =
+      if filter == %{} do
+        []
+      else
+        Board.list_items(filter)
+      end
 
     socket
-    |> assign(:editable_item, nil)
     |> assign(:filter, filter)
-    |> assign(:items, Board.list_items(filter))
-    |> assign(:page_title, "All Items")
-    |> assign(:tag_options, tag_options)
+    |> assign(:items, items)
+    |> assign(:page_title, "Item Search")
+    |> assign(:tag_options, Purple.Tags.make_tag_choices(:item))
   end
 
   @impl Phoenix.LiveView
   def handle_params(params, _, socket) do
-    board_id = Purple.int_from_map(params, "user_board_id")
-
-    user_board =
-      if board_id do
-        Board.get_user_board(board_id)
-      else
-        %Board.UserBoard{name: "All Items", show_done: true}
-      end
-
     {
       :noreply,
       socket
       |> assign(:query_params, params)
-      |> assign(:user_board, user_board)
       |> assign_data()
     }
   end
@@ -54,39 +40,10 @@ defmodule PurpleWeb.BoardLive.Index do
       :noreply,
       push_patch(
         socket,
-        to: board_path(socket.assigns.user_board.id, filter_params),
+        to: board_path(nil, filter_params),
         replace: true
       )
     }
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("toggle_pin", %{"id" => id}, socket) do
-    item = Board.get_item!(id)
-    Board.pin_item!(item, !item.is_pinned)
-    {:noreply, assign_data(socket)}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("toggle_complete", %{"id" => id}, socket) do
-    item = Board.get_item!(id)
-    item = Board.set_item_complete!(item, item.completed_at == nil)
-
-    index = Enum.find_index(socket.assigns.items, &(&1.id == item.id))
-
-    {
-      :noreply,
-      assign(
-        socket,
-        :items,
-        List.replace_at(socket.assigns.items, index, item)
-      )
-    }
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("edit_item", %{"id" => id}, socket) do
-    {:noreply, assign(socket, :editable_item, Board.get_item!(id))}
   end
 
   @impl Phoenix.LiveView
@@ -98,22 +55,8 @@ defmodule PurpleWeb.BoardLive.Index do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2"><%= @page_title %></h1>
-    <.modal
-      :if={!!@editable_item}
-      id="edit-item-modal"
-      on_cancel={JS.patch(board_path(@user_board.id, @query_params), replace: true)}
-      show
-    >
-      <:title><%= @page_title %></:title>
-      <.live_component
-        module={PurpleWeb.BoardLive.UpdateItem}
-        id={@editable_item.id}
-        item={@editable_item}
-        return_to={board_path(@user_board.id, @query_params)}
-      />
-    </.modal>
     <.filter_form :let={f}>
-      <.link navigate={item_create_path(@user_board.id)}>
+      <.link navigate={item_create_path(nil)}>
         <.button type="button">Create</.button>
       </.link>
       <.input
@@ -141,7 +84,7 @@ defmodule PurpleWeb.BoardLive.Index do
     <div class="w-full overflow-auto">
       <.table
         filter={@filter}
-        get_route={fn new_filter -> board_path(@user_board.id, new_filter) end}
+        get_route={fn new_filter -> board_path(nil, new_filter) end}
         rows={@items}
       >
         <:col :let={item} label="Item" order_col="id">
@@ -150,42 +93,17 @@ defmodule PurpleWeb.BoardLive.Index do
         <:col :let={item} label="Description" order_col="description">
           <.link navigate={~p"/board/item/#{item}"}><%= item.description %></.link>
         </:col>
-        <:col :let={item} label="Priority" order_col="priority">
-          <%= item.priority %>
-        </:col>
         <:col :let={item} label="Status" order_col="status">
-          <%= if item.status == :INFO  do %>
-            INFO
-          <% else %>
-            <input
-              type="checkbox"
-              checked={item.status == :DONE}
-              phx-click="toggle_complete"
-              phx-value-id={item.id}
-            />
-          <% end %>
+          <%= item.status %>
         </:col>
         <:col :let={item} label="Last Activity" order_col="last_active_at">
           <%= Purple.Date.format(item.last_active_at) %>
         </:col>
-        <:col :let={item} label="">
-          <.link
-            class={if(!item.is_pinned, do: "opacity-30")}
-            phx-click="toggle_pin"
-            phx-value-id={item.id}
-            href="#"
-          >
-            📌
-          </.link>
-        </:col>
-        <:col :let={item} label="">
-          <.link href="#" phx-click="edit_item" phx-value-id={item.id}>✏️</.link>
-        </:col>
       </.table>
       <.page_links
         filter={@filter}
-        first_page={board_path(@user_board.id, first_page(@filter))}
-        next_page={board_path(@user_board.id, next_page(@filter))}
+        first_page={board_path(nil, first_page(@filter))}
+        next_page={board_path(nil, next_page(@filter))}
         num_rows={length(@items)}
       />
     </div>

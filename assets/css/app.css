@@ -193,6 +193,19 @@
         @apply m-8;
     }
 
+    .markdown-content table {
+	@apply bg-purple-100;
+	@apply border-collapse;
+	@apply border-purple-400;
+	@apply border;
+	@apply rounded;
+    }
+
+    .markdown-content thead {
+	@apply bg-purple-300;
+    }
+
+
     .markdown-content hr {
         @apply mb-2;
         @apply mt-2;

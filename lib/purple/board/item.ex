@@ -9,9 +9,8 @@ defmodule Purple.Board.Item do
   schema "items" do
     field :completed_at, :naive_datetime
     field :description, :string
-    field :is_pinned, :boolean, default: false
+    field :sort_order, :integer
     field :last_active_at, :naive_datetime
-    field :priority, :integer, default: 3
     field :show_files, :boolean, default: false
     field :status, Ecto.Enum, values: [:TODO, :INFO, :DONE], default: :TODO
 
@@ -35,30 +34,11 @@ defmodule Purple.Board.Item do
     end
   end
 
-  defp set_priority(changeset) do
-    case get_field(changeset, :status) do
-      :TODO ->
-        if is_nil(get_field(changeset, :priority)) do
-          put_change(changeset, :priority, 3)
-        else
-          changeset
-        end
-
-      _ ->
-        put_change(changeset, :priority, nil)
-    end
-  end
-
   def changeset(item, attrs) do
     item
-    |> cast(attrs, [
-      :description,
-      :priority,
-      :status
-    ])
+    |> cast(attrs, [:description, :status])
     |> cast_assoc(:entries, with: &Purple.Board.ItemEntry.changeset/2)
     |> validate_required([:description, :status])
     |> set_completed_at()
-    |> set_priority()
   end
 end

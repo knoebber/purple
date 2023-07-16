@@ -57,13 +57,6 @@ defmodule PurpleWeb.BoardLive.UpdateItem do
             label="Status"
           />
           <.input field={f[:description]} phx-hook="AutoFocus" label="Description" />
-          <.input
-            :if={Ecto.Changeset.get_field(@changeset, :status) == :TODO}
-            label="Priority"
-            field={f[:priority]}
-            type="select"
-            options={1..5}
-          />
         </div>
         <.button phx-disable-with="Saving...">Save</.button>
       </.form>

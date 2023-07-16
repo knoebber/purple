@@ -376,7 +376,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
         <% end %>
       <% end %>
     </.section>
-    <div id="entry-container" phx-hook="Sortable">
+    <div id="js-entry-container" phx-hook="EntrySortable">
       <%= for entry <- @entries do %>
         <.section class="mt-2 mb-2 js-sortable-item" id={Integer.to_string(entry.id)}>
           <%= if @live_action == :edit_entry and @editable_entry.id == entry.id do %>

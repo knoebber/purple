@@ -23,11 +23,12 @@ import { LiveSocket } from 'phoenix_live_view';
 import topbar from '../vendor/topbar';
 
 import AutoFocus from './hooks/autofocus';
+import BoardSortable from './hooks/board_sortable';
 import CopyMarkdownImage from './hooks/copy_markdown_image';
+import EntrySortable from './hooks/entry_sortable';
 import MarkdownTextarea from './hooks/markdown_textarea';
 import PDF from './hooks/pdf';
 import SideNav from './hooks/side_nav';
-import Sortable from './hooks/sortable';
 
 const params = {
   _csrf_token: document.querySelector("meta[name='csrf-token']").getAttribute('content'),
@@ -39,11 +40,12 @@ const liveSocket = new LiveSocket(
   {
     hooks: {
       AutoFocus,
+      BoardSortable,
       CopyMarkdownImage,
+      EntrySortable,
       MarkdownTextarea,
       PDF,
       SideNav,
-      Sortable,
     },
     params,
   }

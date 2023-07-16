@@ -342,4 +342,25 @@ defmodule Purple.BoardTest do
       assert Repo.exists?(where(Purple.Tags.Tag, [t], t.id == ^new_tag.id))
     end
   end
+
+  describe "user boards" do
+    test "get_user_board_item_status_map" do
+      item_fixture(%{description: "info1 #ubtest", status: :INFO})
+      item_fixture(%{description: "info2 #ubtest", status: :INFO})
+      item_fixture(%{description: "done1 #ubtest", status: :DONE})
+      tags = item_fixture(%{description: "todo1 #ubtest", status: :TODO})
+
+      ub =
+        user_board_fixture(%{
+          "name" => "test status map",
+          "tags" => [Purple.Tags.get_tag!("ubtest")]
+        })
+
+      assert %{
+               todo: [%{description: "todo1 #ubtest"}],
+               done: [%{description: "done1 #ubtest"}],
+               info: [%{description: "info2 #ubtest"}, %{description: "info1 #ubtest"}]
+             } = get_user_board_item_status_map(ub)
+    end
+  end
 end

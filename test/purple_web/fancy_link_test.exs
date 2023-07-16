@@ -74,7 +74,7 @@ defmodule PurpleWeb.FancyLinkTest do
                },
                {
                  "http://localhost:4000/board/3",
-                 PurpleWeb.BoardLive.Index,
+                 PurpleWeb.BoardLive.Board,
                  %{"user_board_id" => "3"}
                },
                {

@@ -88,13 +88,6 @@ defmodule PurpleWeb.BoardLive.CreateItem do
       <div class="flex flex-col mb-2 w-full xl:w-1/2">
         <.input field={f[:description]} phx-hook="AutoFocus" label="Description" />
         <.input
-          :if={Ecto.Changeset.get_field(@changeset, :status) == :TODO}
-          field={f[:priority]}
-          label="Priority"
-          options={1..5}
-          type="select"
-        />
-        <.input
           field={f[:status]}
           type="select"
           options={Board.item_status_mappings()}

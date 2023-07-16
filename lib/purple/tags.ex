@@ -281,6 +281,10 @@ defmodule Purple.Tags do
     ]
   end
 
+  def get_tag!(tag_name) when is_binary(tag_name) do
+    Repo.one!(from t in Tag, where: t.name == ^tag_name)
+  end
+
   @doc """
   Determines whether the result of sync_tags was a non-op.
   """
