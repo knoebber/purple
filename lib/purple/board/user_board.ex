@@ -11,6 +11,7 @@ defmodule Purple.Board.UserBoard do
   schema "user_boards" do
     field :name, :string, default: ""
     field :show_done, :boolean, default: false
+    field :sort_order_json, :string
 
     timestamps()
 

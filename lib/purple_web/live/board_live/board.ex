@@ -58,13 +58,17 @@ defmodule PurpleWeb.BoardLive.Board do
     }
   end
 
+  defp parse_dom_id(dom_id) do
+    [_, _, item_id_str] = String.split(dom_id, "-")
+    Purple.parse_int!(item_id_str)
+  end
+
   defp set_item_status(nil) do
     nil
   end
 
   defp set_item_status(%{"id" => item_dom_id, "status" => status_str}) do
-    [_, _, item_id_str] = String.split(item_dom_id, "-")
-    item = Board.get_item(item_id_str)
+    item = Board.get_item(parse_dom_id(item_dom_id))
 
     if item do
       Board.update_item(item, %{
@@ -87,9 +91,23 @@ defmodule PurpleWeb.BoardLive.Board do
         },
         socket
       ) do
-    dbg(new_status)
     set_item_status(new_status)
-    {:noreply, socket}
+
+    get_ids = fn key ->
+      Map.get(sort_order_map, key, [])
+    end
+
+    user_board =
+      Board.update_user_board_sort_order(
+        socket.assigns.user_board,
+        %{
+          done: Enum.map(get_ids.("doneIds"), &parse_dom_id/1),
+          info: Enum.map(get_ids.("infoIds"), &parse_dom_id/1),
+          todo: Enum.map(get_ids.("todoIds"), &parse_dom_id/1)
+        }
+      )
+
+    {:noreply, assign(socket, :user_board, user_board)}
   end
 
   defp item(assigns) do
@@ -120,10 +138,10 @@ defmodule PurpleWeb.BoardLive.Board do
         <h2>TODO</h2>
       </div>
       <div class="col-start-2 text-center">
-        <h2>DONE</h2>
+        <h2>INFO</h2>
       </div>
       <div class="col-start-3 text-center">
-        <h2>INFO</h2>
+        <h2>DONE</h2>
       </div>
       <div
         class="col-start-1 js-status-todo"
@@ -135,22 +153,22 @@ defmodule PurpleWeb.BoardLive.Board do
         <.item stream={@streams.todo_items} />
       </div>
       <div
-        class="col-start-2 js-status-done"
-        data-sortable-group="items"
-        id="js-sortable-done"
-        phx-hook="BoardSortable"
-        phx-update="stream"
-      >
-        <.item stream={@streams.done_items} />
-      </div>
-      <div
-        class="col-start-3 js-status-info"
+        class="col-start-2 js-status-info"
         data-sortable-group="items"
         id="js-sortable-info"
         phx-hook="BoardSortable"
         phx-update="stream"
       >
         <.item stream={@streams.info_items} />
+      </div>
+      <div
+        class="col-start-3 js-status-done"
+        data-sortable-group="items"
+        id="js-sortable-done"
+        phx-hook="BoardSortable"
+        phx-update="stream"
+      >
+        <.item stream={@streams.done_items} />
       </div>
     </div>
     """

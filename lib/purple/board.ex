@@ -296,7 +296,7 @@ defmodule Purple.Board do
     if order_by do
       [{Filter.current_order(filter), order_by}]
     else
-      [asc: :sort_order, desc: :last_active_at]
+      [desc: :last_active_at]
     end
   end
 
@@ -337,7 +337,7 @@ defmodule Purple.Board do
       |> Purple.maybe_list()
       |> Enum.map(& &1.name)
 
-    list_items(%{tag: tag_names, show_done: user_board.show_done})
+    list_items(%{tag: tag_names, show_done: true})
   end
 
   def get_user_board_item_status_map(user_board) do
@@ -347,19 +347,70 @@ defmodule Purple.Board do
       :INFO -> :info
     end
 
+    sort_order_map = Jason.decode!(user_board.sort_order_json)
+
+    build_index_map = fn item_id_to_index_map, sort_order_map_key ->
+      Enum.reduce(
+        Enum.with_index(Map.get(sort_order_map, sort_order_map_key, [])),
+        item_id_to_index_map,
+        fn {item_id, index}, acc ->
+          Map.put(acc, item_id, index)
+        end
+      )
+    end
+
+    item_id_to_index_map =
+      %{}
+      |> build_index_map.("todo")
+      |> build_index_map.("done")
+      |> build_index_map.("info")
+
+    build_placeholder = fn status_str ->
+      for _ <- 0..(length(Map.get(sort_order_map, status_str, [])) - 1), do: nil
+    end
+
+    item_status_map =
+      Enum.reduce(
+        list_user_board_items(user_board),
+        %{
+          todo: build_placeholder.("todo"),
+          done: build_placeholder.("done"),
+          info: build_placeholder.("info")
+        },
+        fn item, acc ->
+          index = Map.get(item_id_to_index_map, item.id)
+
+          Map.put(
+            acc,
+            transform_status.(item.status),
+            if index do
+              List.replace_at(
+                Map.get(acc, transform_status.(item.status)),
+                index,
+                item
+              )
+            else
+              List.insert_at(
+                Map.get(acc, transform_status.(item.status)),
+                -1,
+                item
+              )
+            end
+          )
+        end
+      )
+
     Enum.reduce(
-      list_user_board_items(user_board),
-      %{
-        todo: [],
-        done: [],
-        info: []
-      },
-      fn item, acc ->
-        Map.put(acc, transform_status.(item.status), [
-          item | Map.get(acc, transform_status.(item.status))
-        ])
+      [:todo, :done, :info],
+      item_status_map,
+      fn status, acc ->
+        Map.put(acc, status, Enum.filter(acc[status], & &1))
       end
     )
+
+    item_status_map
+    |> Map.put(:todo, Repo.preload(item_status_map.todo, :entries))
+    |> Map.put(:info, Repo.preload(item_status_map.info, :entries))
   end
 
   def list_user_boards(user_id) do
@@ -406,6 +457,16 @@ defmodule Purple.Board do
     %UserBoard{user_id: user_id}
     |> UserBoard.changeset(params)
     |> Repo.insert()
+  end
+
+  def update_user_board_sort_order(%UserBoard{} = user_board, %{} = sort_order_map) do
+    json = Jason.encode!(sort_order_map)
+
+    UserBoard
+    |> where([ub], ub.id == ^user_board.id)
+    |> Repo.update_all(set: [sort_order_json: json])
+
+    Map.put(user_board, :sort_order_json, json)
   end
 
   def update_user_board(%UserBoard{} = user_board, params) do

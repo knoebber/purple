@@ -9,7 +9,6 @@ defmodule Purple.Board.Item do
   schema "items" do
     field :completed_at, :naive_datetime
     field :description, :string
-    field :sort_order, :integer
     field :last_active_at, :naive_datetime
     field :show_files, :boolean, default: false
     field :status, Ecto.Enum, values: [:TODO, :INFO, :DONE], default: :TODO
