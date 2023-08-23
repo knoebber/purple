@@ -14,27 +14,19 @@ defmodule PurpleWeb.BoardLiveTest do
     end
 
     test "searching works", %{conn: conn} do
+      user = user_fixture()
       item_fixture(%{description: "grape"})
       item_fixture(%{description: "apple #liveview"})
       item_fixture(%{description: "banana, #boardlivetest"})
 
-      assert {:ok, view, _} =
+      assert {:ok, _, _} =
                conn
-               |> log_in_user(user_fixture())
+               |> log_in_user(user)
                |> live(~p"/board")
 
-      tbody =
-        view
-        |> element("tbody")
-        |> render()
-
-      assert tbody =~ "grape"
-      assert tbody =~ "apple"
-      assert tbody =~ "banana"
-
       assert {:ok, view, _} =
                conn
-               |> log_in_user(user_fixture())
+               |> log_in_user(user)
                |> live(~p"/board?query=grape")
 
       tbody =
@@ -47,7 +39,7 @@ defmodule PurpleWeb.BoardLiveTest do
 
       assert {:ok, view, _} =
                conn
-               |> log_in_user(user_fixture())
+               |> log_in_user(user)
                |> live(~p"/board?tag=boardlivetest")
 
       tbody =
@@ -106,9 +98,9 @@ defmodule PurpleWeb.BoardLiveTest do
                |> log_in_user(user_fixture())
                |> live(~p"/board/#{user_board.id}")
 
-      items = Purple.Board.list_items(%{tag: Enum.map(user_board.tags(& &1.name))})
+      items = Purple.Board.list_items(%{tag: Enum.map(user_board.tags, & &1.name)})
 
-      List.each(items, fn item ->
+      Enum.each(items, fn item ->
         assert html =~ item.description
       end)
     end

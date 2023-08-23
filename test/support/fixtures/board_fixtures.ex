@@ -25,7 +25,6 @@ defmodule Purple.BoardFixtures do
   def valid_item_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
       description: "Test Item 🌞",
-      priority: 1,
       last_active_at: Purple.Date.utc_now(),
       status: :TODO
     })

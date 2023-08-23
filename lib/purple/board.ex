@@ -400,14 +400,17 @@ defmodule Purple.Board do
         end
       )
 
-    Enum.reduce(
-      [:todo, :done, :info],
-      item_status_map,
-      fn status, acc ->
-        Map.put(acc, status, Enum.filter(acc[status], & &1))
-      end
-    )
+    # Filter nil items (this can happen if an item saved in JSON no longer belongs to board).
+    item_status_map =
+      Enum.reduce(
+        [:todo, :done, :info],
+        item_status_map,
+        fn status, acc ->
+          Map.put(acc, status, Enum.filter(acc[status], & &1))
+        end
+      )
 
+    # Preload the entry content for TODO or INFO. Entries from done items are not displayed.
     item_status_map
     |> Map.put(:todo, Repo.preload(item_status_map.todo, :entries))
     |> Map.put(:info, Repo.preload(item_status_map.info, :entries))

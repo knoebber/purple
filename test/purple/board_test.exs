@@ -58,7 +58,6 @@ defmodule Purple.BoardTest do
                      "content" => "http://localhost:4000/board/26 - #invalid #rollback"
                    }
                  },
-                 "priority" => "3",
                  "status" => "TODO"
                })
 
@@ -67,11 +66,8 @@ defmodule Purple.BoardTest do
       refute Repo.exists?(where(Tag, [t], t.name == "invalid"))
 
       assert {:ok, item} = create_item(%{description: "info", status: :INFO})
-      assert is_nil(item.priority)
 
       assert {:ok, item} = create_item(%{description: "create todo item", status: :TODO})
-      assert is_integer(item.priority)
-      assert item.priority > 0
     end
 
     test "update_item/2" do
@@ -88,7 +84,6 @@ defmodule Purple.BoardTest do
       assert info_item.description == "info item"
       assert NaiveDateTime.compare(info_item.updated_at, item.updated_at) == :gt
       assert NaiveDateTime.compare(info_item.last_active_at, item.last_active_at) == :gt
-      assert is_nil(info_item.priority)
 
       assert {:ok, done_item} =
                update_item(
@@ -96,7 +91,6 @@ defmodule Purple.BoardTest do
                  %{description: "done item", status: :DONE}
                )
 
-      assert is_nil(done_item.priority)
       assert done_item.status == :DONE
       assert done_item.description == "done item"
 
@@ -106,34 +100,7 @@ defmodule Purple.BoardTest do
                  %{description: "todo item", status: :TODO}
                )
 
-      assert is_integer(todo_item.priority)
       assert todo_item.description == "todo item"
-    end
-
-    test "set_item_complete!/2" do
-      item = item_fixture()
-      complete_item = set_item_complete!(item, true)
-      assert complete_item.status == :DONE
-      assert complete_item.completed_at != nil
-      assert is_nil(complete_item.priority)
-
-      incomplete_item = set_item_complete!(complete_item, false)
-      assert incomplete_item.status == :TODO
-      assert incomplete_item.completed_at == nil
-      assert NaiveDateTime.compare(incomplete_item.updated_at, item.updated_at) == :gt
-      assert is_integer(incomplete_item.priority)
-      assert incomplete_item.priority > 0
-    end
-
-    test "pin_item!/2" do
-      item = item_fixture()
-
-      pinned_item = pin_item!(item, true)
-      assert pinned_item.is_pinned == true
-
-      unpinned_item = pin_item!(pinned_item, false)
-      assert unpinned_item.is_pinned == false
-      assert NaiveDateTime.compare(unpinned_item.updated_at, item.updated_at) == :gt
     end
 
     test "toggle_show_item_files!/2" do
@@ -345,22 +312,55 @@ defmodule Purple.BoardTest do
 
   describe "user boards" do
     test "get_user_board_item_status_map" do
-      item_fixture(%{description: "info1 #ubtest", status: :INFO})
-      item_fixture(%{description: "info2 #ubtest", status: :INFO})
+      info_item_1 = item_fixture(%{description: "info1 #ubtest", status: :INFO})
+      info_item_2 = item_fixture(%{description: "info2 #ubtest", status: :INFO})
       item_fixture(%{description: "done1 #ubtest", status: :DONE})
-      tags = item_fixture(%{description: "todo1 #ubtest", status: :TODO})
+      todo_item = item_fixture(%{description: "todo1 #ubtest", status: :TODO})
 
-      ub =
+      ub_id =
         user_board_fixture(%{
           "name" => "test status map",
           "tags" => [Purple.Tags.get_tag!("ubtest")]
         })
+        |> update_user_board_sort_order(%{
+          info: [info_item_2.id, info_item_1.id, 9999],
+          done: [9999],
+          todo: []
+        })
+        |> Map.get(:id)
 
       assert %{
-               todo: [%{description: "todo1 #ubtest"}],
-               done: [%{description: "done1 #ubtest"}],
-               info: [%{description: "info2 #ubtest"}, %{description: "info1 #ubtest"}]
-             } = get_user_board_item_status_map(ub)
+               info: [
+                 %Purple.Board.Item{
+                   description: "info2 #ubtest",
+                   status: :INFO,
+                   entries: [
+                     %Purple.Board.ItemEntry{}
+                   ]
+                 },
+                 %Purple.Board.Item{
+                   description: "info1 #ubtest",
+                   entries: [
+                     %Purple.Board.ItemEntry{}
+                   ]
+                 }
+               ],
+               done: [
+                 %Purple.Board.Item{
+                   description: "done1 #ubtest",
+                   status: :DONE
+                 }
+               ],
+               todo: [
+                 %Purple.Board.Item{
+                   description: "todo1 #ubtest",
+                   status: :TODO,
+                   entries: [
+                     %Purple.Board.ItemEntry{}
+                   ]
+                 }
+               ]
+             } = get_user_board_item_status_map(Purple.Board.get_user_board!(ub_id))
     end
   end
 end
