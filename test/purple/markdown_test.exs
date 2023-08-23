@@ -111,6 +111,86 @@ defmodule Purple.MarkdownTest do
     end
   end
 
+  describe "markdown to lists" do
+    test "returns expected html" do
+      checkbox_map = %{
+        "task" => %{id: 1, is_done: false},
+        "task2" => %{id: 2, is_done: true},
+        "task3" => %{id: 3, is_done: true}
+      }
+
+      markdown = ~s"""
+      # header that is ignored
+      - x task #tag1
+      - not checkbox 1
+      - x task2
+      - not checkbox **2**
+      - x task3
+
+      ## header that is ignored
+
+      whatever **content**.
+
+      1. x task4
+      1. not checkbox 3 #tag1
+      """
+
+      checkbox_html = markdown_to_checkbox_list(markdown, %{checkbox_map: checkbox_map})
+
+      expected_html = ~s"""
+      <ul>
+        <li>
+          <span>
+            <input type="checkbox" phx-click="toggle-checkbox" phx-value-id="1"/>
+            task
+          </span>
+      <a class="internal tag" href="/?tag=tag1">#tag1</a>
+        </li>
+        <li>
+          <span>
+            <input checked="checked" type="checkbox" phx-click="toggle-checkbox" phx-value-id="2"/>
+            task2
+          </span>
+        </li>
+        <li>
+          <span>
+            <input checked="checked" type="checkbox" phx-click="toggle-checkbox" phx-value-id="3"/>
+            task3
+          </span>
+        </li>
+        <li>
+          <span>
+            <input type="checkbox"/>
+            task4
+          </span>
+        </li>
+      </ul>
+      """
+
+      assert String.replace(checkbox_html, ~r/\s/, "") ==
+               String.replace(expected_html, ~r/\s/, "")
+
+      not_checkbox_html = markdown_to_non_checkbox_list(markdown, %{checkbox_map: checkbox_map})
+
+      expected_html = ~s"""
+      <ul>
+        <li>
+      not checkbox 1
+        </li>
+        <li>
+          not checkbox <strong>2</strong>
+        </li>
+        <li>
+          not checkbox 3 <a class="internal tag" href="/?tag=tag1">#tag1</a>
+        </li>
+      </ul>
+      """
+
+      assert String.replace(not_checkbox_html, ~r/\s/, "") ==
+               String.replace(expected_html, ~r/\s/, "")
+    end
+  end
+
   describe "extract_checkbox_content/1" do
     test "finds expected checkbox lists" do
       assert extract_checkbox_content("+ x") == []

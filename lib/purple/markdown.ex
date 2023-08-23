@@ -250,16 +250,63 @@ defmodule Purple.Markdown do
   def markdown_to_html(md, extension_data \\ %{}) do
     case EarmarkParser.as_ast(md) do
       {:ok, ast, _} ->
-        Earmark.Transform.transform(
-          map_purple_ast(
-            ast,
-            set_default_extension_data(extension_data),
-            get_valid_extensions()
-          )
+        ast
+        |> map_purple_ast(
+          set_default_extension_data(extension_data),
+          get_valid_extensions()
         )
+        |> Earmark.Transform.transform()
 
       _ ->
         md
     end
+  end
+
+  defp markdown_to_list_items(md, extension_data, should_be_checkboxes) do
+    case EarmarkParser.as_ast(md) do
+      {:ok, ast, _} ->
+        "<ul>" <>
+          (ast
+           |> map_purple_ast(
+             set_default_extension_data(extension_data),
+             get_valid_extensions()
+           )
+           |> Earmark.Transform.transform()
+           |> Floki.parse_document!()
+           |> Floki.find("li")
+           |> Floki.traverse_and_update(fn
+             {"li", _, children} = node ->
+               has_child_checkboxes = length(Floki.find(children, "input[type=checkbox]")) > 0
+
+               if (should_be_checkboxes and has_child_checkboxes) or
+                    (not should_be_checkboxes and not has_child_checkboxes) do
+                 node
+               else
+                 nil
+               end
+
+             node ->
+               node
+           end)
+           |> Floki.raw_html()) <>
+          "</ul>"
+
+      _ ->
+        md
+    end
+  end
+
+  @doc """
+  Like markdown_to_html, but only returns top level <ol> elements with checkbox list items.
+  """
+  def markdown_to_checkbox_list(md, extension_data \\ %{}) do
+    markdown_to_list_items(md, extension_data, true)
+  end
+
+  @doc """
+  Like markdown_to_html, but only returns top level <ol> elements with non checkbox list items.
+  """
+  def markdown_to_non_checkbox_list(md, extension_data \\ %{}) do
+    markdown_to_list_items(md, extension_data, false)
   end
 end
