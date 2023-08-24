@@ -22,7 +22,7 @@ defmodule PurpleWeb.BoardLive.Board do
       |> PurpleWeb.FancyLink.build_fancy_link_map()
 
     socket
-    |> stream(:todo_items, status_map.todo |> dbg)
+    |> stream(:todo_items, status_map.todo)
     |> stream(:done_items, status_map.done)
     |> stream(:info_items, status_map.info)
     |> assign(:fancy_link_map, fancy_link_map)
@@ -90,6 +90,13 @@ defmodule PurpleWeb.BoardLive.Board do
           end
       })
     end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("toggle-checkbox", %{"id" => id}, socket) do
+    checkbox = Board.get_entry_checkbox!(id)
+    Board.set_checkbox_done(checkbox, !checkbox.is_done)
+    {:noreply, assign_items(socket, socket.assigns.user_board)}
   end
 
   @impl Phoenix.LiveView
