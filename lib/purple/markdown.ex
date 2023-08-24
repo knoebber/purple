@@ -256,57 +256,50 @@ defmodule Purple.Markdown do
           get_valid_extensions()
         )
         |> Earmark.Transform.transform()
+        |> transform_html(Map.get(extension_data, :render_type))
 
       _ ->
         md
     end
   end
 
-  defp markdown_to_list_items(md, extension_data, should_be_checkboxes) do
-    case EarmarkParser.as_ast(md) do
-      {:ok, ast, _} ->
-        "<ul>" <>
-          (ast
-           |> map_purple_ast(
-             set_default_extension_data(extension_data),
-             get_valid_extensions()
-           )
-           |> Earmark.Transform.transform()
-           |> Floki.parse_document!()
-           |> Floki.find("li")
-           |> Floki.traverse_and_update(fn
-             {"li", _, children} = node ->
-               has_child_checkboxes = length(Floki.find(children, "input[type=checkbox]")) > 0
+  defp transform_html(html, nil) do
+    html
+  end
 
-               if (should_be_checkboxes and has_child_checkboxes) or
-                    (not should_be_checkboxes and not has_child_checkboxes) do
-                 node
-               else
-                 nil
-               end
+  defp transform_html(html, :checkbox_list_only) do
+    html_to_list_items(html, true)
+  end
 
-             node ->
-               node
-           end)
-           |> Floki.raw_html()) <>
-          "</ul>"
+  defp transform_html(html, :non_checkbox_list_only) do
+    html_to_list_items(html, false)
+  end
 
-      _ ->
-        md
+  defp html_to_list_items(html, should_be_checkboxes) do
+    list_item_html =
+      html
+      |> Floki.parse_document!()
+      |> Floki.find("li")
+      |> Floki.traverse_and_update(fn
+        {"li", _, children} = node ->
+          has_child_checkboxes = length(Floki.find(children, "input[type=checkbox]")) > 0
+
+          if (should_be_checkboxes and has_child_checkboxes) or
+               (not should_be_checkboxes and not has_child_checkboxes) do
+            node
+          else
+            nil
+          end
+
+        node ->
+          node
+      end)
+      |> Floki.raw_html()
+
+    unless list_item_html == "" do
+      "<ul>" <> list_item_html <> "</ul>"
+    else
+      ""
     end
-  end
-
-  @doc """
-  Like markdown_to_html, but only returns top level <ol> elements with checkbox list items.
-  """
-  def markdown_to_checkbox_list(md, extension_data \\ %{}) do
-    markdown_to_list_items(md, extension_data, true)
-  end
-
-  @doc """
-  Like markdown_to_html, but only returns top level <ol> elements with non checkbox list items.
-  """
-  def markdown_to_non_checkbox_list(md, extension_data \\ %{}) do
-    markdown_to_list_items(md, extension_data, false)
   end
 end

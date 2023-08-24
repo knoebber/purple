@@ -220,6 +220,16 @@ defmodule Purple.Board do
     )
   end
 
+  def get_item!(id, :entries, :checkboxes) do
+    Repo.one!(
+      from i in Item,
+        left_join: e in assoc(i, :entries),
+        left_join: x in assoc(e, :checkboxes),
+        where: i.id == ^id,
+        preload: [entries: {e, checkboxes: x}]
+    )
+  end
+
   def get_entry!(id) do
     Repo.get!(ItemEntry, id)
   end
@@ -410,10 +420,23 @@ defmodule Purple.Board do
         end
       )
 
-    # Preload the entry content for TODO or INFO. Entries from done items are not displayed.
+    # Preload the entry content for TODO or INFO.
+    # Entries from done items are not displayed.
+    # Checkboxes are only displayed for info.
+    todo_items =
+      item_status_map.todo
+      |> Repo.preload(entries: [:checkboxes])
+      |> Enum.map(&Item.set_combined_entry_content(&1))
+      |> Enum.map(&Item.set_combined_checkbox_map(&1))
+
+    info_items =
+      item_status_map.info
+      |> Repo.preload(:entries)
+      |> Enum.map(&Item.set_combined_entry_content(&1))
+
     item_status_map
-    |> Map.put(:todo, Repo.preload(item_status_map.todo, :entries))
-    |> Map.put(:info, Repo.preload(item_status_map.info, :entries))
+    |> Map.put(:todo, todo_items)
+    |> Map.put(:info, info_items)
   end
 
   def list_user_boards(user_id) do

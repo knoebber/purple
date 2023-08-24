@@ -189,7 +189,7 @@
         @apply mr-2;
     }
 
-    .markdown-content {
+    .markdown-content:not(:empty) {
         @apply m-8;
     }
 

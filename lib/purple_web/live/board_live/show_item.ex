@@ -1,6 +1,6 @@
 defmodule PurpleWeb.BoardLive.ShowItem do
   alias Purple.Board
-  alias Purple.Board.ItemEntry
+  alias Purple.Board.{ItemEntry, Item}
   alias Purple.Uploads
   import PurpleWeb.BoardLive.Helpers
   use PurpleWeb, :live_view
@@ -17,52 +17,41 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     |> assign(:num_total_files, length(files))
   end
 
-  defp assign_entries(socket) do
-    entries = Board.list_item_entries(socket.assigns.item.id, :checkboxes)
+  defp assign_item(socket, item_id) do
+    item =
+      item_id
+      |> Board.get_item!(:entries, :checkboxes)
+      |> Item.set_combined_entry_content()
+      |> Item.sort_entries()
+      |> Item.set_entry_checkbox_maps()
 
     fancy_link_map =
-      entries
-      |> Enum.reduce([], fn entry, route_info ->
-        PurpleWeb.FancyLink.extract_routes_from_markdown(entry.content) ++ route_info
-      end)
+      item.combined_entry_content
+      |> PurpleWeb.FancyLink.extract_routes_from_markdown()
       |> PurpleWeb.FancyLink.build_fancy_link_map()
-
-    socket
-    |> assign(:entries, entries)
-    |> assign(:fancy_link_map, fancy_link_map)
-  end
-
-  defp assign_default_params(socket, item_id) do
-    item = Board.get_item!(item_id)
 
     socket
     |> assign_uploads(item)
     |> assign(:page_title, item.description)
     |> assign(:item, item)
-    |> assign_entries()
+    |> assign(:fancy_link_map, fancy_link_map)
   end
 
+  defp assign_item(socket), do: assign_item(socket, socket.assigns.item.id)
+
   defp apply_action(socket, :edit_entry, %{"id" => item_id, "entry_id" => entry_id}) do
-    socket = assign_default_params(socket, item_id)
+    socket = assign_item(socket, item_id)
     assign(socket, :editable_entry, get_entry(socket, entry_id))
   end
 
   defp apply_action(socket, _, %{"id" => item_id}) do
-    assign_default_params(socket, item_id)
+    assign_item(socket, item_id)
   end
 
   defp get_entry(socket, entry_id) do
-    Enum.find(socket.assigns.entries, %ItemEntry{}, fn entry ->
+    Enum.find(socket.assigns.item.entries, %ItemEntry{}, fn entry ->
       Integer.to_string(entry.id) == entry_id
     end)
-  end
-
-  defp make_checkbox_map(entry) do
-    Enum.reduce(
-      entry.checkboxes,
-      %{},
-      fn checkbox, acc -> Map.put(acc, checkbox.description, checkbox) end
-    )
   end
 
   @impl PurpleWeb.FancyLink
@@ -101,14 +90,14 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def handle_event("toggle-checkbox", %{"id" => id}, socket) do
     checkbox = Board.get_entry_checkbox!(id)
     Board.set_checkbox_done(checkbox, !checkbox.is_done)
-    {:noreply, assign_entries(socket)}
+    {:noreply, assign_item(socket)}
   end
 
   @impl Phoenix.LiveView
   def handle_event("toggle_entry_collapse", %{"id" => id}, socket) do
     entry = get_entry(socket, id)
     Board.collapse_item_entries([id], !entry.is_collapsed)
-    {:noreply, assign_entries(socket)}
+    {:noreply, assign_item(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -118,7 +107,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
     {
       :noreply,
-      assign(socket, :item, Board.get_item!(item.id))
+      assign_item(socket)
     }
   end
 
@@ -131,7 +120,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       :noreply,
       socket
       |> put_flash(:info, "Entry deleted")
-      |> assign_entries()
+      |> assign_item()
     }
   end
 
@@ -165,13 +154,14 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       |> Enum.with_index()
       |> Enum.map(fn {entry_id, i} ->
         Map.put(
-          Enum.find(socket.assigns.entries, fn entry ->
+          Enum.find(socket.assigns.item.entries, fn entry ->
             Integer.to_string(entry.id) == entry_id
           end),
           :sort_order,
           i
         )
       end)
+      |> dbg
     )
 
     {:noreply, socket}
@@ -377,7 +367,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <% end %>
     </.section>
     <div id="js-entry-container" phx-hook="EntrySortable">
-      <%= for entry <- @entries do %>
+      <%= for entry <- @item.entries do %>
         <.section class="mt-2 mb-2 js-sortable-item" id={Integer.to_string(entry.id)}>
           <%= if @live_action == :edit_entry and @editable_entry.id == entry.id do %>
             <.entry_header socket={@socket} item={@item} entry={entry} editing={true} />
@@ -393,7 +383,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <.entry_header socket={@socket} item={@item} entry={entry} editing={false} />
             <.markdown
               :if={entry.is_collapsed == false}
-              checkbox_map={make_checkbox_map(entry)}
+              checkbox_map={entry.checkbox_map}
               content={entry.content}
               fancy_link_map={@fancy_link_map}
               link_type={:board}

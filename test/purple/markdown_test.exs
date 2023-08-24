@@ -135,7 +135,8 @@ defmodule Purple.MarkdownTest do
       1. not checkbox 3 #tag1
       """
 
-      checkbox_html = markdown_to_checkbox_list(markdown, %{checkbox_map: checkbox_map})
+      checkbox_html =
+        markdown_to_html(markdown, %{checkbox_map: checkbox_map, render_type: :checkbox_list_only})
 
       expected_html = ~s"""
       <ul>
@@ -170,7 +171,11 @@ defmodule Purple.MarkdownTest do
       assert String.replace(checkbox_html, ~r/\s/, "") ==
                String.replace(expected_html, ~r/\s/, "")
 
-      not_checkbox_html = markdown_to_non_checkbox_list(markdown, %{checkbox_map: checkbox_map})
+      not_checkbox_html =
+        markdown_to_html(markdown, %{
+          checkbox_map: checkbox_map,
+          render_type: :non_checkbox_list_only
+        })
 
       expected_html = ~s"""
       <ul>

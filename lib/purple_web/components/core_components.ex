@@ -618,18 +618,19 @@ defmodule PurpleWeb.CoreComponents do
   attr :fancy_link_map, :map, default: %{}
   attr :link_type, :atom, default: nil
   attr :content, :string, required: true
+  attr :render_type, :atom, default: nil
 
   def markdown(assigns) do
+    # avoid whitespace so that :empty selector works.
     ~H"""
-    <div :if={@content != ""} class="markdown-content">
-      <%= Phoenix.HTML.raw(
+    <div :if={@content != ""} class="markdown-content" phx-no-format><%= Phoenix.HTML.raw(
         Purple.Markdown.markdown_to_html(@content, %{
           checkbox_map: @checkbox_map,
           fancy_link_map: @fancy_link_map,
-          get_tag_link: &get_tag_link(&1, @link_type)
+          get_tag_link: &get_tag_link(&1, @link_type),
+          render_type: @render_type
         })
-      ) %>
-    </div>
+      ) %></div>
     """
   end
 

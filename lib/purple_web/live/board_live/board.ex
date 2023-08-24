@@ -11,11 +11,21 @@ defmodule PurpleWeb.BoardLive.Board do
 
   defp assign_items(socket, user_board) do
     status_map = Board.get_user_board_item_status_map(user_board)
+    items_for_markdown_render = status_map.todo ++ status_map.info
+
+    fancy_link_map =
+      items_for_markdown_render
+      |> Enum.reduce([], fn item, route_info ->
+        PurpleWeb.FancyLink.extract_routes_from_markdown(item.combined_entry_content) ++
+          route_info
+      end)
+      |> PurpleWeb.FancyLink.build_fancy_link_map()
 
     socket
-    |> stream(:todo_items, status_map.todo)
+    |> stream(:todo_items, status_map.todo |> dbg)
     |> stream(:done_items, status_map.done)
     |> stream(:info_items, status_map.info)
+    |> assign(:fancy_link_map, fancy_link_map)
   end
 
   @impl PurpleWeb.FancyLink
@@ -110,6 +120,29 @@ defmodule PurpleWeb.BoardLive.Board do
     {:noreply, assign(socket, :user_board, user_board)}
   end
 
+  defp item_markdown(%{item: %{status: :DONE}} = assigns), do: ~H""
+
+  defp item_markdown(%{item: %{status: :INFO}} = assigns) do
+    ~H"""
+    <.markdown
+      content={@item.combined_entry_content}
+      render_type={:non_checkbox_list_only}
+      fancy_link_map={@fancy_link_map}
+    />
+    """
+  end
+
+  defp item_markdown(%{item: %{status: :TODO}} = assigns) do
+    ~H"""
+    <.markdown
+      content={@item.combined_entry_content}
+      render_type={:checkbox_list_only}
+      fancy_link_map={@fancy_link_map}
+      checkbox_map={@item.combined_checkbox_map}
+    />
+    """
+  end
+
   defp item(assigns) do
     ~H"""
     <.section :for={{dom_id, item} <- @stream} id={dom_id} class="mb-2 cursor-move js-sortable-item">
@@ -120,6 +153,7 @@ defmodule PurpleWeb.BoardLive.Board do
           </.link>
         </h2>
       </div>
+      <.item_markdown item={item} fancy_link_map={@fancy_link_map} />
     </.section>
     """
   end
@@ -150,7 +184,7 @@ defmodule PurpleWeb.BoardLive.Board do
         phx-hook="BoardSortable"
         phx-update="stream"
       >
-        <.item stream={@streams.todo_items} />
+        <.item stream={@streams.todo_items} fancy_link_map={@fancy_link_map} />
       </div>
       <div
         class="col-start-2 js-status-info"
@@ -159,7 +193,7 @@ defmodule PurpleWeb.BoardLive.Board do
         phx-hook="BoardSortable"
         phx-update="stream"
       >
-        <.item stream={@streams.info_items} />
+        <.item stream={@streams.info_items} fancy_link_map={@fancy_link_map} />
       </div>
       <div
         class="col-start-3 js-status-done"
@@ -168,7 +202,7 @@ defmodule PurpleWeb.BoardLive.Board do
         phx-hook="BoardSortable"
         phx-update="stream"
       >
-        <.item stream={@streams.done_items} />
+        <.item stream={@streams.done_items} fancy_link_map={@fancy_link_map} />
       </div>
     </div>
     """

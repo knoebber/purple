@@ -13,10 +13,62 @@ defmodule Purple.Board.Item do
     field :show_files, :boolean, default: false
     field :status, Ecto.Enum, values: [:TODO, :INFO, :DONE], default: :TODO
 
+    field :combined_checkbox_map, :map, virtual: true, default: %{}
+    field :combined_entry_content, :string, virtual: true, default: nil
+
     timestamps()
 
     has_many :entries, Purple.Board.ItemEntry
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.ItemTag
+  end
+
+  def set_combined_entry_content(%__MODULE__{} = item) do
+    Map.put(
+      item,
+      :combined_entry_content,
+      Enum.reduce(
+        Map.get(item, :entries, []),
+        "",
+        &(&1.content <> "\n\n" <> &2)
+      )
+    )
+  end
+
+  def sort_entries(%__MODULE__{entries: entries} = item) when is_list(entries) do
+    Map.put(
+      item,
+      :entries,
+      Enum.sort(
+        entries,
+        &(&1.sort_order <= &2.sort_order)
+      )
+    )
+  end
+
+  def set_entry_checkbox_maps(%__MODULE__{entries: entries} = item) when is_list(entries) do
+    Map.put(
+      item,
+      :entries,
+      Enum.map(
+        entries,
+        &Purple.Board.ItemEntry.set_checkbox_map/1
+      )
+    )
+  end
+
+  def set_combined_checkbox_map(%__MODULE__{entries: entries} = item)
+      when is_list(entries) do
+    item = set_entry_checkbox_maps(item)
+
+    item
+    |> Map.put(
+      :combined_checkbox_map,
+      Enum.reduce(
+        item.entries,
+        %{},
+        fn entry, acc -> Map.merge(entry.checkbox_map, acc) end
+      )
+    )
   end
 
   defp set_completed_at(changeset) do
