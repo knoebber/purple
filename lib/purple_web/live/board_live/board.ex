@@ -124,7 +124,7 @@ defmodule PurpleWeb.BoardLive.Board do
         }
       )
 
-    {:noreply, assign(socket, :user_board, user_board)}
+    {:noreply, assign_items(socket, user_board)}
   end
 
   defp item_markdown(%{item: %{status: :DONE}} = assigns), do: ~H""
