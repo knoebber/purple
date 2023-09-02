@@ -100,6 +100,26 @@ defmodule PurpleWeb.BoardLive.Board do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("toggle-done", _, socket) do
+    user_board = socket.assigns.user_board
+
+    {:ok, _} =
+      Board.update_user_board(user_board, %{
+        "show_done" => !user_board.show_done,
+        "tags" => user_board.tags
+      })
+
+    user_board = Board.get_user_board!(user_board.id)
+
+    {
+      :noreply,
+      socket
+      |> assign(:user_board, user_board)
+      |> assign_items(user_board)
+    }
+  end
+
+  @impl Phoenix.LiveView
   def handle_event(
         "save_item_order",
         %{
@@ -114,14 +134,22 @@ defmodule PurpleWeb.BoardLive.Board do
       Map.get(sort_order_map, key, [])
     end
 
+    params = %{
+      info: Enum.map(get_ids.("infoIds"), &parse_dom_id/1),
+      todo: Enum.map(get_ids.("todoIds"), &parse_dom_id/1)
+    }
+
+    params =
+      if socket.assigns.user_board.show_done do
+        Map.put(params, :done, Enum.map(get_ids.("doneIds"), &parse_dom_id/1))
+      else
+        params
+      end
+
     user_board =
       Board.update_user_board_sort_order(
         socket.assigns.user_board,
-        %{
-          done: Enum.map(get_ids.("doneIds"), &parse_dom_id/1),
-          info: Enum.map(get_ids.("infoIds"), &parse_dom_id/1),
-          todo: Enum.map(get_ids.("todoIds"), &parse_dom_id/1)
-        }
+        params
       )
 
     {:noreply, assign_items(socket, user_board)}
@@ -174,15 +202,26 @@ defmodule PurpleWeb.BoardLive.Board do
       </.link>
       <h1 class="mb-2"><%= @page_title %></h1>
     </div>
-    <div class="grid grid-cols-3 gap-4 ">
+    <div
+      :if={!@user_board.show_done}
+      class="flex justify-end js-status-done"
+      data-sortable-group="items"
+      id="js-sortable-done-hole"
+      phx-hook="BoardSortable"
+    >
+      Done Hole <.link href="#" phx-click="toggle-done">🌞️</.link>
+    </div>
+    <div class="grid gap-4">
       <div class="col-start-1 text-center">
         <h2>TODO</h2>
       </div>
       <div class="col-start-2 text-center">
         <h2>INFO</h2>
       </div>
-      <div class="col-start-3 text-center">
-        <h2>DONE</h2>
+      <div :if={@user_board.show_done} class="col-start-3 text-center">
+        <h2>
+          DONE <.link href="#" phx-click="toggle-done">🌚️</.link>
+        </h2>
       </div>
       <div
         class="col-start-1 js-status-todo"
@@ -203,6 +242,7 @@ defmodule PurpleWeb.BoardLive.Board do
         <.item stream={@streams.info_items} fancy_link_map={@fancy_link_map} />
       </div>
       <div
+        :if={@user_board.show_done}
         class="col-start-3 js-status-done"
         data-sortable-group="items"
         id="js-sortable-done"

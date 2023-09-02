@@ -347,7 +347,7 @@ defmodule Purple.Board do
       |> Purple.maybe_list()
       |> Enum.map(& &1.name)
 
-    list_items(%{tag: tag_names, show_done: true})
+    list_items(%{tag: tag_names, show_done: user_board.show_done})
   end
 
   def get_user_board_item_status_map(user_board) do

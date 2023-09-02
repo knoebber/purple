@@ -1,9 +1,11 @@
 import Sortable from 'sortablejs/modular/sortable.core.esm.js';
 
 function getIds(sortableEl) {
-  return Array
-    .from(sortableEl.querySelectorAll('.js-sortable-item'))
-    .map((e) => e.id);
+  return sortableEl
+    ? Array
+      .from(sortableEl.querySelectorAll('.js-sortable-item'))
+      .map((e) => e.id)
+    : null;
 }
 
 function getStatus(sortableEl, itemEl) {
@@ -26,7 +28,6 @@ export default {
       group: this.el.dataset.sortableGroup,
       dragClass: 'filter-none',
       onSort: (sortableEvent) => {
-	console.log(sortableEvent);
 	const { item, originalTarget } = sortableEvent;
 	const shouldChangeStatus = item.parentElement.id !== originalTarget.id;
 	this.pushEvent('save_item_order', {
