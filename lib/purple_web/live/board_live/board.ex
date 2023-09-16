@@ -22,9 +22,9 @@ defmodule PurpleWeb.BoardLive.Board do
       |> PurpleWeb.FancyLink.build_fancy_link_map()
 
     socket
-    |> stream(:todo_items, status_map.todo)
-    |> stream(:done_items, status_map.done)
-    |> stream(:info_items, status_map.info)
+    |> stream(:todo_items, status_map.todo, reset: true)
+    |> stream(:done_items, status_map.done, reset: true)
+    |> stream(:info_items, status_map.info, reset: true)
     |> assign(:fancy_link_map, fancy_link_map)
   end
 
@@ -45,13 +45,15 @@ defmodule PurpleWeb.BoardLive.Board do
 
   @impl Phoenix.LiveView
   def mount(_, _, socket) do
+    dom_id = &"js-item-#{&1.id}"
+
     {
       :ok,
       socket
       |> assign_side_nav()
-      |> stream_configure(:todo_items, dom_id: &"js-item-#{&1.id}")
-      |> stream_configure(:done_items, dom_id: &"js-item-#{&1.id}")
-      |> stream_configure(:info_items, dom_id: &"js-item-#{&1.id}")
+      |> stream_configure(:todo_items, dom_id: dom_id)
+      |> stream_configure(:done_items, dom_id: dom_id)
+      |> stream_configure(:info_items, dom_id: dom_id)
     }
   end
 
@@ -209,7 +211,7 @@ defmodule PurpleWeb.BoardLive.Board do
       id="js-sortable-done-hole"
       phx-hook="BoardSortable"
     >
-      Done Hole <.link href="#" phx-click="toggle-done">🌞️</.link>
+      Done Hole&nbsp;<.link href="#" phx-click="toggle-done">️🌚</.link>
     </div>
     <div class="grid gap-4">
       <div class="col-start-1 text-center">
@@ -220,7 +222,7 @@ defmodule PurpleWeb.BoardLive.Board do
       </div>
       <div :if={@user_board.show_done} class="col-start-3 text-center">
         <h2>
-          DONE <.link href="#" phx-click="toggle-done">🌚️</.link>
+          DONE <.link href="#" phx-click="toggle-done">🌞️</.link>
         </h2>
       </div>
       <div
