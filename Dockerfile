@@ -97,7 +97,7 @@ ENV MIX_ENV="prod"
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/purple ./
 
-RUN apt-get update -y && apt-get install -y imagemagick
+RUN apt-get update -y && apt-get install -y imagemagick ca-certificates
 
 USER nobody
 
