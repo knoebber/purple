@@ -56,6 +56,9 @@ defmodule Purple do
     end
   end
 
+  def maybe_hd([head | _]), do: head
+  def maybe_hd(_), do: nil
+
   def drop_falsey_values(map) when is_map(map) do
     Map.reject(map, fn {_, val} ->
       is_nil(val) or val == "" or val == 0 or val == false or val == []

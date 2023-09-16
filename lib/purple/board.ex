@@ -454,7 +454,7 @@ defmodule Purple.Board do
       )
       |> MapSet.size() > 0
     end)
-    |> hd
+    |> Purple.maybe_hd()
   end
 
   def list_user_boards(user_id) do

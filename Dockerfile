@@ -13,7 +13,8 @@
 #   - Ex: hexpm/elixir:1.13.4-erlang-24.3.3-debian-bullseye-20210902-slim
 #
 ARG BUILDER_IMAGE="hexpm/elixir:1.15.5-erlang-26.0.2-debian-bullseye-20230612-slim"
-ARG RUNNER_IMAGE="debian:bullseye-slim"
+ARG DEBIAN_VERSION=bullseye-20220801-slim
+ARG RUNNER_IMAGE="debian:bullseye-slim" # i think this is breaking the oauth flow, something something erlang cert...
 
 FROM ${BUILDER_IMAGE} as builder
 
