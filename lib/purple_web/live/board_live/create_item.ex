@@ -25,9 +25,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   end
 
   defp user_board_entry(ub = %UserBoard{}) do
-    make_full_url(~p"/board/#{ub}") <>
-      " - " <>
-      Enum.map_join(ub.tags, " ", &("#" <> &1.name))
+    Enum.map_join(ub.tags, " ", &("#" <> &1.name))
   end
 
   @impl Phoenix.LiveView
