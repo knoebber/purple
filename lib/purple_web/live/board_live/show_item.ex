@@ -35,6 +35,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     |> assign(:page_title, item.description)
     |> assign(:item, item)
     |> assign(:fancy_link_map, fancy_link_map)
+    |> assign(:user_board, Board.get_relevant_user_board(item, socket.assigns.current_user))
   end
 
   defp assign_item(socket), do: assign_item(socket, socket.assigns.item.id)
@@ -161,7 +162,6 @@ defmodule PurpleWeb.BoardLive.ShowItem do
           i
         )
       end)
-      |> dbg
     )
 
     {:noreply, socket}
@@ -259,9 +259,15 @@ defmodule PurpleWeb.BoardLive.ShowItem do
   def render(assigns) do
     ~H"""
     <h1>
-      <.link navigate={~p"/board"}>
-        Board
-      </.link>
+      <%= if @user_board do %>
+        <.link navigate={~p"/board/#{@user_board}"}>
+          <%= @user_board.name %>
+        </.link>
+      <% else %>
+        <.link navigate={~p"/board"}>
+          Board
+        </.link>
+      <% end %>
       / <%= @item.description %>
     </h1>
     <.section class="mt-2 mb-2">

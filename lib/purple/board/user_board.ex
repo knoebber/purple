@@ -23,6 +23,25 @@ defmodule Purple.Board.UserBoard do
       unique: true
   end
 
+  def get_sort_order_map(%__MODULE__{} = ub) do
+    Jason.decode!(ub.sort_order_json)
+  end
+
+  def get_num_sorted_items(%__MODULE__{} = ub) do
+    get_sort_order_map(ub)
+    |> Map.values()
+    |> Enum.reduce(
+      0,
+      fn
+        lst, total when is_list(lst) ->
+          length(lst) + total
+
+        _, total ->
+          total
+      end
+    )
+  end
+
   def changeset(board, %{"tags" => tags} = attrs) do
     changeset =
       board

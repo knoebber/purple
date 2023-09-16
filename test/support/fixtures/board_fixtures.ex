@@ -68,7 +68,7 @@ defmodule Purple.BoardFixtures do
 
     attrs =
       Enum.into(attrs, %{
-        "name" => "Purple Board",
+        "name" => "Purple Board (fixture default)",
         "show_done" => true,
         "tags" => [tag]
       })

@@ -357,7 +357,7 @@ defmodule Purple.Board do
       :INFO -> :info
     end
 
-    sort_order_map = Jason.decode!(user_board.sort_order_json)
+    sort_order_map = UserBoard.get_sort_order_map(user_board)
 
     build_index_map = fn item_id_to_index_map, sort_order_map_key ->
       Enum.reduce(
@@ -426,17 +426,35 @@ defmodule Purple.Board do
     todo_items =
       item_status_map.todo
       |> Repo.preload(entries: [:checkboxes])
-      |> Enum.map(&Item.set_combined_entry_content(&1))
+      |> Enum.map(&Item.set_combined_entry_content(&1, true))
       |> Enum.map(&Item.set_combined_checkbox_map(&1))
 
     info_items =
       item_status_map.info
       |> Repo.preload(:entries)
-      |> Enum.map(&Item.set_combined_entry_content(&1))
+      |> Enum.map(&Item.set_combined_entry_content(&1, true))
 
     item_status_map
     |> Map.put(:todo, todo_items)
     |> Map.put(:info, info_items)
+  end
+
+  def get_relevant_user_board(item = %Item{}, %Purple.Accounts.User{id: user_id}) do
+    item = Repo.preload(item, :tags)
+
+    user_id
+    |> list_user_boards()
+    |> Enum.sort(fn a, b ->
+      UserBoard.get_num_sorted_items(a) <= UserBoard.get_num_sorted_items(b)
+    end)
+    |> Enum.filter(fn board ->
+      MapSet.intersection(
+        MapSet.new(item.tags),
+        MapSet.new(board.tags)
+      )
+      |> MapSet.size() > 0
+    end)
+    |> hd
   end
 
   def list_user_boards(user_id) do

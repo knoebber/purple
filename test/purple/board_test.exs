@@ -2,6 +2,7 @@ defmodule Purple.BoardTest do
   alias Purple.Board.{ItemEntry, UserBoard}
   alias Purple.Tags.Tag
   import Ecto.Query
+  import Purple.AccountsFixtures
   import Purple.Board
   import Purple.BoardFixtures
   use Purple.DataCase
@@ -361,6 +362,30 @@ defmodule Purple.BoardTest do
                  }
                ]
              } = get_user_board_item_status_map(Purple.Board.get_user_board!(ub_id))
+    end
+
+    test "get_relevant_user_board" do
+      item1 = item_fixture(%{description: "item1 #tag1", status: :INFO})
+      item2 = item_fixture(%{description: "item2 #tag2", status: :INFO})
+
+      user1 = user_fixture()
+      user2 = user_fixture()
+
+      ub1 =
+        user_board_fixture(%{
+          "tags" => [Purple.Tags.get_tag!("tag1")],
+          "user" => user1
+        })
+
+      ub2 =
+        user_board_fixture(%{
+          "tags" => [Purple.Tags.get_tag!("tag2")],
+          "user" => user1
+        })
+
+      assert ub1 == get_relevant_user_board(item1, user1)
+      assert ub2 == get_relevant_user_board(item2, user1)
+      assert nil == get_relevant_user_board(item1, user2)
     end
   end
 end

@@ -22,14 +22,20 @@ defmodule Purple.Board.Item do
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.ItemTag
   end
 
-  def set_combined_entry_content(%__MODULE__{} = item) do
+  def set_combined_entry_content(%__MODULE__{} = item, should_omit_collapsed \\ false) do
     Map.put(
       item,
       :combined_entry_content,
       Enum.reduce(
         Map.get(item, :entries, []),
         "",
-        &(&1.content <> "\n\n" <> &2)
+        fn entry, result ->
+          if should_omit_collapsed and entry.is_collapsed do
+            result
+          else
+            entry.content <> "\n\n" <> result
+          end
+        end
       )
     )
   end
