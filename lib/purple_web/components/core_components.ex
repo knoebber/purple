@@ -609,7 +609,7 @@ defmodule PurpleWeb.CoreComponents do
     """
   end
 
-  defp get_tag_link(tag, :board), do: ~p"/board?tag=#{tag}"
+  defp get_tag_link(tag, :board), do: ~p"/board/search?tag=#{tag}"
   defp get_tag_link(tag, :run), do: ~p"/runs?tag=#{tag}"
   defp get_tag_link(tag, :finance), do: ~p"/finance?tag=#{tag}"
   defp get_tag_link(tag, nil), do: "?tag=#{tag}"

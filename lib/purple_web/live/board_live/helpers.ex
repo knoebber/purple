@@ -4,25 +4,25 @@ defmodule PurpleWeb.BoardLive.Helpers do
   """
   use PurpleWeb, :verified_routes
 
-  def board_path(nil, params), do: board_path(params)
+  def search_path(nil, params), do: search_path(params)
 
-  def board_path(board_id, params) when is_map(params) do
-    ~p"/board/#{board_id}?#{params}"
+  def search_path(board_id, params) when is_map(params) do
+    ~p"/board/search#{board_id}?#{params}"
   end
 
-  def board_path(params) when is_map(params) do
-    ~p"/board?#{params}"
+  def search_path(params) when is_map(params) do
+    ~p"/board/search?#{params}"
   end
 
-  def board_path(nil) do
-    board_path()
+  def search_path(nil) do
+    search_path()
   end
 
-  def board_path(board_id) do
-    ~p"/board/#{board_id}"
+  def search_path(board_id) do
+    ~p"/board/search#{board_id}"
   end
 
-  def board_path() do
+  def search_path() do
     ~p"/board"
   end
 
@@ -41,7 +41,7 @@ defmodule PurpleWeb.BoardLive.Helpers do
   def side_nav(user_id) when is_integer(user_id) do
     [
       %{
-        label: "All Items",
+        label: "Board",
         to: ~p"/board",
         children:
           Enum.map(
@@ -49,9 +49,13 @@ defmodule PurpleWeb.BoardLive.Helpers do
             &%{
               group: true,
               label: &1.name,
-              to: board_path(&1.id)
+              to: ~p"/board/#{&1}"
             }
           )
+      },
+      %{
+        label: "Search",
+        to: ~p"/board/search"
       },
       %{
         label: "Board settings",
