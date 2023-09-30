@@ -12,7 +12,8 @@ defmodule Purple.Application do
       PurpleWeb.Telemetry,
       {Phoenix.PubSub, name: Purple.PubSub},
       PurpleWeb.Endpoint,
-      Purple.TaskServer
+      Purple.TaskServer,
+      Purple.KeyValue
     ]
 
     if Application.get_env(:purple, :env) == :dev do

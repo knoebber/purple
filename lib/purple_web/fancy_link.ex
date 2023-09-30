@@ -104,7 +104,6 @@ defmodule PurpleWeb.FancyLink do
       route_tuples,
       %{},
       fn {url, module, params}, fancy_link_groups ->
-        # TODO: batch queries
         title = get_fancy_link_title(module, params)
 
         if title do
