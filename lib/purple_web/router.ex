@@ -119,10 +119,9 @@ defmodule PurpleWeb.Router do
       live "/runs/:id/edit", RunLive.Show, :edit
 
       live "/board", BoardLive.Index, :index
+      live "/board/new", BoardLive.Index, :create
       live "/board/search", BoardLive.ItemSearch, :index
-      live "/board/settings", BoardLive.BoardSettings, :index
-      live "/board/settings/new", BoardLive.BoardSettings, :create
-      live "/board/settings/:id", BoardLive.BoardSettings, :edit
+      live "/board/:id/edit", BoardLive.Index, :edit
       live "/board/:user_board_id", BoardLive.Board, :show
       live "/board/item/create", BoardLive.CreateItem, :create
       live "/board/item/:id", BoardLive.ShowItem, :show

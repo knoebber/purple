@@ -56,10 +56,6 @@ defmodule PurpleWeb.BoardLive.Helpers do
       %{
         label: "Search",
         to: ~p"/board/search"
-      },
-      %{
-        label: "Board settings",
-        to: ~p"/board/settings"
       }
     ]
   end

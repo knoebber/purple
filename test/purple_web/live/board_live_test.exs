@@ -13,6 +13,13 @@ defmodule PurpleWeb.BoardLiveTest do
                live(conn, ~p"/board")
     end
 
+    test "ok", %{conn: conn} do
+      assert {:ok, _, _} =
+               conn
+               |> log_in_user(user_fixture())
+               |> live(~p"/board")
+    end
+
     test "searching works", %{conn: conn} do
       user = user_fixture()
       item_fixture(%{description: "grape"})
@@ -22,12 +29,12 @@ defmodule PurpleWeb.BoardLiveTest do
       assert {:ok, _, _} =
                conn
                |> log_in_user(user)
-               |> live(~p"/board")
+               |> live(~p"/board/search")
 
       assert {:ok, view, _} =
                conn
                |> log_in_user(user)
-               |> live(~p"/board?query=grape")
+               |> live(~p"/board/search?query=grape")
 
       tbody =
         view
@@ -40,7 +47,7 @@ defmodule PurpleWeb.BoardLiveTest do
       assert {:ok, view, _} =
                conn
                |> log_in_user(user)
-               |> live(~p"/board?tag=boardlivetest")
+               |> live(~p"/board/search?tag=boardlivetest")
 
       tbody =
         view
@@ -111,7 +118,7 @@ defmodule PurpleWeb.BoardLiveTest do
       assert {:ok, _, html} =
                conn
                |> log_in_user(user_fixture())
-               |> live(~p"/board/settings")
+               |> live(~p"/board")
 
       html =~ "An Example Board Name!"
     end
@@ -123,7 +130,7 @@ defmodule PurpleWeb.BoardLiveTest do
       assert {:ok, _, html} =
                conn
                |> log_in_user(user)
-               |> live(~p"/board/settings/#{user_board}")
+               |> live(~p"/board/#{user_board}/edit")
 
       html =~ "Editable Board"
     end

@@ -133,7 +133,6 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
       >
         <div class="flex flex-col gap-4 mb-4">
           <.input field={f[:name]} phx-hook="AutoFocus" label="Name" />
-          <.input field={f[:show_done]} type="checkbox" label="Show Done?" />
           <.label>Tags</.label>
           <div class="flex flex-wrap text-xs font-mono gap-1 max-h-48 overflow-auto">
             <.button
