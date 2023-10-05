@@ -1,8 +1,8 @@
 defmodule PurpleWeb.FancyLink do
+  alias Purple.KeyValue
+
   @callback get_fancy_link_type() :: String.t()
   @callback get_fancy_link_title(Map.t()) :: String.t() | nil
-
-  defp host, do: Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host]
 
   defp implemented_by?(module) do
     module.module_info()[:attributes]
@@ -11,17 +11,10 @@ defmodule PurpleWeb.FancyLink do
   end
 
   def extract_routes_from_markdown(md) do
-    "(^|\\s)(https?://#{host()}[^/]*)(/\\S+)"
+    "(^|\\s)(https?://#{PurpleWeb.WebHelpers.host()}[^/]*)(/\\S+)"
     |> Regex.compile!()
     |> Regex.scan(md)
     |> Enum.map(fn [_, _, basename, path] -> {basename, path} end)
-    |> build_route_tuples()
-  end
-
-  def build_route_tuples(basename_path_pairs) when is_list(basename_path_pairs) do
-    basename_path_pairs
-    |> Enum.map(&build_route_tuple/1)
-    |> Enum.filter(& &1)
   end
 
   @doc """
@@ -46,7 +39,7 @@ defmodule PurpleWeb.FancyLink do
   nil
   """
   def build_route_tuple({basename, path}) do
-    case Phoenix.Router.route_info(PurpleWeb.Router, "GET", path, host()) do
+    case Phoenix.Router.route_info(PurpleWeb.Router, "GET", path, PurpleWeb.WebHelpers.host()) do
       %{phoenix_live_view: {module, _, _, _}, path_params: path_params} ->
         {
           basename <> path,
@@ -74,7 +67,7 @@ defmodule PurpleWeb.FancyLink do
     unless is_nil(index) do
       {basename, path} = String.split_at(absolute_url, index)
 
-      basename_pattern = Regex.compile!("^https?://#{host()}")
+      basename_pattern = Regex.compile!("^https?://#{PurpleWeb.WebHelpers.host()}")
 
       if Regex.match?(basename_pattern, basename) and String.starts_with?(path, "/") do
         build_route_tuple({basename, path})
@@ -99,12 +92,13 @@ defmodule PurpleWeb.FancyLink do
     )
   end
 
-  def build_fancy_link_groups(route_tuples) when is_list(route_tuples) do
+  def build_fancy_link_groups(urls) when is_list(urls) do
     Enum.reduce(
-      route_tuples,
+      urls,
       %{},
-      fn {url, module, params}, fancy_link_groups ->
-        title = get_fancy_link_title(module, params)
+      fn url, fancy_link_groups ->
+        {url, module, _} = route_tuple = build_route_tuple(url)
+        title = get_fancy_link_title(route_tuple)
 
         if title do
           type = module.get_fancy_link_type()
@@ -117,34 +111,49 @@ defmodule PurpleWeb.FancyLink do
     )
   end
 
-  def get_fancy_link_title(module, params) when is_atom(module) and is_map(params) do
-    if implemented_by?(module) do
-      module.get_fancy_link_title(params)
-    end
-  end
+  def get_fancy_link_title({url, module, params}) when is_atom(module) and is_map(params) do
+    unix_now = Purple.Date.unix_now()
+    seconds_until_stale = 3600
 
-  def get_formatted_fancy_link_type_and_title(module, params)
-      when is_atom(module) and is_map(params) do
     if implemented_by?(module) do
-      title = module.get_fancy_link_title(params)
+      cache_key = "fancy_link:#{url}"
 
-      if title do
-        Enum.join([module.get_fancy_link_type(), title], " · ")
+      case KeyValue.get(cache_key) do
+        nil ->
+          title = module.get_fancy_link_title(params)
+          KeyValue.insert(cache_key, {title, unix_now})
+          title
+
+        {cached_title, inserted_at} ->
+          if unix_now - inserted_at > seconds_until_stale do
+            KeyValue.delete(cache_key)
+          end
+
+          cached_title
       end
     end
   end
 
-  def build_fancy_link_map(route_tuples) when is_list(route_tuples) do
-    Enum.reduce(
-      route_tuples,
-      %{},
-      fn {url, module, params}, fancy_link_map ->
-        title = get_formatted_fancy_link_type_and_title(module, params)
+  defp get_formatted_fancy_link_type_and_title({_, module, _} = route_tuple) do
+    title = get_fancy_link_title(route_tuple)
 
-        if title do
-          Map.put(fancy_link_map, url, title)
+    if title do
+      Enum.join([module.get_fancy_link_type(), title], " · ")
+    end
+  end
+
+  def build_fancy_link_map(markdown) when is_binary(markdown) do
+    markdown
+    |> extract_routes_from_markdown()
+    |> Enum.reduce(
+      %{},
+      fn absolute_url, fancy_link_map ->
+        with {url, _, _} = route_tuple <- build_route_tuple(absolute_url),
+             formatted_title when is_binary(formatted_title) <-
+               get_formatted_fancy_link_type_and_title(route_tuple) do
+          Map.put(fancy_link_map, url, formatted_title)
         else
-          fancy_link_map
+          _ -> fancy_link_map
         end
       end
     )

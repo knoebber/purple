@@ -20,6 +20,7 @@ config :purple, Purple.Repo,
 # you can enable the server option below.
 config :purple, PurpleWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
+  url: [host: "localhost", port: 4000],
   secret_key_base: "G+qgvtuvUJ6e9+i/DHLR0WcSuxpO88nWhK8naEgyW09aEv2oInIYtk8UAWhXOSqJ",
   server: false
 

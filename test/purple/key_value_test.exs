@@ -10,11 +10,12 @@ defmodule Purple.KeyValueTest do
 
       KeyValue.insert("int", 1)
       KeyValue.insert(:str, "string")
+      KeyValue.insert(:str, "overwritten string")
       KeyValue.insert("map", %{foo: "bar"})
       KeyValue.insert(:arr, [1, 2, 3])
 
       assert 1 = KeyValue.get("int")
-      assert "string" = KeyValue.get(:str)
+      assert "overwritten string" = KeyValue.get(:str)
       assert %{foo: "bar"} = KeyValue.get("map")
       assert [1, 2, 3] = KeyValue.get(:arr)
 

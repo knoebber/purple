@@ -8,21 +8,27 @@ defmodule PurpleWeb.FancyLinkTest do
 
   describe "fancy link" do
     test "extract_routes_from_markdown\1" do
-      assert extract_routes_from_markdown("") == []
-      assert extract_routes_from_markdown("# wee") == []
-      assert extract_routes_from_markdown("#wee") == []
+      extract_route_tuples_from_markdown = fn str ->
+        str
+        |> extract_routes_from_markdown
+        |> Enum.map(&build_route_tuple/1)
+      end
 
-      assert extract_routes_from_markdown("https://example.com/ok\nexample.com/ok") ==
+      assert extract_route_tuples_from_markdown.("") == []
+      assert extract_route_tuples_from_markdown.("# wee") == []
+      assert extract_route_tuples_from_markdown.("#wee") == []
+
+      assert extract_route_tuples_from_markdown.("https://example.com/ok\nexample.com/ok") ==
                []
 
-      assert extract_routes_from_markdown("https://example.com/ok\nexample.com/ok") ==
+      assert extract_route_tuples_from_markdown.("https://example.com/ok\nexample.com/ok") ==
                []
 
-      assert extract_routes_from_markdown("localhost:4000/") == []
-      assert extract_routes_from_markdown("localhost:4000/ok/ok") == []
-      assert extract_routes_from_markdown("http://localhost:4000/ok/ok") == []
+      assert extract_route_tuples_from_markdown.("localhost:4000/") == []
+      assert extract_route_tuples_from_markdown.("localhost:4000/ok/ok") == []
+      assert extract_route_tuples_from_markdown.("http://localhost:4000/ok/ok") == [nil]
 
-      assert extract_routes_from_markdown("http://localhost:4000/board") == [
+      assert extract_route_tuples_from_markdown.("http://localhost:4000/board") == [
                {
                  "http://localhost:4000/board",
                  PurpleWeb.BoardLive.Index,
@@ -30,7 +36,7 @@ defmodule PurpleWeb.FancyLinkTest do
                }
              ]
 
-      assert extract_routes_from_markdown(" http://localhost:4000/finance ") == [
+      assert extract_route_tuples_from_markdown.(" http://localhost:4000/finance ") == [
                {
                  "http://localhost:4000/finance",
                  PurpleWeb.FinanceLive.Index,
@@ -39,7 +45,7 @@ defmodule PurpleWeb.FancyLinkTest do
              ]
 
       assert(
-        extract_routes_from_markdown(
+        extract_route_tuples_from_markdown.(
           "# Fancy Links\n\n* http://localhost:4000/board/item/105\n* http://localhost:4000/finance/transactions/538"
         ) == [
           {
@@ -55,7 +61,7 @@ defmodule PurpleWeb.FancyLinkTest do
         ]
       )
 
-      assert extract_routes_from_markdown(~s"""
+      assert extract_route_tuples_from_markdown.(~s"""
              # Test header
              http://localhost:4000/runs/1? (fancy 1)
 
@@ -87,11 +93,15 @@ defmodule PurpleWeb.FancyLinkTest do
 
     test "get_fancy_link_title/1" do
       item = item_fixture()
-      {_, module, params} = build_route_tuple("http://localhost:4000/board/item/#{item.id}")
-      title = get_fancy_link_title(module, params)
+
+      title =
+        "http://localhost:4000/board/item/#{item.id}"
+        |> build_route_tuple()
+        |> get_fancy_link_title()
+
       assert title =~ item.description
 
-      title = get_fancy_link_title(PurpleWeb, %{})
+      title = get_fancy_link_title({"http://example.com", PurpleWeb, %{}})
       assert title == nil
     end
 
@@ -123,21 +133,19 @@ defmodule PurpleWeb.FancyLinkTest do
     end
 
     test "build_fancy_link_map/1" do
-      assert build_fancy_link_map([]) == %{}
-      assert build_fancy_link_map([{"", PurpleWeb, %{}}]) == %{}
+      assert build_fancy_link_map("") == %{}
+      assert build_fancy_link_map("http://localhost:4000/does/not/exist") == %{}
 
       item = item_fixture()
       item_2 = item_fixture(%{description: "fancy links", status: :DONE})
 
-      route_tuples =
-        extract_routes_from_markdown(~s"""
+      fancy_link_map =
+        build_fancy_link_map(~s"""
         http://localhost:4000/board/item/#{item.id}
         http://localhost:4000/board/item/#{item_2.id}
         nil
         example.com
         """)
-
-      fancy_link_map = build_fancy_link_map(route_tuples)
 
       assert fancy_link_map == %{
                "http://localhost:4000/board/item/#{item.id}" => "🌻 · Test Item 🌞 (TODO)",

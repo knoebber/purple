@@ -1,6 +1,6 @@
 defmodule Purple.KeyValue do
   @doc """
-  Simple key value store that uses Erlang Term Storage i.e, :ets.
+  Simple key value store that uses Erlang Term Storage - :ets.
   """
 
   use GenServer
@@ -13,7 +13,7 @@ defmodule Purple.KeyValue do
   end
 
   def get(key) do
-    case :ets.lookup(@name, key) do
+    case lookup(key) do
       [{^key, value}] -> value
       [] -> nil
     end
@@ -21,6 +21,10 @@ defmodule Purple.KeyValue do
 
   def insert(key, value) do
     GenServer.call(@name, {:insert, {key, value}})
+  end
+
+  def lookup(key) do
+    :ets.lookup(@name, key)
   end
 
   @impl GenServer
@@ -31,7 +35,7 @@ defmodule Purple.KeyValue do
 
   @impl GenServer
   def handle_call({:insert, {key, value}}, _, state) do
-    :ets.insert_new(@name, {key, value})
+    :ets.insert(@name, {key, value})
     {:reply, :ok, state}
   end
 

@@ -3,12 +3,8 @@ defmodule PurpleWeb.Components.SideNav do
   alias PurpleWeb.FancyLink
   alias Purple.History
 
-  defp build_formatted_history(viewed_urls) do
-    viewed_urls
-    |> Enum.map(fn viewed_url_record ->
-      FancyLink.build_route_tuple(viewed_url_record.url)
-    end)
-    |> FancyLink.build_fancy_link_groups()
+  defp build_formatted_history(url_records) do
+    FancyLink.build_fancy_link_groups(for r <- url_records, do: r.url)
   end
 
   defp get_history(nil) do
@@ -41,9 +37,13 @@ defmodule PurpleWeb.Components.SideNav do
     new_history =
       if socket.assigns.current_user do
         [url_without_params | _] = String.split(to, "?")
-        {_, module, params} = FancyLink.build_route_tuple(url_without_params)
 
-        if FancyLink.get_fancy_link_title(module, params) do
+        title =
+          url_without_params
+          |> FancyLink.build_route_tuple()
+          |> FancyLink.get_fancy_link_title()
+
+        if title do
           socket.assigns.current_user.id
           |> History.save_url(url_without_params)
           |> build_formatted_history()
@@ -62,7 +62,12 @@ defmodule PurpleWeb.Components.SideNav do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <nav class={unless @side_nav, do: "hidden"} phx-hook="SideNav" id="js-side-nav">
+    <nav
+      class={unless @side_nav, do: "hidden"}
+      id="js-side-nav"
+      phx-hook="SideNav"
+      phx-target={@myself}
+    >
       <%= for link <- @side_nav do %>
         <.link navigate={link.to}><%= link.label %></.link>
         <div :if={Map.has_key?(link, :children) and length(link.children) > 0} class="side-link-group">

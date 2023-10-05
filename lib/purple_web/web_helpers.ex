@@ -2,6 +2,9 @@ defmodule PurpleWeb.WebHelpers do
   @moduledoc """
   Functions that are available to all purple web views
   """
+
+  def host, do: Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host]
+
   def make_full_url(path) when is_binary(path) do
     host = Application.get_env(:purple, PurpleWeb.Endpoint)[:url][:host]
 
@@ -42,9 +45,7 @@ defmodule PurpleWeb.WebHelpers do
     Phoenix.Component.assign(
       socket,
       :fancy_link_map,
-      content
-      |> PurpleWeb.FancyLink.extract_routes_from_markdown()
-      |> PurpleWeb.FancyLink.build_fancy_link_map()
+      PurpleWeb.FancyLink.build_fancy_link_map(content)
     )
   end
 end

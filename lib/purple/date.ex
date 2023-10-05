@@ -25,6 +25,10 @@ defmodule Purple.Date do
     |> DateTime.to_naive()
   end
 
+  def unix_now() do
+    DateTime.now!("Etc/UTC") |> DateTime.to_unix()
+  end
+
   def to_local_datetime(%NaiveDateTime{} = ndt) do
     ndt
     |> DateTime.from_naive!(@naive_tz)

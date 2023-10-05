@@ -2,6 +2,7 @@ defmodule Purple do
   @moduledoc """
   Misc functions for purple
   """
+
   def parse_int!(s) do
     {int, _} = Integer.parse(s)
     int

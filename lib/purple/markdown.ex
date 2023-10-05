@@ -41,7 +41,7 @@ defmodule Purple.Markdown do
 
   def extract_eligible_text_from_ast(md, valid_parents)
       when is_binary(md) and is_list(valid_parents) do
-    case EarmarkParser.as_ast(md) do
+    case Earmark.Parser.as_ast(md) do
       {:ok, ast, _} -> extract_eligible_text_from_ast(ast, valid_parents)
       _ -> []
     end
@@ -248,7 +248,7 @@ defmodule Purple.Markdown do
   end
 
   def markdown_to_html(md, extension_data \\ %{}) do
-    case EarmarkParser.as_ast(md) do
+    case Earmark.Parser.as_ast(md) do
       {:ok, ast, _} ->
         ast
         |> map_purple_ast(

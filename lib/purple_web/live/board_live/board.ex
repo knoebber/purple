@@ -15,9 +15,8 @@ defmodule PurpleWeb.BoardLive.Board do
 
     fancy_link_map =
       items_for_markdown_render
-      |> Enum.reduce([], fn item, route_info ->
-        PurpleWeb.FancyLink.extract_routes_from_markdown(item.combined_entry_content) ++
-          route_info
+      |> Enum.reduce("", fn item, all_markdown ->
+        item.combined_entry_content <> "\n\n" <> all_markdown
       end)
       |> PurpleWeb.FancyLink.build_fancy_link_map()
 

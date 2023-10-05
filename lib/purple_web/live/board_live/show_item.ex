@@ -25,10 +25,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       |> Item.sort_entries()
       |> Item.set_entry_checkbox_maps()
 
-    fancy_link_map =
-      item.combined_entry_content
-      |> PurpleWeb.FancyLink.extract_routes_from_markdown()
-      |> PurpleWeb.FancyLink.build_fancy_link_map()
+    fancy_link_map = PurpleWeb.FancyLink.build_fancy_link_map(item.combined_entry_content)
 
     socket
     |> assign_uploads(item)
