@@ -1,6 +1,19 @@
 #+title: Purple
 
-Toy app for learning Elixir + Phoenix + LiveView + Tailwind
+Personal data tracking tool written in Elixir with Phoenix
+LiveView. This project for personal use, nothing is intended
+to be useful for other parties :) .
+
+* Features
+
++ Create boards, items, entries, and checkboxes
++ Drag n' drop items between ~TODO~, ~DONE~, and ~INFO~ statuses.
++ Upload any kind of file, view images, movies, and PDFs in-app.
++ Custom markdown dialect that dynamically renders other purple resources
++ Automatically import and organize credit card transactions
++ Renders live weather data from my home - publicly available at
+  https://mypurplewebsite.com
++ And lots of other random stuff that I thought would be fun to implement
 
 * Starting the Server
 
