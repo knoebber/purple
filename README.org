@@ -1,8 +1,8 @@
 #+title: Purple
 
 Personal data tracking tool written in Elixir with Phoenix
-LiveView. This project for personal use, nothing is intended
-to be useful for other parties :) .
+LiveView. This project is for personal use - nothing is intended to be
+useful for other parties :) .
 
 * Features
 
