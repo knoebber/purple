@@ -1,4 +1,5 @@
 defmodule PurpleWeb.HomeLive do
+  alias Purple.Weather
   use PurpleWeb, :live_view
 
   @impl Phoenix.LiveView
@@ -11,6 +12,7 @@ defmodule PurpleWeb.HomeLive do
       :ok,
       socket
       |> assign(:last_weather_snapshot, nil)
+      |> assign(:total_rainfall_inches, Weather.get_total_rainfall_inches())
       |> assign(:page_title, "Home")
       |> assign(:should_show_logs, false)
       |> assign(:side_nav, if(socket.assigns.current_user, do: [], else: nil))
@@ -21,8 +23,9 @@ defmodule PurpleWeb.HomeLive do
 
   @impl Phoenix.LiveView
   def handle_info({:weather_snapshot, weather_snapshot}, socket) do
-    {
-      :noreply,
+    is_raining = Map.get(weather_snapshot, :rain_millimeters, 0) > 0
+
+    socket =
       socket
       |> stream_insert(
         :weather_logs,
@@ -49,7 +52,15 @@ defmodule PurpleWeb.HomeLive do
           )
         end)
       )
-    }
+
+    socket =
+      if is_raining do
+        assign(socket, :total_rainfall_inches, Weather.get_total_rainfall_inches())
+      else
+        socket
+      end
+
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -93,6 +104,7 @@ defmodule PurpleWeb.HomeLive do
                 <th class="pt-0">Fahrenheit</th>
                 <th class="pt-0">Humidity</th>
                 <th class="pt-0">Pressure</th>
+                <th class="pt-0">Total Rainfall</th>
               </tr>
             </thead>
             <tbody>
@@ -101,12 +113,13 @@ defmodule PurpleWeb.HomeLive do
                 <td><%= @last_weather_snapshot.temperature %>°</td>
                 <td><%= @last_weather_snapshot.humidity %>%</td>
                 <td><%= @last_weather_snapshot.pressure %></td>
+                <td><%= @total_rainfall_inches %></td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="flex-auto">
-          <.button phx-click="toggle_logs">📟</.button>
+          <.button phx-click="toggle_logs">Live event stream 📟</.button>
           <div
             :if={@should_show_logs}
             phx-update="stream"

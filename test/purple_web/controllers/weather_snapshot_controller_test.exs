@@ -45,7 +45,7 @@ defmodule PurpleWeb.WeatherSnapshotControllerTest do
     end
 
     test "error without expected body", %{conn: conn} do
-      assert_raise FunctionClauseError, fn ->
+      assert_raise Phoenix.ActionClauseError, fn ->
         post(conn, ~p"/api/weather_snapshots/broadcast")
       end
     end

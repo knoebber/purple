@@ -3,10 +3,12 @@ defmodule Purple.Weather do
   The Weather context.
   """
 
+  @in_per_mm 0.03937007874
+
   import Ecto.Query, warn: false
   alias Purple.Repo
 
-  alias Purple.Weather.WeatherSnapshot
+  alias Purple.Weather.{Rainfall, WeatherSnapshot, Wind}
 
   @doc """
   Returns the list of weather_snapshots.
@@ -100,5 +102,22 @@ defmodule Purple.Weather do
   """
   def change_weather_snapshot(%WeatherSnapshot{} = weather_snapshot, attrs \\ %{}) do
     WeatherSnapshot.changeset(weather_snapshot, attrs)
+  end
+
+  def save_rainfall(attrs) do
+    attrs
+    |> Rainfall.changeset()
+    |> Repo.insert()
+  end
+
+  def save_wind(attrs) do
+    attrs
+    |> Wind.changeset()
+    |> Repo.insert()
+  end
+
+  def get_total_rainfall_inches do
+    mm = Repo.one!(from r in Rainfall, select: sum(r.millimeters))
+    Float.round((mm || 0) * @in_per_mm, 2)
   end
 end

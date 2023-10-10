@@ -14,16 +14,6 @@ defmodule Purple.Weather.WeatherSnapshot do
     field :rain_millimeters, :float, virtual: true
   end
 
-  def put_timestamp(changeset) do
-    unix_time = get_field(changeset, :unix_timestamp)
-
-    if is_integer(unix_time) do
-      put_change(changeset, :timestamp, Purple.Date.unix_to_naive(unix_time))
-    else
-      changeset
-    end
-  end
-
   def changeset(weather_snapshot, attrs) do
     weather_snapshot
     |> cast(attrs, [
@@ -36,7 +26,6 @@ defmodule Purple.Weather.WeatherSnapshot do
       :wind_speed_mph
     ])
     |> validate_required([:humidity, :pressure, :temperature, :unix_timestamp])
-    |> validate_number(:unix_timestamp, greater_than: 1_684_615_665)
-    |> put_timestamp()
+    |> Purple.Weather.Helpers.put_timestamp()
   end
 end
