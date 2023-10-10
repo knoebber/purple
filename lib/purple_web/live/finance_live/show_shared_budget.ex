@@ -239,10 +239,9 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
         <div class="p-1">
           <.table rows={user.transactions}>
             <:col :let={transaction} label="Transaction">
-              <%= live_redirect(
-                Finance.Transaction.to_string(transaction),
-                to: ~p"/finance/transactions/#{transaction}"
-              ) %>
+              <.link navigate={~p"/finance/transactions/#{transaction}"}>
+                <%= Finance.Transaction.to_string(transaction) %>
+              </.link>
             </:col>
             <:col :let={transaction} label="Type">
               <%= hd(transaction.shared_transaction).type %>

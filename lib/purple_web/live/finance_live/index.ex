@@ -232,9 +232,9 @@ defmodule PurpleWeb.FinanceLive.Index do
       <% end %>
     </.modal>
     <div class="flex flex-col md:flex-row gap-1 mb-2">
-      <%= live_redirect(to: ~p"/finance/transactions/create") do %>
+      <.link navigate={~p"/finance/transactions/create"}>
         <.button class="h-full" type="button">Create</.button>
-      <% end %>
+      </.link>
       <.form for={%{}} phx-submit="import">
         <.button
           class="pl-4 pr-4 text-lg bg-purple-200 border-collapse border-purple-400 border rounded h-full"
