@@ -7,7 +7,7 @@ defmodule PurpleWeb.WeatherSnapshotController do
   alias Purple.Weather.{WeatherSnapshot, Rainfall, Wind}
 
   @cache_key :last_weather_report
-  @snapshot_persist_interval_seconds 18
+  @snapshot_persist_interval_seconds 1800
 
   action_fallback PurpleWeb.FallbackController
 
