@@ -83,7 +83,7 @@ defmodule Purple.Finance.Transaction do
   end
 
   defp set_timestamp(changeset, attrs) do
-    timestamp_attrs = Map.get(attrs, "timestamp")
+    timestamp_attrs = Map.get(attrs, "timestamp") || Map.get(attrs, :timestamp)
 
     if is_map(timestamp_attrs) do
       put_change(

@@ -1,6 +1,15 @@
 defmodule Purple.FinanceTest do
+  alias Purple.Finance.{Transaction, Merchant, PaymentMethod}
+  import Purple.FinanceFixtures
   use Purple.DataCase
-  alias Purple.Finance.Transaction
+
+  describe "can create basic resources" do
+    test "fixtures work" do
+      assert %Transaction{} = transaction_fixture()
+      assert %PaymentMethod{} = payment_method_fixture()
+      assert %Merchant{} = merchant_fixture()
+    end
+  end
 
   describe "transaction" do
     test "dollars_to_cents\1" do
