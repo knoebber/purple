@@ -1,14 +1,38 @@
 defmodule PurpleWeb.FinanceLive.ShowMerchant do
   alias Purple.Finance
+  alias Purple.Finance.{Transaction}
   import PurpleWeb.FinanceLive.Helpers
   use PurpleWeb, :live_view
 
+  @behaviour PurpleWeb.FancyLink
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_type do
+    "🧟‍♀️"
+  end
+
+  @impl PurpleWeb.FancyLink
+  def get_fancy_link_title(%{"id" => merchant_id}) do
+    merchant = Finance.get_merchant(merchant_id)
+
+    if merchant do
+      merchant.description
+    end
+  end
+
   defp assign_data(socket, merchant_id) do
-    merchant = Finance.get_merchant!(merchant_id, :transactions)
+    merchant = Finance.get_merchant!(merchant_id)
+
+    transactions =
+      Finance.list_transactions(%{
+        merchant_id: merchant_id,
+        user_id: socket.assigns.current_user.id
+      })
 
     socket
     |> assign(:page_title, merchant.name)
     |> assign(:merchant, merchant)
+    |> assign(:transactions, transactions)
     |> assign_fancy_link_map(merchant.description)
   end
 
@@ -45,6 +69,12 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
     }
   end
 
+  defp transactions_string(transactions) do
+    n = length(transactions)
+    result = "#{n} transaction"
+    if n > 1, do: "#{result}s", else: result
+  end
+
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
@@ -58,13 +88,8 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
           <.link :if={@is_editing} patch={~p"/finance/merchants/#{@merchant.id}"} replace={true}>
             Cancel
           </.link>
-          <.link
-            :if={length(@merchant.transactions) > 0}
-            navigate={~p"/finance?merchant_id=#{@merchant.id}"}
-          >
-            <%= length(@merchant.transactions) %> transaction<span :if={
-              length(@merchant.transactions) > 1
-            }>s</span>
+          <.link :if={length(@transactions) > 0} navigate={~p"/finance?merchant_id=#{@merchant.id}"}>
+            <%= transactions_string(@transactions) %>
           </.link>
         </div>
         <.timestamp model={@merchant} />
@@ -84,6 +109,12 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
         link_type={:finance}
         fancy_link_map={@fancy_link_map}
       />
+      <.flex_col>
+        <%= PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type() %>
+        <div :for={tx <- @transactions}>
+          <.link navigate={~p"/finance/transactions/#{tx}"}><%= Transaction.to_string(tx) %></.link>
+        </div>
+      </.flex_col>
     </.section>
     """
   end

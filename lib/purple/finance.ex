@@ -78,14 +78,14 @@ defmodule Purple.Finance do
   end
 
   def get_or_create_payment_method!(name) when is_binary(name) do
-    case get_payment_method(name) do
+    case get_payment_method_by_name(name) do
       nil -> Repo.insert!(%PaymentMethod{name: name})
       pm -> pm
     end
   end
 
   def get_or_create_merchant!(name) when is_binary(name) do
-    case get_merchant(name) do
+    case get_merchant_by_name(name) do
       nil -> Repo.insert!(%Merchant{name: name})
       merchant -> merchant
     end
@@ -135,18 +135,16 @@ defmodule Purple.Finance do
     Repo.get!(SharedBudget, id)
   end
 
-  def get_merchant(name) when is_binary(name) do
+  def get_merchant_by_name(name) when is_binary(name) do
     Repo.one(from(m in Merchant, where: m.name == ^name))
+  end
+
+  def get_merchant(id) do
+    Repo.one(from(m in Merchant, where: m.id == ^id))
   end
 
   def get_merchant!(id) do
     Repo.get!(Merchant, id)
-  end
-
-  def get_merchant!(id, :transactions) do
-    Merchant
-    |> Repo.get!(id)
-    |> Repo.preload(:transactions)
   end
 
   def get_merchant!(id, :tags) do
@@ -159,7 +157,7 @@ defmodule Purple.Finance do
     )
   end
 
-  def get_payment_method(name) when is_binary(name) do
+  def get_payment_method_by_name(name) when is_binary(name) do
     Repo.one(from(pm in PaymentMethod, where: pm.name == ^name))
   end
 
@@ -380,7 +378,7 @@ defmodule Purple.Finance do
     |> join(:inner, [sba], u in assoc(sba, :user))
     |> user_filter(filter)
     |> sb_filter.(filter)
-    |> order_by(:inserted_at)
+    |> order_by(desc: :inserted_at)
     |> preload([_, u], user: u)
     |> Repo.all()
   end

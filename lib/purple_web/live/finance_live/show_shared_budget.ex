@@ -111,7 +111,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
   @impl Phoenix.LiveView
   def handle_event("delete_adjustment", params, socket) do
     Finance.delete_shared_budget_adjustment(%Finance.SharedBudgetAdjustment{
-      id: Purple.int_from_map(params, "id")
+      id: Purple.int_from_map!(params, "id")
     })
 
     {
@@ -131,16 +131,6 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       socket
       |> put_flash(:info, "Deleted shared budget")
       |> push_redirect(to: ~p"/finance/shared_budgets", replace: true)
-    }
-  end
-
-  @impl Phoenix.LiveView
-  def handle_info(:new_shared_transaction, socket) do
-    {
-      :noreply,
-      socket
-      |> put_flash(:info, "Shared transaction")
-      |> assign_data(socket.assigns.shared_budget.id)
     }
   end
 
@@ -178,15 +168,6 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       <% end %>
     </.modal>
     <.button :if={length(@users) == 0} class="mb-2" phx-click="delete">Delete</.button>
-    <.live_component
-      action={:new}
-      current_user={@current_user}
-      shared_transaction={%Finance.SharedTransaction{}}
-      id={:new_shared_transaction}
-      module={PurpleWeb.FinanceLive.SharedTransactionForm}
-      shared_budget_id={@shared_budget.id}
-      user_transaction_mappings={@user_transaction_mappings}
-    />
     <div class="p-1 mb-2 flex">
       <.link href="#" phx-click="toggle_show_adjustments" class="font-mono">
         <%= if(@shared_budget.show_adjustments, do: "Hide Adjustments", else: "Show Adjustments") %>
@@ -227,7 +208,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
                 <%= row.description %>
               </:col>
               <:col :let={row} label="">
-                <.link href="#" phx-click="delete_adjustment" phx-value_id={row.id}>
+                <.link href="#" phx-click="delete_adjustment" phx-value-id={row.id}>
                   ❌
                 </.link>
               </:col>

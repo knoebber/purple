@@ -453,6 +453,25 @@ defmodule PurpleWeb.CoreComponents do
     """
   end
 
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def flex_col(assigns) do
+    ~H"""
+    <div
+      class={[
+        "flex flex-col gap-3 p-3",
+        @class
+      ]}
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </div>
+    """
+  end
+
   @doc """
   Renders an input with label and error messages.
 

@@ -170,18 +170,24 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
           transaction={@transaction}
         />
       <% else %>
-        <div class="pl-4">
-          <p>Paid with: <%= @transaction.payment_method.name %></p>
-          <p :if={@transaction.description != ""}>
+        <.flex_col>
+          <span>Paid with: <%= @transaction.payment_method.name %></span>
+          <span>
+            Merchant:
+            <.link navigate={~p"/finance/merchants/#{@transaction.merchant}"}>
+              <%= @transaction.merchant.name %>
+            </.link>
+          </span>
+          <span :if={@transaction.description != ""}>
             Description: <%= @transaction.description %>
-          </p>
-          <p>
+          </span>
+          <span>
             Category: <%= Purple.titleize(@transaction.category) %>
-          </p>
+          </span>
           <p :if={@transaction.notes != ""}>
             Notes 👇
           </p>
-        </div>
+        </.flex_col>
         <.markdown content={@transaction.notes} link_type={:finance} fancy_link_map={@fancy_link_map} />
       <% end %>
     </.section>
