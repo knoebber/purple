@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+flyctl proxy 12345:5432 -a purple-db

@@ -1,19 +1,27 @@
 #!/usr/bin/env bash
 set -e
 
-bucket=mypurplewebsite.com
-date="$(date +%Y-%m-%d@%H:%M)"
-
-db_key="s3://$bucket/pgdump/$date.sql"
-upload_key="s3://$bucket/uploads"
-
 if ! [ -x "$(command -v aws)" ]; then
-  echo "error: aws cli isn't installed." >&2
-  exit 1
+    echo "error: aws cli isn't installed." >&2
+    exit 1
 fi
 
-pg_dump -d purple --data-only | aws s3 cp - "$db_key"
+bucket=mypurplewebsite.com
+date="$(date +%Y-%m-%d@%H:%M)"
+db_key="s3://$bucket/pgdump/$date.sql"
 
-pushd ~/projects/purple/priv/uploads
-aws s3 sync . "$upload_key" --exclude 'thumbnails/*'
-popd
+echo "dumping purple to '$db_key'"
+PGPASSWORD=$(security find-generic-password -a knoebber -s prod-purple-db -w) pg_dump purple\
+	  --data-only\
+	  --username postgres\
+	  --host localhost\
+	  --port 12345\
+    | aws s3 cp - "$db_key"
+
+# upload_key="s3://$bucket/uploads"
+
+# pg_dump -d purple --data-only | aws s3 cp - "$db_key"
+
+# pushd ~/projects/purple/priv/uploads
+# aws s3 sync . "$upload_key" --exclude 'thumbnails/*'
+# popd
