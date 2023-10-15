@@ -1,9 +1,9 @@
-defmodule PurpleWeb.BoardLiveTest do
-  use PurpleWeb.ConnCase
-
+defmodule PurpleWeb.FinanceLiveTest do
+  alias Purple.Finance
   import Phoenix.LiveViewTest
   import Purple.AccountsFixtures
   import Purple.FinanceFixtures
+  use PurpleWeb.ConnCase
 
   describe "index page" do
     test "redirect when not logged in", %{conn: conn} do
@@ -100,6 +100,65 @@ defmodule PurpleWeb.BoardLiveTest do
       assert html =~ tx3.dollars
       assert html =~ tx4.dollars
       refute html =~ tx1.dollars
+    end
+
+    test "shared budget math works", %{conn: conn} do
+      sb = Finance.create_shared_budget!("Shared Budget Test")
+
+      assert_user_total = fn user_who_is_behind, total ->
+        assert {:ok, view, _} =
+                 conn
+                 |> log_in_user(user_who_is_behind)
+                 |> live(~p"/finance/shared_budgets/#{sb}")
+
+        h2_html =
+          view
+          |> element("h2:fl-contains('#{user_who_is_behind.email}')")
+          |> render
+
+        assert h2_html =~ user_who_is_behind.email
+        assert h2_html =~ total
+      end
+
+      create_shared_tx = fn user, dollars, type ->
+        {:ok, stx} =
+          Finance.create_shared_transaction(sb.id, %{
+            transaction_id: transaction_fixture(%{dollars: dollars}, user: user).id,
+            type: type
+          })
+
+        stx
+      end
+
+      create_adjustment = fn user, dollars, type ->
+        {:ok, adj} =
+          Finance.create_shared_budget_adjustment(sb.id, %{
+            user_id: user.id,
+            dollars: dollars,
+            type: type
+          })
+
+        adj
+      end
+
+      # E.G. Bob and Sue live together and Bob spends $1000.00 on groceries. Then, Sue could get even with Bob by paying him $500.00
+      bob = user_fixture()
+      sue = user_fixture()
+
+      create_shared_tx.(bob, "1000.00", :SHARE)
+
+      # Instead of paying Bob $500 in cash, Sue buys Bob a new phone for $510. This isn't shared, so it's entered as a CREDIT.
+      create_shared_tx.(sue, "510.00", :CREDIT)
+
+      # Shared budget should show that Bob is down 10 dollars.
+      assert_user_total.(bob, "10.00")
+
+      create_adjustment.(sue, "15.00", :SHARE)
+      assert_user_total.(bob, "17.50")
+
+      create_adjustment.(bob, "1.12", :CREDIT)
+
+      assert_user_total.(bob, "16.38")
     end
   end
 end
