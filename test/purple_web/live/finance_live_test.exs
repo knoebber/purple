@@ -56,7 +56,7 @@ defmodule PurpleWeb.FinanceLiveTest do
 
   describe "show merchant" do
     test "ok", %{conn: conn} do
-      m = merchant_fixture()
+      m = merchant_name_fixture()
 
       assert {:ok, view, _} =
                conn
@@ -71,16 +71,16 @@ defmodule PurpleWeb.FinanceLiveTest do
     test "shows user transactions", %{conn: conn} do
       user1 = user_fixture()
       user2 = user_fixture()
-      m = merchant_fixture()
-      tx1 = transaction_fixture(%{dollars: "1000.12"}, user: user1, merchant: m)
-      tx2 = transaction_fixture(%{dollars: "111.00"}, user: user2, merchant: m)
-      tx3 = transaction_fixture(%{dollars: "222.00"}, user: user2, merchant: m)
-      tx4 = transaction_fixture(%{dollars: "333.00"}, user: user2, merchant: m)
+      m = merchant_name_fixture()
+      tx1 = transaction_fixture(%{dollars: "1000.12"}, user: user1, merchant_name: m)
+      tx2 = transaction_fixture(%{dollars: "111.00"}, user: user2, merchant_name: m)
+      tx3 = transaction_fixture(%{dollars: "222.00"}, user: user2, merchant_name: m)
+      tx4 = transaction_fixture(%{dollars: "333.00"}, user: user2, merchant_name: m)
 
       assert {:ok, view, _} =
                conn
                |> log_in_user(user1)
-               |> live(~p"/finance/merchants/#{m}")
+               |> live(~p"/finance/merchants/#{m.merchant}")
 
       html = render(view)
 
@@ -91,7 +91,7 @@ defmodule PurpleWeb.FinanceLiveTest do
       assert {:ok, view, _} =
                conn
                |> log_in_user(user2)
-               |> live(~p"/finance/merchants/#{m}")
+               |> live(~p"/finance/merchants/#{m.merchant}")
 
       html = render(view)
 

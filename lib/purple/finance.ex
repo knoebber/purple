@@ -25,12 +25,20 @@ defmodule Purple.Finance do
   alias Purple.Tags
   alias Purple.TransactionParser
 
+  """
+  TODO: transactions should be associated to merchant names, not merchants.
+        add maint function for merging merchants.
+        add maint function for backfilling merchant_name table.
+        drop merchant name col
+  """
+
   @dollar_amount_fragment "CONCAT('$', ROUND(cents/100.00,2))"
   @yyyy_mm "to_char(\"timestamp\", 'YYYY-MM')"
 
   defp get_merchant_name(name) do
     Repo.one(
-      from(mn in MerchantName,
+      from(
+        mn in MerchantName,
         join: merchant in assoc(mn, :merchant),
         where: mn.name == ^name,
         preload: [merchant: merchant]
@@ -42,7 +50,10 @@ defmodule Purple.Finance do
       when is_binary(name) do
     case get_merchant_name(name) do
       nil ->
-        Repo.insert(%MerchantName{name: name, is_primary: is_primary, merchant_id: merchant_id})
+        {:ok, _} =
+          Repo.insert(%MerchantName{name: name, is_primary: is_primary, merchant_id: merchant_id})
+
+        {:ok, get_merchant_name(name)}
 
       %MerchantName{merchant_id: ^merchant_id, is_primary: ^is_primary} = mn ->
         {:ok, mn}
@@ -106,7 +117,7 @@ defmodule Purple.Finance do
   end
 
   def get_or_create_merchant!(name) when is_binary(name) do
-    {:ok, merchant} =
+    {:ok, {:ok, merchant_name}} =
       Repo.transaction(fn ->
         {should_name_be_primary, merchant} =
           case get_merchant_by_name(name) do
@@ -115,11 +126,10 @@ defmodule Purple.Finance do
             merchant -> {false, merchant}
           end
 
-        {:ok, _} = give_name_to_merchant(merchant, name, should_name_be_primary)
-        merchant
+        give_name_to_merchant(merchant, name, should_name_be_primary)
       end)
 
-    get_merchant!(merchant.id)
+    merchant_name
   end
 
   def change_transaction(%Transaction{} = transaction, attrs \\ %{}) do
@@ -234,10 +244,10 @@ defmodule Purple.Finance do
   defp get_transaction_query(id) do
     from(tx in Transaction,
       select_merge: %{dollars: fragment(@dollar_amount_fragment)},
-      join: m in assoc(tx, :merchant),
+      join: m in assoc(tx, :merchant_name),
       join: pm in assoc(tx, :payment_method),
       where: tx.id == ^id,
-      preload: [merchant: m, payment_method: pm]
+      preload: [merchant_name: m, payment_method: pm]
     )
   end
 
@@ -319,7 +329,6 @@ defmodule Purple.Finance do
       query,
       [tx, m, pm],
       ilike(tx.description, ^term) or
-        ilike(m.description, ^term) or
         ilike(m.name, ^term) or
         ilike(pm.name, ^term) or
         ilike(tx.category, ^term)
@@ -387,7 +396,7 @@ defmodule Purple.Finance do
 
     Transaction
     |> select_merge(%{dollars: fragment(@dollar_amount_fragment)})
-    |> join(:inner, [tx], m in assoc(tx, :merchant))
+    |> join(:inner, [tx], m in assoc(tx, :merchant_name))
     |> join(:inner, [tx], pm in assoc(tx, :payment_method))
     |> join(:left, [tx], stx in assoc(tx, :shared_transaction))
     |> Tags.filter_by_tag(filter, :transaction)
@@ -399,7 +408,7 @@ defmodule Purple.Finance do
     |> month_filter(filter)
     |> category_filter(filter)
     |> order_by(^order_by)
-    |> preload([_, m, pm, stx], merchant: m, payment_method: pm, shared_transaction: stx)
+    |> preload([_, m, pm, stx], merchant_name: m, payment_method: pm, shared_transaction: stx)
     |> Repo.paginate(filter)
   end
 
@@ -662,26 +671,33 @@ defmodule Purple.Finance do
     } = params
 
     Repo.transaction(fn ->
-      merchant = Repo.preload(get_or_create_merchant!(transaction_params.merchant), :tags)
+      merchant_name = get_or_create_merchant!(transaction_params.merchant)
+      merchant = Repo.preload(merchant_name.merchant, :tags)
 
       category =
-        Enum.find(
-          Ecto.Enum.mappings(Transaction, :category),
-          {:OTHER, "OTHER"},
-          fn {_, label} ->
-            Enum.find(
-              merchant.tags,
-              fn tag -> String.downcase(label) == String.downcase(tag.name) end
-            )
-          end
-        )
+        if merchant.category != :OTHER do
+          merchant.category
+        else
+          Enum.find(
+            Ecto.Enum.mappings(Transaction, :category),
+            {:OTHER, "OTHER"},
+            fn {_, label} ->
+              Enum.find(
+                merchant.tags,
+                fn tag -> String.downcase(label) == String.downcase(tag.name) end
+              )
+            end
+          )
+        end
 
       transaction =
         Repo.insert!(%Transaction{
           cents: transaction_params.cents,
           description: "",
           category: elem(category, 0),
+          # todo - delete
           merchant: merchant,
+          merchant_name: merchant_name,
           notes: transaction_params.notes,
           payment_method: get_or_create_payment_method!(transaction_params.payment_method),
           timestamp: transaction_params.timestamp,

@@ -112,7 +112,9 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
       <.flex_col>
         <%= PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type() %>
         <div :for={tx <- @transactions}>
-          <.link navigate={~p"/finance/transactions/#{tx}"}><%= Transaction.to_string(tx) %></.link>
+          <.link navigate={~p"/finance/transactions/#{tx}"}>
+            <%= Transaction.to_string(tx, false) %>
+          </.link>
         </div>
       </.flex_col>
     </.section>

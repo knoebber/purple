@@ -8,7 +8,7 @@ defmodule Purple.FinanceTest do
     test "fixtures work" do
       assert %Transaction{} = transaction_fixture()
       assert %PaymentMethod{} = payment_method_fixture()
-      assert %Merchant{} = merchant_fixture()
+      assert %MerchantName{merchant: %Merchant{}} = merchant_name_fixture()
     end
   end
 
@@ -40,8 +40,8 @@ defmodule Purple.FinanceTest do
 
   describe "merchant" do
     test "merchant names" do
-      merchant1 = merchant_fixture("pineapple")
-      merchant2 = merchant_fixture("grape")
+      merchant1 = merchant_name_fixture("pineapple").merchant
+      merchant2 = merchant_name_fixture("grape").merchant
 
       assert {:error, _} = give_name_to_merchant(merchant1, "grape")
       assert {:error, _} = give_name_to_merchant(merchant1, "grape", true)
@@ -54,7 +54,7 @@ defmodule Purple.FinanceTest do
 
       # duplicate call should be noop
       assert {:ok, %MerchantName{is_primary: true, name: "blueberry"}} =
-               give_name_to_merchant(merchant1, "blueberry", true)
+               give_name_to_merchant(merchant1, "BLUEBERRY", true)
 
       merchant1 = get_merchant(merchant1.id)
 
@@ -64,8 +64,8 @@ defmodule Purple.FinanceTest do
              ] = merchant1.names
 
       assert merchant1.primary_name == "blueberry"
-      assert merchant1.id == get_merchant_by_name("blueberry").id
-      assert merchant1.id == get_merchant_by_name("pineapple").id
+      assert merchant1.id == get_merchant_by_name("BLUEBERRY").id
+      assert merchant1.id == get_merchant_by_name("PineApplE").id
 
       # ok to give 'pineapple' to merchant 2 since it's non primary
       assert {:ok, _} = give_name_to_merchant(merchant2, "pineapple", true)

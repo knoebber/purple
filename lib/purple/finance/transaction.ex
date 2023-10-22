@@ -14,17 +14,23 @@ defmodule Purple.Finance.Transaction do
 
     timestamps()
 
+    # todo - delete
     belongs_to :merchant, Purple.Finance.Merchant
+    belongs_to :merchant_name, Purple.Finance.MerchantName
     belongs_to :payment_method, Purple.Finance.PaymentMethod
     belongs_to :user, Purple.Accounts.User
     has_many :shared_transaction, Purple.Finance.SharedTransaction
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.TransactionTag
   end
 
-  def to_string(transaction = %__MODULE__{}) do
-    transaction.dollars <>
-      " " <>
-      transaction.merchant.name <> " " <> Purple.Date.format(transaction.timestamp)
+  def to_string(transaction = %__MODULE__{}, should_include_merchant_name \\ true) do
+    if should_include_merchant_name do
+      transaction.dollars <>
+        " " <>
+        transaction.merchant_name.name <> " " <> Purple.Date.format(transaction.timestamp)
+    else
+      transaction.dollars(" " <> Purple.Date.format(transaction.timestamp))
+    end
   end
 
   def dollars_to_cents([]) do
@@ -86,13 +92,17 @@ defmodule Purple.Finance.Transaction do
       :category,
       :description,
       :dollars,
+      # todo delete
       :merchant_id,
+      :merchant_name_id,
       :notes,
       :payment_method_id
     ])
     |> validate_required([
       :dollars,
+      # todo delete
       :merchant_id,
+      :merchant_name_id,
       :payment_method_id
     ])
     |> set_cents

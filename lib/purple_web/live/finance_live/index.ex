@@ -273,9 +273,9 @@ defmodule PurpleWeb.FinanceLive.Index do
             <%= transaction.dollars %>
           </.link>
         </:col>
-        <:col :let={transaction} label="Merchant" order_col="merchant_id">
-          <.link navigate={~p"/finance/merchants/#{transaction.merchant}"}>
-            <%= transaction.merchant.name %>
+        <:col :let={transaction} label="Merchant" order_col="merchant_name_id">
+          <.link navigate={~p"/finance/merchants/#{transaction.merchant_name.merchant_id}"}>
+            <%= transaction.merchant_name.name %>
           </.link>
         </:col>
         <:col :let={transaction} label="Payment Method" order_col="payment_method_id">

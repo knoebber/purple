@@ -11,6 +11,11 @@ defmodule Purple.Repo.Migrations.MerchantEnhancements do
 
     create unique_index(:merchant_names, [:name])
 
+    alter table(:transactions) do
+      # this will be changed to false in next migration
+      add :merchant_name_id, references(:merchant_names), null: true
+    end
+
     alter table(:merchants) do
       add :category, :string, default: "OTHER", null: false
     end

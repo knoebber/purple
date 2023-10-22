@@ -22,6 +22,7 @@ defmodule Purple.Finance.Merchant do
   def set_primary_name(%__MODULE__{names: names} = merchant)
       when is_list(names) and length(names) > 0 do
     primary_merchant_name = Enum.find(merchant.names, & &1.is_primary) || hd(merchant.names)
+
     Map.put(
       merchant,
       :primary_name,

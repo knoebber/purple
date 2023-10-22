@@ -40,5 +40,31 @@ defmodule Purple.Maint do
   end
 
   def add_merchant_names do
+    merchants = Repo.all(Purple.Finance.Merchant) |> Repo.preload(:names)
+
+    Enum.each(merchants, fn m ->
+      if m.names == [] do
+        Repo.insert!(%Purple.Finance.MerchantName{
+          name: m.name,
+          is_primary: true,
+          merchant_id: m.id
+        })
+        |> inspect(label: "new merchant name")
+      end
+    end)
+  end
+
+  def update_transaction_merchant_ref do
+    transactions = Repo.all(Purple.Finance.Transaction)
+
+    Enum.each(transactions, fn t ->
+      if is_nil(t.merchant_name_id) do
+        m = Purple.Finance.get_merchant!(t.merchant_id)
+
+        Purple.Finance.Transaction
+        |> where([t], t.id == ^t.id)
+        |> Repo.update_all(set: [merchant_name_id: hd(m.names).id])
+      end
+    end)
   end
 end
