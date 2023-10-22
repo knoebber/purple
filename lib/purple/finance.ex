@@ -10,6 +10,7 @@ defmodule Purple.Finance do
   alias Purple.Finance.{
     ImportedTransaction,
     Merchant,
+    MerchantName,
     PaymentMethod,
     SharedBudget,
     SharedBudgetAdjustment,
@@ -26,6 +27,100 @@ defmodule Purple.Finance do
 
   @dollar_amount_fragment "CONCAT('$', ROUND(cents/100.00,2))"
   @yyyy_mm "to_char(\"timestamp\", 'YYYY-MM')"
+
+  defp get_merchant_name(name) do
+    Repo.one(
+      from(mn in MerchantName,
+        join: merchant in assoc(mn, :merchant),
+        where: mn.name == ^name,
+        preload: [merchant: merchant]
+      )
+    )
+  end
+
+  def give_name_to_merchant(%Merchant{id: merchant_id}, name, is_primary \\ false)
+      when is_binary(name) do
+    case get_merchant_name(name) do
+      nil ->
+        Repo.insert(%MerchantName{name: name, is_primary: is_primary, merchant_id: merchant_id})
+
+      %MerchantName{merchant_id: ^merchant_id, is_primary: ^is_primary} = mn ->
+        {:ok, mn}
+
+      %MerchantName{} = other_merchant_name
+      when merchant_id != other_merchant_name.merchant_id and other_merchant_name.is_primary ->
+        {:error, "cannot give away merchant #{other_merchant_name.merchant_id}'s primary name"}
+
+      %MerchantName{} = other_merchant_name ->
+        MerchantName
+        |> where([mn], mn.id == ^other_merchant_name.id)
+        |> Repo.update_all(
+          set: [
+            is_primary: is_primary,
+            merchant_id: merchant_id,
+            updated_at: Purple.Date.utc_now()
+          ]
+        )
+
+        if is_primary do
+          MerchantName
+          |> where([mn], mn.merchant_id == ^merchant_id and mn.id != ^other_merchant_name.id)
+          |> Repo.update_all(set: [is_primary: false, updated_at: Purple.Date.utc_now()])
+        end
+
+        {:ok, get_merchant_name(name)}
+    end
+  end
+
+  defp maybe_set_primary_name(nil), do: nil
+  defp maybe_set_primary_name(m), do: Merchant.set_primary_name(m)
+
+  def get_merchant_by_name(name) when is_binary(name) do
+    from(m in Merchant,
+      join: names in assoc(m, :names),
+      where: names.name == ^name,
+      preload: [names: names]
+    )
+    |> Repo.one()
+    |> maybe_set_primary_name()
+  end
+
+  def get_merchant(id) do
+    from(m in Merchant,
+      join: names in assoc(m, :names),
+      where: m.id == ^id,
+      preload: [names: names]
+    )
+    |> Repo.one()
+    |> maybe_set_primary_name()
+  end
+
+  def get_merchant!(id) do
+    %Merchant{} = get_merchant(id)
+  end
+
+  def get_merchant!(id, :tags) do
+    id
+    |> get_merchant!()
+    |> Repo.preload(:tags)
+  end
+
+  def get_or_create_merchant!(name) when is_binary(name) do
+    {:ok, merchant} =
+      Repo.transaction(fn ->
+        {should_name_be_primary, merchant} =
+          case get_merchant_by_name(name) do
+            # todo: remove name
+            nil -> {true, Repo.insert!(%Merchant{name: name})}
+            merchant -> {false, merchant}
+          end
+
+        {:ok, _} = give_name_to_merchant(merchant, name, should_name_be_primary)
+        merchant
+      end)
+
+    get_merchant!(merchant.id)
+  end
 
   def change_transaction(%Transaction{} = transaction, attrs \\ %{}) do
     Transaction.changeset(transaction, attrs)
@@ -84,13 +179,6 @@ defmodule Purple.Finance do
     end
   end
 
-  def get_or_create_merchant!(name) when is_binary(name) do
-    case get_merchant_by_name(name) do
-      nil -> Repo.insert!(%Merchant{name: name})
-      merchant -> merchant
-    end
-  end
-
   def update_merchant(%Merchant{} = merchant, params) do
     merchant
     |> Merchant.changeset(params)
@@ -133,28 +221,6 @@ defmodule Purple.Finance do
 
   def get_shared_budget(id) do
     Repo.get!(SharedBudget, id)
-  end
-
-  def get_merchant_by_name(name) when is_binary(name) do
-    Repo.one(from(m in Merchant, where: m.name == ^name))
-  end
-
-  def get_merchant(id) do
-    Repo.one(from(m in Merchant, where: m.id == ^id))
-  end
-
-  def get_merchant!(id) do
-    Repo.get!(Merchant, id)
-  end
-
-  def get_merchant!(id, :tags) do
-    Repo.one!(
-      from(m in Merchant,
-        left_join: t in assoc(m, :tags),
-        where: m.id == ^id,
-        preload: [tags: t]
-      )
-    )
   end
 
   def get_payment_method_by_name(name) when is_binary(name) do

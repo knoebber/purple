@@ -19,7 +19,7 @@ defmodule Purple.FinanceFixtures do
   def merchant_fixture(name \\ "U can buy stuff here 4 💸") do
     m = Finance.get_or_create_merchant!(name)
     {:ok, m} = Finance.update_merchant(m, %{"description" => "description for the fixture!"})
-    m
+    Finance.get_merchant!(m.id)
   end
 
   def payment_method_fixture(name \\ "CC 4200 💳") do

@@ -6,10 +6,12 @@ alias Purple.{
   Filter,
   Finance,
   Gmail,
+  Maint,
   Repo,
   Tags,
   TransactionParser,
-  Uploads
+  Uploads,
+  Weather
 }
 
 IEx.configure(inspect: [limit: :infinity])

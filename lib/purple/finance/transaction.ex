@@ -8,31 +8,7 @@ defmodule Purple.Finance.Transaction do
     field :timestamp, :naive_datetime
     field :notes, :string, default: ""
 
-    field :category, Ecto.Enum,
-      values: [
-        :ACTIVITIES,
-        :CAR,
-        :CLOTHES,
-        :COFFEE,
-        :CONSTRUCTION,
-        :DRINKS,
-        :GAS,
-        :GIFT,
-        :GROCERIES,
-        :HEALTH,
-        :HIPCAMP,
-        :HOME,
-        :MAKEUP,
-        :OTHER,
-        :PETS,
-        :RESTAURANT,
-        :SOFTWARE,
-        :TREATS,
-        :UTILITIES,
-        :VACATION,
-        :WORK
-      ],
-      default: :OTHER
+    field :category, Ecto.Enum, values: Purple.Finance.Choices.category_values(), default: :OTHER
 
     field :dollars, :string, default: "", virtual: true
 

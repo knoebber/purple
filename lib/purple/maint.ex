@@ -38,4 +38,7 @@ defmodule Purple.Maint do
       |> Repo.update!()
     end)
   end
+
+  def add_merchant_names do
+  end
 end
