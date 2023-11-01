@@ -4,14 +4,12 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
   import PurpleWeb.FinanceLive.Helpers
 
   alias Purple.Finance
-  alias Purple.Finance.Merchant
 
   defp assign_data(socket) do
-    assign(
-      socket,
-      :merchants,
-      Finance.list_merchants(socket.assigns.current_user.id)
-    )
+    socket
+    |> assign(:merchants, Finance.list_merchants(socket.assigns.current_user.id))
+    |> assign(:filtered_merchants, nil)
+    |> assign(:q, "")
   end
 
   @impl true
@@ -50,44 +48,43 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("search", %{"q" => q}, socket) do
+    socket =
+      if q == "" do
+        assign(socket, :filtered_merchants, nil)
+      else
+        assign(
+          socket,
+          :filtered_merchants,
+          Enum.filter(
+            socket.assigns.merchants,
+            &String.contains?(String.downcase(&1.primary_name), String.downcase(q))
+          )
+        )
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1 class="mb-2"><%= @page_title %></h1>
-    <div class="mb-2 sm:w-1/3">
-      <.live_component
-        action={:new_merchant}
-        id={:new}
-        module={PurpleWeb.FinanceLive.MerchantForm}
-        class=""
-        merchant={%Merchant{}}
-      />
-    </div>
-    <.table rows={@merchants}>
-      <:col :let={row} label="Name">
-        <.link navigate={~p"/finance/merchants/#{row}"}>
-          <%= row.name %>
-        </.link>
-      </:col>
-      <:col :let={row} label="Description">
-        <%= row.description %>
-      </:col>
-      <:col :let={row} label="# Transactions">
-        <%= if length(row.transactions) > 0 do %>
-          <.link navigate={~p"/finance?#{%{merchant_id: row.id}}"}>
-            <%= length(row.transactions) %>
+    <.flex_col>
+      <h1><%= @page_title %></h1>
+      <form class="w-96" phx-change="search">
+        <.input name="q" value={@q} label="Search" />
+      </form>
+      <div class="flex flex-wrap gap-5 ">
+        <div
+          :for={merchant <- @filtered_merchants || @merchants}
+          class="p-4 bg-purple-100 border-collapse border-purple-400 border rounded"
+        >
+          <.link navigate={~p"/finance/merchants/#{merchant}"}>
+            <%= merchant.primary_name %>
           </.link>
-        <% else %>
-          0
-        <% end %>
-      </:col>
-      <:col :let={row} label="">
-        <%= if length(row.transactions) == 0 do %>
-          <.link href="#" phx-click="delete" phx-value-id={row.id}>
-            ❌
-          </.link>
-        <% end %>
-      </:col>
-    </.table>
+        </div>
+      </div>
+    </.flex_col>
     """
   end
 end

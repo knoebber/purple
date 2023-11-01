@@ -203,8 +203,7 @@ defmodule Purple.Tags do
     where(
       query,
       [tx, m],
-      tx.id in subquery(tag_filter_subquery(TransactionTag, tagname, :transaction_id)) or
-        m.id in subquery(tag_filter_subquery(MerchantTag, tagname, :merchant_id))
+      tx.id in subquery(tag_filter_subquery(TransactionTag, tagname, :transaction_id))
     )
   end
 
@@ -214,10 +213,6 @@ defmodule Purple.Tags do
 
   def filter_by_tag(query, %{tag: tagname}, :run) do
     apply_tag_filter(query, RunTag, tagname, :run_id)
-  end
-
-  def filter_by_tag(query, %{tag: tagname}, :merchant) do
-    apply_tag_filter(query, MerchantTag, tagname, :merchant_id)
   end
 
   def filter_by_tag(query, _, _), do: query
@@ -249,17 +244,14 @@ defmodule Purple.Tags do
   def list_tags(atom), do: list_tags(atom, %{})
   def list_tags(:item, _), do: list_model_tags(ItemTag)
   def list_tags(:run, _), do: list_model_tags(RunTag)
-  def list_tags(:merchant, _), do: list_model_tags(MerchantTag)
 
   def list_tags(:transaction, %{user_id: user_id}) do
     Repo.all(
       from tags in Tag,
-        left_join: mt in MerchantTag,
-        on: mt.tag_id == tags.id,
         left_join: tt in TransactionTag,
         on: tt.tag_id == tags.id,
         join: tx in Purple.Finance.Transaction,
-        on: tx.id == tt.transaction_id or mt.merchant_id == tx.merchant_id,
+        on: tx.id == tt.transaction_id,
         where: tx.user_id == ^user_id,
         group_by: tags.id,
         order_by: tags.name,

@@ -14,8 +14,6 @@ defmodule Purple.Finance.Transaction do
 
     timestamps()
 
-    # todo - delete
-    belongs_to :merchant, Purple.Finance.Merchant
     belongs_to :merchant_name, Purple.Finance.MerchantName
     belongs_to :payment_method, Purple.Finance.PaymentMethod
     belongs_to :user, Purple.Accounts.User
@@ -24,12 +22,12 @@ defmodule Purple.Finance.Transaction do
   end
 
   def to_string(transaction = %__MODULE__{}, should_include_merchant_name \\ true) do
+    ts = Purple.Date.format(transaction.timestamp)
+
     if should_include_merchant_name do
-      transaction.dollars <>
-        " " <>
-        transaction.merchant_name.name <> " " <> Purple.Date.format(transaction.timestamp)
+      transaction.dollars <> " " <> transaction.merchant_name.name <> " " <> ts
     else
-      transaction.dollars(" " <> Purple.Date.format(transaction.timestamp))
+      transaction.dollars <> " " <> ts
     end
   end
 
@@ -92,16 +90,12 @@ defmodule Purple.Finance.Transaction do
       :category,
       :description,
       :dollars,
-      # todo delete
-      :merchant_id,
       :merchant_name_id,
       :notes,
       :payment_method_id
     ])
     |> validate_required([
       :dollars,
-      # todo delete
-      :merchant_id,
       :merchant_name_id,
       :payment_method_id
     ])

@@ -36,14 +36,24 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
     assigns = socket.assigns
 
     changeset = Finance.change_transaction(assigns.transaction, params)
-    merchant_id = selected_option_id(changeset, assigns.merchant_options, :merchant_id)
 
     payment_method_id =
       selected_option_id(changeset, assigns.payment_method_options, :payment_method_id)
 
+    merchant_name_result =
+      if socket.assigns[:merchant_name_result] do
+        socket.assigns.merchant_name_result
+      else
+        tx = socket.assigns.transaction
+
+        if tx && tx.merchant_name_id do
+          Finance.get_merchant_name!(tx.merchant_name_id)
+        end
+      end
+
     socket
     |> assign(:changeset, changeset)
-    |> assign(:merchant_id, merchant_id)
+    |> assign(:merchant_name_result, merchant_name_result)
     |> assign(:payment_method_id, payment_method_id)
   end
 
@@ -58,8 +68,9 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
       |> assign(assigns)
       |> assign(:class, class)
       |> assign(:rows, text_area_rows(assigns.transaction.notes))
-      |> assign(:merchant_options, Finance.merchant_mappings(user_id))
       |> assign(:payment_method_options, Finance.payment_method_mappings(user_id))
+      |> assign(:merchant_name_q, "")
+      |> assign(:merchant_names, Finance.list_merchant_names())
       |> assign(:should_leave_open, false)
       |> assign_changeset()
     }
@@ -96,6 +107,25 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
   end
 
   @impl Phoenix.LiveComponent
+  def handle_event("filter_merchant_names", %{"merchant_name_q" => q}, socket) do
+    merchant_name_result =
+      case Enum.filter(
+             socket.assigns.merchant_names,
+             &String.contains?(String.downcase(&1.name), String.downcase(q))
+           ) do
+        [head | _] -> head
+        [] -> nil
+      end
+
+    {
+      :noreply,
+      socket
+      |> assign(:merchant_name_result, merchant_name_result)
+      |> assign(:merchant_name_q, q)
+    }
+  end
+
+  @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
     <div class={@class}>
@@ -110,12 +140,24 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
           />
           <.input field={f[:dollars]} label="Amount" />
           <%= datetime_select_group(f, :timestamp) %>
+          <div class="flex gap-4 items-end">
+            <.input
+              name="merchant_name_q"
+              value={@merchant_name_q}
+              label="Type to find merchant name"
+              phx-change="filter_merchant_names"
+            />
+            <div
+              :if={@merchant_name_result}
+              class="p-1 bg-purple-100 border-collapse border-purple-400 border rounded h-fit"
+            >
+              <%= @merchant_name_result.name %>
+            </div>
+          </div>
           <.input
-            class="w-5/6"
-            field={f[:merchant_id]}
-            label="Merchant"
-            options={@merchant_options}
-            type="select"
+            type="hidden"
+            field={f[:merchant_name_id]}
+            value={@merchant_name_result && @merchant_name_result.id}
           />
           <.input
             class="w-5/6"

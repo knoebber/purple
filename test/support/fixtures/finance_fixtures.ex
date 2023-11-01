@@ -31,7 +31,7 @@ defmodule Purple.FinanceFixtures do
     Finance.get_or_create_payment_method!(name)
   end
 
-  def transaction_fixture(attrs \\ %{}, keywords \\ []) do
+  def transaction_fixture(attrs \\ %{}, keywords \\ []) when is_map(attrs) do
     user = Keyword.get_lazy(keywords, :user, &Purple.AccountsFixtures.user_fixture/0)
     payment_method = Keyword.get_lazy(keywords, :payment_method, &payment_method_fixture/0)
     merchant_name = Keyword.get_lazy(keywords, :merchant_name, &merchant_name_fixture/0)
@@ -40,14 +40,12 @@ defmodule Purple.FinanceFixtures do
       Map.merge(
         valid_tx_attributes(attrs),
         %{
-          # todo - delete
-          merchant_id: merchant_name.merchant.id,
           merchant_name_id: merchant_name.id,
           payment_method_id: payment_method.id
         }
       )
 
     {:ok, tx} = Finance.create_transaction(user.id, attrs)
-    tx
+    Finance.get_transaction!(tx.id)
   end
 end

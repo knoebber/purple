@@ -47,6 +47,12 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
       <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate" phx-target={@myself}>
         <div class="flex flex-col mb-2">
           <.input field={f[:name]} phx-hook="AutoFocus" label="Name" />
+          <.input
+            field={f[:category]}
+            label="Category"
+            type="select"
+            options={Finance.category_mappings()}
+          />
           <.input field={f[:description]} type="textarea" rows={@rows} label="Description" />
         </div>
         <.button phx-disable-with="Saving...">Save</.button>

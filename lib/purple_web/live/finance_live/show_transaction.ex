@@ -174,8 +174,8 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
           <span>Paid with: <%= @transaction.payment_method.name %></span>
           <span>
             Merchant:
-            <.link navigate={~p"/finance/merchants/#{@transaction.merchant}"}>
-              <%= @transaction.merchant.name %>
+            <.link navigate={~p"/finance/merchants/#{@transaction.merchant_name.merchant_id}"}>
+              <%= @transaction.merchant_name.name %>
             </.link>
           </span>
           <span :if={@transaction.description != ""}>

@@ -16,7 +16,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
     merchant = Finance.get_merchant(merchant_id)
 
     if merchant do
-      merchant.description
+      merchant.primary_name
     end
   end
 
@@ -30,7 +30,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
       })
 
     socket
-    |> assign(:page_title, merchant.name)
+    |> assign(:page_title, merchant.primary_name)
     |> assign(:merchant, merchant)
     |> assign(:transactions, transactions)
     |> assign_fancy_link_map(merchant.description)
@@ -110,7 +110,10 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
         fancy_link_map={@fancy_link_map}
       />
       <.flex_col>
-        <%= PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type() %>
+        <span :if={!@is_editing}>
+          Category: <%= Purple.titleize(@merchant.category) %>
+        </span>
+        Transactions <%= PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type() %>
         <div :for={tx <- @transactions}>
           <.link navigate={~p"/finance/transactions/#{tx}"}>
             <%= Transaction.to_string(tx, false) %>

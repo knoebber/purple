@@ -25,7 +25,6 @@ defmodule PurpleWeb.FinanceLive.Index do
 
     socket
     |> assign(:filter, filter)
-    |> assign(:merchant_options, Finance.merchant_mappings(user_id))
     |> assign(:payment_method_options, Finance.payment_method_mappings(user_id))
     |> assign(:tag_options, Purple.Tags.make_tag_choices(:transaction, filter))
     |> assign(:transactions, Finance.list_transactions(filter))
@@ -254,9 +253,9 @@ defmodule PurpleWeb.FinanceLive.Index do
           class="lg:w-1/4"
         />
         <.input
-          field={f[:tag]}
+          field={f[:category]}
           type="select"
-          options={@tag_options}
+          options={[{"All", nil} | Finance.category_mappings()]}
           value={Map.get(@filter, :tag, "")}
           class="lg:w-1/4"
         />

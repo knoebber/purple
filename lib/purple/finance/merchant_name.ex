@@ -4,6 +4,8 @@ defmodule Purple.Finance.MerchantName do
   schema "merchant_names" do
     field :name, :string
     field :is_primary, :boolean, default: false
+
+    has_many :transactions, Purple.Finance.Transaction
     belongs_to :merchant, Purple.Finance.Merchant
 
     timestamps()

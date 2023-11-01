@@ -54,18 +54,50 @@ defmodule PurpleWeb.FinanceLiveTest do
     end
   end
 
+  describe "create transaction page" do
+    test "ok", %{conn: conn} do
+      pm = payment_method_fixture("CC 420 💳")
+      u = user_fixture()
+
+      assert {:ok, view, _} =
+               conn
+               |> log_in_user(u)
+               |> live(~p"/finance/transactions/create")
+
+      form = view |> element("form") |> render()
+      # payment method name is present in form.
+      assert form =~ pm.name
+    end
+  end
+
+  describe "merchant index" do
+    test "ok", %{conn: conn} do
+      u = user_fixture()
+      m = merchant_name_fixture("testing merchant index")
+      t = transaction_fixture(%{}, user: u, merchant_name: m)
+
+      assert {:ok, view, _} =
+               conn
+               |> log_in_user(u)
+               |> live(~p"/finance/merchants")
+
+      content = render(view)
+      assert content =~ "testing merchant index"
+    end
+  end
+
   describe "show merchant" do
     test "ok", %{conn: conn} do
-      m = merchant_name_fixture()
+      mn = merchant_name_fixture()
 
       assert {:ok, view, _} =
                conn
                |> log_in_user(user_fixture())
-               |> live(~p"/finance/merchants/#{m}")
+               |> live(~p"/finance/merchants/#{mn.merchant_id}")
 
       html = render(view)
-      assert html =~ m.name
-      assert html =~ m.description
+      assert html =~ mn.name
+      assert html =~ mn.merchant.description
     end
 
     test "shows user transactions", %{conn: conn} do

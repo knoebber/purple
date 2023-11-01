@@ -5,15 +5,9 @@ defmodule Purple.Finance.Merchant do
   schema "merchants" do
     field :category, Ecto.Enum, values: Purple.Finance.Choices.category_values(), default: :OTHER
     field :description, :string, default: ""
-    # deprecated
-    field :name, :string
-
     field :primary_name, :string, virtual: true
 
-    has_many :transactions, Purple.Finance.Transaction
-
     has_many :names, Purple.Finance.MerchantName
-
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.MerchantTag
 
     timestamps()
@@ -30,15 +24,7 @@ defmodule Purple.Finance.Merchant do
     )
   end
 
-  def set_primary_name(%__MODULE__{} = m) do
-    # TODO: remove this after every merchant has a name set.
-    m
-  end
-
   def changeset(merchant, attrs) do
-    merchant
-    |> cast(attrs, [:name, :description])
-    |> validate_required([:name])
-    |> unique_constraint(:name, message: "already exists")
+    cast(merchant, attrs, [:description, :category])
   end
 end

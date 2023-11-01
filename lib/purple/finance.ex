@@ -25,13 +25,6 @@ defmodule Purple.Finance do
   alias Purple.Tags
   alias Purple.TransactionParser
 
-  """
-  TODO: transactions should be associated to merchant names, not merchants.
-        add maint function for merging merchants.
-        add maint function for backfilling merchant_name table.
-        drop merchant name col
-  """
-
   @dollar_amount_fragment "CONCAT('$', ROUND(cents/100.00,2))"
   @yyyy_mm "to_char(\"timestamp\", 'YYYY-MM')"
 
@@ -96,6 +89,10 @@ defmodule Purple.Finance do
     |> maybe_set_primary_name()
   end
 
+  def get_merchant_name!(id) do
+    Repo.get!(MerchantName, id)
+  end
+
   def get_merchant(id) do
     from(m in Merchant,
       join: names in assoc(m, :names),
@@ -121,8 +118,7 @@ defmodule Purple.Finance do
       Repo.transaction(fn ->
         {should_name_be_primary, merchant} =
           case get_merchant_by_name(name) do
-            # todo: remove name
-            nil -> {true, Repo.insert!(%Merchant{name: name})}
+            nil -> {true, Repo.insert!(%Merchant{})}
             merchant -> {false, merchant}
           end
 
@@ -353,8 +349,17 @@ defmodule Purple.Finance do
 
   defp category_filter(q, _), do: q
 
-  defp merchant_filter(q, %{merchant_id: id}) do
-    where(q, [_, m], m.id == ^id)
+  defp merchant_filter(q, %{merchant_id: merchant_id}) do
+    where(
+      q,
+      [_, mn],
+      mn.id in subquery(
+        from mn in MerchantName,
+          select: [:id],
+          join: m in assoc(mn, :merchant),
+          where: m.id == ^merchant_id
+      )
+    )
   end
 
   defp merchant_filter(q, _), do: q
@@ -396,7 +401,7 @@ defmodule Purple.Finance do
 
     Transaction
     |> select_merge(%{dollars: fragment(@dollar_amount_fragment)})
-    |> join(:inner, [tx], m in assoc(tx, :merchant_name))
+    |> join(:inner, [tx], mn in assoc(tx, :merchant_name))
     |> join(:inner, [tx], pm in assoc(tx, :payment_method))
     |> join(:left, [tx], stx in assoc(tx, :shared_transaction))
     |> Tags.filter_by_tag(filter, :transaction)
@@ -408,7 +413,11 @@ defmodule Purple.Finance do
     |> month_filter(filter)
     |> category_filter(filter)
     |> order_by(^order_by)
-    |> preload([_, m, pm, stx], merchant_name: m, payment_method: pm, shared_transaction: stx)
+    |> preload([_, mn, pm, stx],
+      merchant_name: mn,
+      payment_method: pm,
+      shared_transaction: stx
+    )
     |> Repo.paginate(filter)
   end
 
@@ -469,10 +478,18 @@ defmodule Purple.Finance do
 
   def list_merchants(user_id) when is_integer(user_id) do
     Merchant
-    |> join(:left, [m], tx in assoc(m, :transactions))
-    |> where([m, tx], tx.user_id == ^user_id or is_nil(tx.user_id))
-    |> order_by(:name)
-    |> preload([_, tx], transactions: tx)
+    |> join(:inner, [m], mn in assoc(m, :names))
+    |> join(:inner, [_, mn], tx in assoc(mn, :transactions))
+    |> where([_, _, tx], tx.user_id == ^user_id)
+    |> preload([_, mn], names: mn)
+    |> Repo.all()
+    |> Enum.map(&Merchant.set_primary_name/1)
+    |> Enum.sort(&(&1.primary_name < &2.primary_name))
+  end
+
+  def list_merchant_names() do
+    MerchantName
+    |> order_by(desc: :name)
     |> Repo.all()
   end
 
@@ -498,13 +515,6 @@ defmodule Purple.Finance do
     ImportedTransaction
     |> import_task_filter(filter)
     |> Repo.all()
-  end
-
-  def merchant_mappings(user_id) do
-    Enum.map(
-      list_merchants(user_id),
-      fn %{id: id, name: name} -> [value: id, key: name] end
-    )
   end
 
   def payment_method_mappings(user_id) do
@@ -695,8 +705,6 @@ defmodule Purple.Finance do
           cents: transaction_params.cents,
           description: "",
           category: elem(category, 0),
-          # todo - delete
-          merchant: merchant,
           merchant_name: merchant_name,
           notes: transaction_params.notes,
           payment_method: get_or_create_payment_method!(transaction_params.payment_method),
