@@ -18,18 +18,27 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
       socket
       |> assign(assigns)
       |> assign(:rows, text_area_rows(merchant.description))
-      |> assign(:changeset, Finance.change_merchant(merchant))
+      |> assign(:form, to_form(Finance.change_merchant(merchant)))
     }
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("validate", _, socket) do
-    {:noreply, socket}
+  def handle_event("validate", %{"merchant" => merchant_params}, socket) do
+    form =
+      socket.assigns.merchant
+      |> Finance.change_merchant(merchant_params)
+      |> to_form
+
+    {
+      :noreply,
+      socket
+      |> assign(:form, form)
+    }
   end
 
   @impl Phoenix.LiveComponent
-  def handle_event("save", %{"merchant" => merchant}, socket) do
-    case save_merchant(socket, socket.assigns.action, merchant) do
+  def handle_event("save", %{"merchant" => merchant_params}, socket) do
+    case save_merchant(socket, socket.assigns.action, merchant_params) do
       {:ok, merchant} ->
         Purple.Tags.sync_tags(merchant.id, :merchant)
         send(self(), {:saved_merchant, merchant.id})
@@ -44,16 +53,15 @@ defmodule PurpleWeb.FinanceLive.MerchantForm do
   def render(assigns) do
     ~H"""
     <div class={@class}>
-      <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate" phx-target={@myself}>
+      <.form for={@form} phx-submit="save" phx-change="validate" phx-target={@myself}>
         <div class="flex flex-col mb-2">
-          <.input field={f[:name]} phx-hook="AutoFocus" label="Name" />
           <.input
-            field={f[:category]}
+            field={@form[:category]}
             label="Category"
             type="select"
             options={Finance.category_mappings()}
           />
-          <.input field={f[:description]} type="textarea" rows={@rows} label="Description" />
+          <.input field={@form[:description]} type="textarea" rows={@rows} label="Description" />
         </div>
         <.button phx-disable-with="Saving...">Save</.button>
       </.form>

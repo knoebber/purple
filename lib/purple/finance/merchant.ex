@@ -1,4 +1,5 @@
 defmodule Purple.Finance.Merchant do
+  alias Purple.Finance.MerchantName
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -24,7 +25,8 @@ defmodule Purple.Finance.Merchant do
     )
   end
 
-  def changeset(merchant, attrs) do
-    cast(merchant, attrs, [:description, :category])
+  def changeset(%__MODULE__{} = merchant, attrs) do
+    merchant
+    |> cast(attrs, [:description, :category])
   end
 end

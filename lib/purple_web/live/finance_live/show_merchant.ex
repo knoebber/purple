@@ -94,32 +94,42 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
         </div>
         <.timestamp model={@merchant} />
       </div>
-      <.live_component
-        :if={@is_editing}
-        action={:edit_merchant}
-        class="p-4"
-        current_user={@current_user}
-        id={@merchant.id}
-        module={PurpleWeb.FinanceLive.MerchantForm}
-        merchant={@merchant}
-      />
-      <.markdown
-        :if={!@is_editing}
-        content={@merchant.description}
-        link_type={:finance}
-        fancy_link_map={@fancy_link_map}
-      />
-      <.flex_col>
-        <span :if={!@is_editing}>
-          Category: <%= Purple.titleize(@merchant.category) %>
-        </span>
-        Transactions <%= PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type() %>
-        <div :for={tx <- @transactions}>
-          <.link navigate={~p"/finance/transactions/#{tx}"}>
-            <%= Transaction.to_string(tx, false) %>
-          </.link>
-        </div>
-      </.flex_col>
+      <%= if @is_editing do %>
+        <.live_component
+          action={:edit_merchant}
+          class="p-4"
+          current_user={@current_user}
+          id={@merchant.id}
+          module={PurpleWeb.FinanceLive.MerchantForm}
+          merchant={@merchant}
+        />
+      <% else %>
+        <.flex_col>
+          <div :if={length(@merchant.names) > 1}>
+            Names:
+            <span
+              :for={name <- @merchant.names}
+              class="p-1 bg-purple-100 border-collapse border-purple-400 border rounded"
+            >
+              <span :if={name.is_primary}>🧟‍♀️<%= name.name %></span>
+            </span>
+          </div>
+          <div :if={!@is_editing}>
+            Category: <%= Purple.titleize(@merchant.category) %>
+          </div>
+          Transactions <%= PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type() %>
+          <div :for={tx <- @transactions}>
+            <.link navigate={~p"/finance/transactions/#{tx}"}>
+              <%= Transaction.to_string(tx, false) %>
+            </.link>
+          </div>
+        </.flex_col>
+        <.markdown
+          content={@merchant.description}
+          link_type={:finance}
+          fancy_link_map={@fancy_link_map}
+        />
+      <% end %>
     </.section>
     """
   end

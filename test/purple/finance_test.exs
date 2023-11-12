@@ -92,5 +92,36 @@ defmodule Purple.FinanceTest do
 
       assert nil == get_merchant_by_name("no database match")
     end
+
+    test "merge merchants" do
+      main_merchant = merchant_name_fixture("main merchant").merchant
+      to_merge_merchant = merchant_name_fixture("to merge merchant").merchant
+      give_name_to_merchant(main_merchant, "foo")
+      give_name_to_merchant(to_merge_merchant, "bar")
+
+      {:ok, main_merchant} =
+        update_merchant(main_merchant, %{
+          "description" => "Tags :) \n\n#apple\n\n#orange"
+        })
+
+      {:ok, to_merge_merchant} =
+        update_merchant(to_merge_merchant, %{
+          "description" => "Tags :) \n\n#apple\n\n#orange #uniquetag"
+        })
+
+      Purple.Tags.sync_tags(main_merchant.id, :merchant)
+      Purple.Tags.sync_tags(to_merge_merchant.id, :merchant)
+
+      merge_merchants(main_merchant, to_merge_merchant)
+
+      assert is_nil(get_merchant(to_merge_merchant.id))
+
+      result = get_merchant!(main_merchant.id, :tags)
+      assert for tag <- result.tags, do: tag.name == ["apple", "orange", "uniquetag"]
+      assert result.primary_name == "main merchant"
+
+      assert for name <- result.names,
+                 do: name.name == ["main merchant", "to merge merchant", "foo", "bar"]
+    end
   end
 end

@@ -7,6 +7,8 @@ defmodule Purple.Finance do
 
   import Ecto.Query
 
+  alias Purple.Tags.MerchantTag
+
   alias Purple.Finance.{
     ImportedTransaction,
     Merchant,
@@ -37,6 +39,24 @@ defmodule Purple.Finance do
         preload: [merchant: merchant]
       )
     )
+  end
+
+  def merge_merchants(%Merchant{} = main, %Merchant{} = to_merge) do
+    Repo.transaction(fn ->
+      MerchantName
+      |> where([mn], mn.merchant_id == ^to_merge.id)
+      |> Repo.update_all(set: [merchant_id: main.id, is_primary: false])
+
+      unless to_merge.description == "" do
+        update_merchant(main, %{
+          "description" => main.description <> "\n\n" <> to_merge.description
+        })
+      end
+
+      Tags.sync_tags(main.id, :merchant)
+
+      Repo.delete!(to_merge)
+    end)
   end
 
   def give_name_to_merchant(%Merchant{id: merchant_id}, name, is_primary \\ false)
