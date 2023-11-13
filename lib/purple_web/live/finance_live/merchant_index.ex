@@ -67,13 +67,24 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("new_merchant", %{"name" => name}, socket) do
+    mn = Finance.get_or_create_merchant!(name)
+    {:noreply, push_navigate(socket, to: ~p"/finance/merchants/#{mn.merchant_id}")}
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <.flex_col>
       <h1><%= @page_title %></h1>
-      <form class="w-96" phx-change="search">
-        <.input name="q" value={@q} label="Search" />
-      </form>
+      <div class="flex justify-between">
+        <form class="w-96" phx-change="search">
+          <.input name="q" value={@q} label="Search" />
+        </form>
+        <form class="w-96" phx-submit="new_merchant">
+          <.input name="name" value={@q} label="Get or create merchant" />
+        </form>
+      </div>
       <div class="flex flex-wrap gap-5 ">
         <div
           :for={merchant <- @filtered_merchants || @merchants}
