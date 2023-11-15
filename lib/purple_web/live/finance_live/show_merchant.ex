@@ -60,6 +60,18 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
   end
 
   @impl Phoenix.LiveView
+  def handle_event("delete", _, socket) do
+    Finance.delete_merchant!(socket.assigns.merchant)
+
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "deleted merchant '#{socket.assigns.merchant.primary_name}'")
+      |> push_navigate(to: ~p"/finance/merchants")
+    }
+  end
+
+  @impl Phoenix.LiveView
   def handle_info({:saved_merchant, merchant_id}, socket) do
     {
       :noreply,
@@ -85,6 +97,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
           <.link :if={!@is_editing} patch={~p"/finance/merchants/#{@merchant.id}/edit"} replace={true}>
             Edit
           </.link>
+          <.link :if={@transactions == []} href="#" phx-click="delete">Delete</.link>
           <.link :if={@is_editing} patch={~p"/finance/merchants/#{@merchant.id}"} replace={true}>
             Cancel
           </.link>
@@ -105,13 +118,14 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
         />
       <% else %>
         <.flex_col>
-          <div :if={length(@merchant.names) > 1}>
-            Names:
+          <div :if={length(@merchant.names) > 1} class="flex gap-3">
+            <span class="p-1">🧟‍♀️ Names:</span>
             <span
               :for={name <- @merchant.names}
+              :if={not name.is_primary}
               class="p-1 bg-purple-100 border-collapse border-purple-400 border rounded"
             >
-              <span :if={name.is_primary}>🧟‍♀️<%= name.name %></span>
+              <span>‍️<%= name.name %></span>
             </span>
           </div>
           <div :if={!@is_editing}>
@@ -120,7 +134,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
           Transactions <%= PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type() %>
           <div :for={tx <- @transactions}>
             <.link navigate={~p"/finance/transactions/#{tx}"}>
-              <%= Transaction.to_string(tx, false) %>
+              <%= Transaction.to_string(tx) %>
             </.link>
           </div>
         </.flex_col>

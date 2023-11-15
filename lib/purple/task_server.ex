@@ -25,21 +25,21 @@ defmodule Purple.TaskServer do
   def handle_info(:work, state) do
     Logger.info("task server is starting work")
 
-    # Logger.info("importing transactions")
+    Logger.info("importing transactions")
 
-    # Enum.each(
-    #   Accounts.list_user_oauth_tokens(),
-    #   fn %{user_id: user_id} ->
-    #     %{success: num_success, failed: num_failed, errors: errors} =
-    #       Finance.import_transactions(user_id)
+    Enum.each(
+      Accounts.list_user_oauth_tokens(),
+      fn %{user_id: user_id} ->
+        %{success: num_success, failed: num_failed, errors: errors} =
+          Finance.import_transactions(user_id)
 
-    #     if num_success > 0 or num_failed > 0 do
-    #       Logger.info(
-    #         "user id: #{user_id}, success: #{num_success}, failed: #{num_failed}, errors: #{errors}"
-    #       )
-    #     end
-    #   end
-    # )
+        if num_success > 0 or num_failed > 0 do
+          Logger.info(
+            "user id: #{user_id}, success: #{num_success}, failed: #{num_failed}, errors: #{errors}"
+          )
+        end
+      end
+    )
 
     Logger.info("parsing RSS feeds")
     Enum.each(Feed.list_sources(), &Feed.save_items_from_source/1)

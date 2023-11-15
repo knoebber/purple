@@ -77,7 +77,7 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
     ~H"""
     <.flex_col>
       <h1><%= @page_title %></h1>
-      <div class="flex justify-between">
+      <div class="flex gap-8">
         <form class="w-96" phx-change="search">
           <.input name="q" value={@q} label="Search" />
         </form>

@@ -7,8 +7,6 @@ defmodule Purple.Finance do
 
   import Ecto.Query
 
-  alias Purple.Tags.MerchantTag
-
   alias Purple.Finance.{
     ImportedTransaction,
     Merchant,
@@ -718,13 +716,14 @@ defmodule Purple.Finance do
               )
             end
           )
+          |> elem(0)
         end
 
       transaction =
         Repo.insert!(%Transaction{
           cents: transaction_params.cents,
           description: "",
-          category: elem(category, 0),
+          category: category,
           merchant_name: merchant_name,
           notes: transaction_params.notes,
           payment_method: get_or_create_payment_method!(transaction_params.payment_method),

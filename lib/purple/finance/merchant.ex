@@ -1,5 +1,4 @@
 defmodule Purple.Finance.Merchant do
-  alias Purple.Finance.MerchantName
   use Ecto.Schema
   import Ecto.Changeset
 

@@ -1,5 +1,14 @@
 defmodule Purple.FinanceTest do
-  alias Purple.Finance.{Transaction, Merchant, PaymentMethod, MerchantName}
+  alias Purple.Finance.{
+    Transaction,
+    Merchant,
+    PaymentMethod,
+    MerchantName,
+    ImportedTransaction,
+    TransactionImportTask
+  }
+
+  import Purple.AccountsFixtures
   import Purple.Finance
   import Purple.FinanceFixtures
   use Purple.DataCase
@@ -35,6 +44,63 @@ defmodule Purple.FinanceTest do
       assert Transaction.dollars_to_cents("4,200.42") == 4200 * 100 + 42
       assert Transaction.dollars_to_cents("$4,200.42") == 4200 * 100 + 42
       assert Transaction.dollars_to_cents("$1,123,435.69") == 1_123_435 * 100 + 69
+    end
+
+    test "save imported transaction" do
+      u = user_fixture()
+
+      tit =
+        Repo.insert!(%TransactionImportTask{
+          parser: Purple.TransactionParser.BOAEmail,
+          status: :ACTIVE,
+          user_id: u.id,
+          email_label: ""
+        })
+
+      olive = get_or_create_merchant!("Olive 🫒")
+      {:ok, _} = update_merchant(olive.merchant, %{"description" => "#home"})
+      Purple.Tags.sync_tags(olive.merchant_id, :merchant)
+      assert [%Purple.Tags.Tag{name: "home"}] = get_merchant!(olive.merchant_id, :tags).tags
+
+      get_params = fn
+        p ->
+          %{
+            transaction_params:
+              Enum.into(
+                p,
+                %{
+                  cents: 42069,
+                  merchant: olive.name,
+                  notes: "default get_params note",
+                  payment_method: "CC 💳 27",
+                  user_id: u.id,
+                  timestamp: Purple.Date.utc_now()
+                }
+              ),
+            imported_transaction: %ImportedTransaction{
+              transaction_import_task_id: tit.id,
+              data_id: "#{System.unique_integer()}",
+              data_summary: "whatever."
+            }
+          }
+      end
+
+      assert {:ok, {%Transaction{id: id}, %ImportedTransaction{}}} =
+               save_imported_transaction(get_params.(%{}))
+
+      tx = get_transaction!(id)
+      assert tx.category == :HOME
+
+      {:ok, _} = give_name_to_merchant(olive.merchant, "Apple 🍏")
+      {:ok, _} = update_merchant(olive.merchant, %{"category" => :SOFTWARE})
+
+      assert {:ok, {%Transaction{id: id}, %ImportedTransaction{}}} =
+               save_imported_transaction(get_params.(%{merchant: "Apple 🍏"}))
+
+      tx = get_transaction!(id)
+      assert tx.merchant_name.name == "Apple 🍏"
+      assert tx.merchant_name.merchant_id == olive.merchant_id
+      assert tx.category == :SOFTWARE
     end
   end
 

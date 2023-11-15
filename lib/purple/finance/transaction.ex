@@ -21,14 +21,9 @@ defmodule Purple.Finance.Transaction do
     many_to_many :tags, Purple.Tags.Tag, join_through: Purple.Tags.TransactionTag
   end
 
-  def to_string(transaction = %__MODULE__{}, should_include_merchant_name \\ true) do
-    ts = Purple.Date.format(transaction.timestamp)
-
-    if should_include_merchant_name do
-      transaction.dollars <> " " <> transaction.merchant_name.name <> " " <> ts
-    else
-      transaction.dollars <> " " <> ts
-    end
+  def to_string(transaction = %__MODULE__{}) do
+    transaction.dollars <>
+      " " <> transaction.merchant_name.name <> " " <> Purple.Date.format(transaction.timestamp)
   end
 
   def dollars_to_cents([]) do
