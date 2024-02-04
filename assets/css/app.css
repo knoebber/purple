@@ -193,6 +193,11 @@
         @apply m-8;
     }
 
+    .markdown-content img {
+	display: inline;
+	max-height: 400px;
+    }
+
     .markdown-content table {
 	@apply bg-purple-100;
 	@apply border-collapse;
