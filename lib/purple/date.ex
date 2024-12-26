@@ -26,7 +26,7 @@ defmodule Purple.Date do
   end
 
   def unix_now() do
-    DateTime.now!("Etc/UTC") |> DateTime.to_unix()
+    System.os_time(:second)
   end
 
   def to_local_datetime(%NaiveDateTime{} = ndt) do
