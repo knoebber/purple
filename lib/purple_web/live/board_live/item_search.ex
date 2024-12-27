@@ -56,7 +56,7 @@ defmodule PurpleWeb.BoardLive.ItemSearch do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1 class="mb-2"><%= @page_title %></h1>
+    <h1 class="mb-2">{@page_title}</h1>
     <.filter_form :let={f}>
       <.link navigate={item_create_path(nil)}>
         <.button type="button">Create</.button>
@@ -90,16 +90,16 @@ defmodule PurpleWeb.BoardLive.ItemSearch do
         rows={@items}
       >
         <:col :let={item} label="Item" order_col="id">
-          <.link navigate={~p"/board/item/#{item}"}><%= item.id %></.link>
+          <.link navigate={~p"/board/item/#{item}"}>{item.id}</.link>
         </:col>
         <:col :let={item} label="Description" order_col="description">
-          <.link navigate={~p"/board/item/#{item}"}><%= item.description %></.link>
+          <.link navigate={~p"/board/item/#{item}"}>{item.description}</.link>
         </:col>
         <:col :let={item} label="Status" order_col="status">
-          <%= item.status %>
+          {item.status}
         </:col>
         <:col :let={item} label="Last Activity" order_col="last_active_at">
-          <%= Purple.Date.format(item.last_active_at) %>
+          {Purple.Date.format(item.last_active_at)}
         </:col>
       </.table>
       <.page_links

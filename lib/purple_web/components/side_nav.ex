@@ -62,17 +62,12 @@ defmodule PurpleWeb.Components.SideNav do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <nav
-      class={unless @side_nav, do: "hidden"}
-      id="js-side-nav"
-      phx-hook="SideNav"
-      phx-target={@myself}
-    >
+    <nav class={if !@side_nav, do: "hidden"} id="js-side-nav" phx-hook="SideNav" phx-target={@myself}>
       <%= for link <- @side_nav do %>
-        <.link navigate={link.to}><%= link.label %></.link>
+        <.link navigate={link.to}>{link.label}</.link>
         <div :if={Map.has_key?(link, :children) and length(link.children) > 0} class="side-link-group">
           <.link :for={child <- link.children} navigate={child.to}>
-            <%= child.label %>
+            {child.label}
           </.link>
         </div>
       <% end %>
@@ -81,8 +76,8 @@ defmodule PurpleWeb.Components.SideNav do
           <h4 class="history-header">History</h4>
           <div :for={{group_name, link_pairs} <- @history} class="history-group">
             <div class="side-link-group history">
-              <span><%= group_name %></span>
-              <.link :for={{path, title} <- link_pairs} navigate={path}><%= title %></.link>
+              <span>{group_name}</span>
+              <.link :for={{path, title} <- link_pairs} navigate={path}>{title}</.link>
             </div>
           </div>
         </div>

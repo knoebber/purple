@@ -52,7 +52,7 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1 class="mb-2"><%= @page_title %></h1>
+    <h1 class="mb-2">{@page_title}</h1>
     <div class="mb-2 sm:w-1/3">
       <.live_component
         action={:new_payment_method}
@@ -63,12 +63,12 @@ defmodule PurpleWeb.FinanceLive.PaymentMethodIndex do
     </div>
     <.table rows={@payment_methods}>
       <:col :let={row} label="Name">
-        <%= row.name %>
+        {row.name}
       </:col>
       <:col :let={row} label="# Transactions">
         <%= if length(row.transactions) > 0 do %>
           <.link navigate={~p"/finance?#{%{payment_method_id: row.id}}"}>
-            <%= length(row.transactions) %>
+            {length(row.transactions)}
           </.link>
         <% else %>
           0

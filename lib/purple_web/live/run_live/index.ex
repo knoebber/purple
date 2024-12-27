@@ -87,9 +87,9 @@ defmodule PurpleWeb.RunLive.Index do
   def render(assigns) do
     ~H"""
     <div class="mb-2 flex">
-      <h1><%= @page_title %></h1>
+      <h1>{@page_title}</h1>
       <i class="ml-2 self-center">
-        <%= @weekly_total %> this week, <%= @total %> displayed
+        {@weekly_total} this week, {@total} displayed
       </i>
     </div>
     <.modal
@@ -98,7 +98,7 @@ defmodule PurpleWeb.RunLive.Index do
       on_cancel={JS.patch(~p"/runs?#{@filter}", replace: true)}
       show
     >
-      <:title><%= Purple.titleize(@live_action) %> Run</:title>
+      <:title>{Purple.titleize(@live_action)} Run</:title>
       <.live_component
         id={@editable_run.id || :new}
         module={PurpleWeb.RunLive.FormComponent}
@@ -136,17 +136,17 @@ defmodule PurpleWeb.RunLive.Index do
       <.table rows={@runs} get_route={fn filter -> ~p"/runs?#{filter}" end} filter={@filter}>
         <:col :let={run} label="Miles" order_col="miles">
           <.link navigate={~p"/runs/#{run}"}>
-            <%= run.miles %>
+            {run.miles}
           </.link>
         </:col>
         <:col :let={run} label="Duration" order_col="seconds">
-          <%= Run.format_duration(run) %>
+          {Run.format_duration(run)}
         </:col>
         <:col :let={run} label="Pace">
-          <%= Run.format_pace(run) %>
+          {Run.format_pace(run)}
         </:col>
         <:col :let={run} label="Date" order_col="date">
-          <%= Purple.Date.format(run.date, :dayname) %>
+          {Purple.Date.format(run.date, :dayname)}
         </:col>
         <:col :let={run} label="">
           <.link patch={~p"/runs/edit/#{run}?#{@filter}"} replace={true}>

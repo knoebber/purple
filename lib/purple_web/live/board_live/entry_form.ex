@@ -93,7 +93,7 @@ defmodule PurpleWeb.BoardLive.EntryForm do
             rows={@num_rows}
             type="textarea"
           />
-          <.error :if={@checkbox_error}><%= @checkbox_error %></.error>
+          <.error :if={@checkbox_error}>{@checkbox_error}</.error>
         </div>
         <.button>Done</.button>
       </.form>

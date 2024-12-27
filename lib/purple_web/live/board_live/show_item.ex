@@ -226,7 +226,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             phx-value-id={@entry.id}
             class="no-underline font-mono"
           >
-            <%= if(@entry.is_collapsed, do: "[+]", else: "[-]") %>
+            {if(@entry.is_collapsed, do: "[+]", else: "[-]")}
           </a>
           <.link patch={~p"/board/item/#{@item}/entry/#{@entry}"} replace={true}>
             Edit
@@ -244,7 +244,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       </div>
       <%= if @entry.is_collapsed do %>
         <strong class="whitespace-nowrap overflow-hidden text-ellipsis w-1/2 text-purple-900">
-          <%= String.slice(strip_markdown(@entry.content), 0, 100) %>
+          {String.slice(strip_markdown(@entry.content), 0, 100)}
         </strong>
       <% end %>
       <.timestamp model={@entry} />
@@ -258,14 +258,14 @@ defmodule PurpleWeb.BoardLive.ShowItem do
     <h1>
       <%= if @user_board do %>
         <.link navigate={~p"/board/#{@user_board}"}>
-          <%= @user_board.name %>
+          {@user_board.name}
         </.link>
       <% else %>
         <.link navigate={~p"/board"}>
           Board
         </.link>
       <% end %>
-      / <%= @item.description %>
+      / {@item.description}
     </h1>
     <.section class="mt-2 mb-2">
       <div class="flex justify-between bg-purple-300 p-1">
@@ -275,7 +275,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <span>|</span>
             <.link patch={~p"/board/item/#{@item}"} replace={true}>Cancel</.link>
           <% else %>
-            <strong><%= @item.status %></strong>
+            <strong>{@item.status}</strong>
             <span>|</span>
             <.link patch={~p"/board/item/#{@item}/edit"} replace={true}>
               Edit
@@ -308,7 +308,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       <div>
         <span>
           <.link href="#" phx-click="toggle_files_collapsed" class="ml-1 no-underline font-mono">
-            <%= if(!@item.show_files, do: "[+]", else: "[-]") %>
+            {if(!@item.show_files, do: "[+]", else: "[-]")}
           </.link>
           <%= if @num_total_files > 0 do %>
             <.link navigate={~p"/board/item/#{@item}/files"}>
@@ -361,7 +361,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
             <ul class="ml-8">
               <li :for={ref <- @file_refs}>
                 <.link navigate={~p"/board/item/#{@item}/files/#{ref}"}>
-                  <%= Uploads.FileRef.title(ref) %>
+                  {Uploads.FileRef.title(ref)}
                 </.link>
               </li>
             </ul>

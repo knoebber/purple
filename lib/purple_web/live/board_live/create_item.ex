@@ -81,7 +81,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1 class="mb-2"><%= @page_title %></h1>
+    <h1 class="mb-2">{@page_title}</h1>
     <.form :let={f} for={@changeset} phx-submit="save" phx-change="validate">
       <div class="flex flex-col mb-2 w-full xl:w-1/2">
         <.input field={f[:description]} phx-hook="AutoFocus" label="Description" />

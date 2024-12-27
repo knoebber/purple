@@ -64,7 +64,7 @@ defmodule PurpleWeb.FancyLink do
         end
       end)
 
-    unless is_nil(index) do
+    if not is_nil(index) do
       {basename, path} = String.split_at(absolute_url, index)
 
       basename_pattern = Regex.compile!("^https?://#{PurpleWeb.WebHelpers.host()}")

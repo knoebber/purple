@@ -45,7 +45,7 @@ defmodule Purple.Finance do
       |> where([mn], mn.merchant_id == ^to_merge.id)
       |> Repo.update_all(set: [merchant_id: main.id, is_primary: false])
 
-      unless to_merge.description == "" do
+      if to_merge.description != "" do
         update_merchant(main, %{
           "description" => main.description <> "\n\n" <> to_merge.description
         })

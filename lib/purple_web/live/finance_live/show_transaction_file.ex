@@ -54,9 +54,9 @@ defmodule PurpleWeb.FinanceLive.ShowTransactionFile do
       <.link navigate={~p"/board"}>Finance</.link>
       /
       <.link navigate={~p"/finance/transactions/#{@transaction}"}>
-        <%= @transaction.description || @transaction.id %>
+        {@transaction.description || @transaction.id}
       </.link>
-      / <%= @page_title %>
+      / {@page_title}
     </h1>
     <.file_ref_header
       file_ref={@file_ref}

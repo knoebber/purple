@@ -76,7 +76,7 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
   def render(assigns) do
     ~H"""
     <.flex_col>
-      <h1><%= @page_title %></h1>
+      <h1>{@page_title}</h1>
       <div class="flex gap-8">
         <form class="w-96" phx-change="search">
           <.input name="q" value={@q} label="Search" />
@@ -91,7 +91,7 @@ defmodule PurpleWeb.FinanceLive.MerchantIndex do
           class="p-4 bg-purple-100 border-collapse border-purple-400 border rounded"
         >
           <.link navigate={~p"/finance/merchants/#{merchant}"}>
-            <%= merchant.primary_name %>
+            {merchant.primary_name}
           </.link>
         </div>
       </div>

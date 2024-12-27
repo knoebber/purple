@@ -16,11 +16,11 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudgetAdjustment do
     ~H"""
     <div class="flex flex-col">
       <div class="flex justify-between">
-        <strong><%= @adjustment.description %></strong>
+        <strong>{@adjustment.description}</strong>
         <.timestamp model={@adjustment} />
       </div>
       <div>
-        <%= @adjustment.dollars %> <%= Purple.titleize(@adjustment.type) %> for <%= @adjustment.user.email %>
+        {@adjustment.dollars} {Purple.titleize(@adjustment.type)} for {@adjustment.user.email}
       </div>
       <.markdown content={@adjustment.notes} link_type={:finance} fancy_link_map={@fancy_link_map} />
       <div class="mt-2">

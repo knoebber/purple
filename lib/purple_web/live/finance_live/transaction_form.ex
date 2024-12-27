@@ -139,7 +139,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
             options={Finance.category_mappings()}
           />
           <.input field={f[:dollars]} label="Amount" />
-          <%= datetime_select_group(f, :timestamp) %>
+          {datetime_select_group(f, :timestamp)}
           <div class="flex gap-4 items-end">
             <.input
               name="merchant_name_q"
@@ -151,7 +151,7 @@ defmodule PurpleWeb.FinanceLive.TransactionForm do
               :if={@merchant_name_result}
               class="p-1 bg-purple-100 border-collapse border-purple-400 border rounded h-fit"
             >
-              <%= @merchant_name_result.name %>
+              {@merchant_name_result.name}
             </div>
           </div>
           <.input

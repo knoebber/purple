@@ -142,7 +142,7 @@ defmodule PurpleWeb.BoardLive.UserBoardForm do
               phx-target={@myself}
               type="button"
             >
-              <%= tag.name %>
+              {tag.name}
             </.button>
           </div>
           <.inputs_for :let={tag} field={f[:tags]} skip_hidden={true}>

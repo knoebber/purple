@@ -296,7 +296,7 @@ defmodule Purple.Markdown do
       end)
       |> Floki.raw_html()
 
-    unless list_item_html == "" do
+    if list_item_html != "" do
       "<ul>" <> list_item_html <> "</ul>"
     else
       ""

@@ -47,8 +47,8 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
     ~H"""
     <h1>
       <.link navigate={~p"/board"}>Board</.link>
-      / <.link navigate={~p"/board/item/#{@item}"}><%= @item.description %></.link>
-      / <%= @page_title %>
+      / <.link navigate={~p"/board/item/#{@item}"}>{@item.description}</.link>
+      / {@page_title}
     </h1>
     <.file_ref_header
       file_ref={@file_ref}

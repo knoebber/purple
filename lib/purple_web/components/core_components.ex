@@ -117,12 +117,12 @@ defmodule PurpleWeb.CoreComponents do
                   id={"#{@id}-title"}
                   class="text-lg font-semibold leading-8 text-zinc-800"
                 >
-                  <%= render_slot(@title) %>
+                  {render_slot(@title)}
                 </h1>
                 <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
-                  <%= render_slot(@subtitle) %>
+                  {render_slot(@subtitle)}
                 </p>
-                <%= render_slot(@inner_block) %>
+                {render_slot(@inner_block)}
                 <div :if={@confirm != [] or @cancel != []} class="ml-6 mb-4 flex items-center gap-5">
                   <.button
                     :for={confirm <- @confirm}
@@ -131,14 +131,14 @@ defmodule PurpleWeb.CoreComponents do
                     phx-disable-with
                     class="py-2 px-3"
                   >
-                    <%= render_slot(confirm) %>
+                    {render_slot(confirm)}
                   </.button>
                   <.link
                     :for={cancel <- @cancel}
                     phx-click={hide_modal(@on_cancel, @id)}
                     class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
                   >
-                    <%= render_slot(cancel) %>
+                    {render_slot(cancel)}
                   </.link>
                 </div>
               </div>
@@ -186,9 +186,9 @@ defmodule PurpleWeb.CoreComponents do
       <p :if={@title} class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
         <Heroicons.information_circle :if={@kind == :info} mini class="h-4 w-4" />
         <Heroicons.exclamation_circle :if={@kind == :error} mini class="h-4 w-4" />
-        <%= @title %>
+        {@title}
       </p>
-      <p class="mt-2 text-[0.8125rem] leading-5"><%= msg %></p>
+      <p class="mt-2 text-[0.8125rem] leading-5">{msg}</p>
       <button :if={@close} type="button" class="group absolute top-2 right-1 p-2">
         <Heroicons.x_mark solid class="h-5 w-5 stroke-current opacity-40 group-hover:opacity-70" />
       </button>
@@ -215,8 +215,8 @@ defmodule PurpleWeb.CoreComponents do
     <div class="mt-14">
       <dl class="-my-4 divide-y divide-zinc-100">
         <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8">
-          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500"><%= item.title %></dt>
-          <dd class="text-sm leading-6 text-zinc-700"><%= render_slot(item) %></dd>
+          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500">{item.title}</dt>
+          <dd class="text-sm leading-6 text-zinc-700">{render_slot(item)}</dd>
         </div>
       </dl>
     </div>
@@ -228,7 +228,7 @@ defmodule PurpleWeb.CoreComponents do
     <span title={
       if Map.has_key?(@model, :updated_at), do: "updated: #{Purple.Date.format(@model.updated_at)}"
     }>
-      <%= Purple.Date.format(@model.inserted_at) %>
+      {Purple.Date.format(@model.inserted_at)}
     </span>
     """
   end
@@ -260,12 +260,12 @@ defmodule PurpleWeb.CoreComponents do
       <%= if @next_sort_link && @order do %>
         <span class="flex">
           <.link patch={@next_sort_link}>
-            <%= render_slot(@inner_block) %>
+            {render_slot(@inner_block)}
           </.link>
-          <%= order_icon(@order) %>
+          {order_icon(@order)}
         </span>
       <% else %>
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       <% end %>
     </th>
     """
@@ -296,7 +296,7 @@ defmodule PurpleWeb.CoreComponents do
                 )
               }
             >
-              <%= col.label %>
+              {col.label}
             </.th>
           <% end %>
         </tr>
@@ -305,7 +305,7 @@ defmodule PurpleWeb.CoreComponents do
         <%= for row <- @rows do %>
           <tr>
             <%= for col <- @col do %>
-              <td><%= render_slot(col, row) %></td>
+              <td>{render_slot(col, row)}</td>
             <% end %>
           </tr>
         <% end %>
@@ -325,7 +325,7 @@ defmodule PurpleWeb.CoreComponents do
       phx-change="search"
       phx-submit="search"
     >
-      <%= render_slot(@inner_block, f) %>
+      {render_slot(@inner_block, f)}
     </.form>
     """
   end
@@ -367,19 +367,19 @@ defmodule PurpleWeb.CoreComponents do
       <div class="flex gap-2">
         <div>
           <.label>Hour</.label>
-          <%= @b.(:hour, class: select_class(), options: @hours) %>
+          {@b.(:hour, class: select_class(), options: @hours)}
         </div>
         <div>
           <.label>Day</.label>
-          <%= @b.(:day, class: select_class()) %>
+          {@b.(:day, class: select_class())}
         </div>
         <div>
           <.label>Month</.label>
-          <%= @b.(:month, class: select_class()) %>
+          {@b.(:month, class: select_class())}
         </div>
         <div>
           <.label>Year</.label>
-          <%= @b.(:year, class: select_class()) %>
+          {@b.(:year, class: select_class())}
         </div>
       </div>
       """
@@ -429,7 +429,7 @@ defmodule PurpleWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </button>
     """
   end
@@ -448,7 +448,7 @@ defmodule PurpleWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </section>
     """
   end
@@ -467,7 +467,7 @@ defmodule PurpleWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -534,9 +534,9 @@ defmodule PurpleWeb.CoreComponents do
           class="mt-2 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
           {@rest}
         />
-        <%= @label %>
+        {@label}
       </label>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -544,12 +544,12 @@ defmodule PurpleWeb.CoreComponents do
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label :if={@label} for={@id}><%= @label %></.label>
+      <.label :if={@label} for={@id}>{@label}</.label>
       <select id={@id} name={@name} class={select_class()} multiple={@multiple} {@rest}>
-        <option :if={@prompt} value=""><%= @prompt %></option>
-        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+        <option :if={@prompt} value="">{@prompt}</option>
+        {Phoenix.HTML.Form.options_for_select(@options, @value)}
       </select>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -557,7 +557,7 @@ defmodule PurpleWeb.CoreComponents do
   def input(%{type: "textarea"} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label :if={@label} for={@id}><%= @label %></.label>
+      <.label :if={@label} for={@id}>{@label}</.label>
       <textarea
         id={@id || @name}
         name={@name}
@@ -569,7 +569,7 @@ defmodule PurpleWeb.CoreComponents do
         ]}
         {@rest}
       ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -577,7 +577,7 @@ defmodule PurpleWeb.CoreComponents do
   def input(assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label :if={@label} for={@id}><%= @label %></.label>
+      <.label :if={@label} for={@id}>{@label}</.label>
       <input
         type={@type}
         name={@name}
@@ -591,7 +591,7 @@ defmodule PurpleWeb.CoreComponents do
         ]}
         {@rest}
       />
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -611,7 +611,7 @@ defmodule PurpleWeb.CoreComponents do
   def label(assigns) do
     ~H"""
     <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800 mt-2">
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </label>
     """
   end
@@ -625,7 +625,7 @@ defmodule PurpleWeb.CoreComponents do
     ~H"""
     <p class="phx-no-feedback:hidden mt-3 flex gap-3 text-sm leading-6 text-rose-600">
       <Heroicons.exclamation_circle mini class="mt-0.5 h-5 w-5 flex-none fill-rose-500" />
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </p>
     """
   end
@@ -731,7 +731,7 @@ defmodule PurpleWeb.CoreComponents do
         <span>|</span>
         <.link href="#" phx-click="delete" data-confirm="Are you sure?">Delete</.link>
         <span>|</span>
-        <strong><%= Purple.Uploads.FileRef.size_string(@file_ref) %></strong>
+        <strong>{Purple.Uploads.FileRef.size_string(@file_ref)}</strong>
       </div>
       <.timestamp model={@file_ref} />
     </div>

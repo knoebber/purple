@@ -91,7 +91,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2">
-      <%= @page_title %>
+      {@page_title}
     </h1>
     <.section class="mb-2">
       <div class="flex justify-between bg-purple-300 p-1 mb-2">
@@ -154,7 +154,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
         <ul class="ml-8">
           <li :for={ref <- @file_refs}>
             <.link navigate={~p"/finance/transactions/#{@transaction}/files/#{ref}"}>
-              <%= Uploads.FileRef.title(ref) %>
+              {Uploads.FileRef.title(ref)}
             </.link>
           </li>
         </ul>
@@ -171,18 +171,18 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
         />
       <% else %>
         <.flex_col>
-          <span>Paid with: <%= @transaction.payment_method.name %></span>
+          <span>Paid with: {@transaction.payment_method.name}</span>
           <span>
             Merchant:
             <.link navigate={~p"/finance/merchants/#{@transaction.merchant_name.merchant_id}"}>
-              <%= @transaction.merchant_name.name %>
+              {@transaction.merchant_name.name}
             </.link>
           </span>
           <span :if={@transaction.description != ""}>
-            Description: <%= @transaction.description %>
+            Description: {@transaction.description}
           </span>
           <span>
-            Category: <%= Purple.titleize(@transaction.category) %>
+            Category: {Purple.titleize(@transaction.category)}
           </span>
           <p :if={@transaction.notes != ""}>
             Notes 👇

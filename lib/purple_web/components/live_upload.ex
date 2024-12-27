@@ -118,18 +118,18 @@ defmodule PurpleWeb.LiveUpload do
               </a>
               <.live_img_preview entry={entry} />
               <div :for={err <- upload_errors(@uploads.files, entry)}>
-                <%= error_to_string(err) %>
+                {error_to_string(err)}
               </div>
               <progress class="self-start mt-1 w-full" value={entry.progress} max="100">
-                <%= entry.progress %>%
+                {entry.progress}%
               </progress>
             </div>
           <% end %>
         </div>
         <div :for={err <- upload_errors(@uploads.files)}>
-          <%= error_to_string(err) %>
+          {error_to_string(err)}
         </div>
-        <div :for={err <- @save_errors}><%= err %></div>
+        <div :for={err <- @save_errors}>{err}</div>
       <% end %>
     </div>
     """

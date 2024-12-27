@@ -203,7 +203,7 @@ defmodule PurpleWeb.FinanceLive.Index do
   def render(assigns) do
     ~H"""
     <div class="flex mb-2">
-      <h1><%= @page_title %></h1>
+      <h1>{@page_title}</h1>
     </div>
     <.modal
       :if={!!@transaction_for_share}
@@ -269,16 +269,16 @@ defmodule PurpleWeb.FinanceLive.Index do
       >
         <:col :let={transaction} label="Amount" order_col="cents">
           <.link navigate={~p"/finance/transactions/#{transaction}"}>
-            <%= transaction.dollars %>
+            {transaction.dollars}
           </.link>
         </:col>
         <:col :let={transaction} label="Merchant" order_col="merchant_name_id">
           <.link navigate={~p"/finance/merchants/#{transaction.merchant_name.merchant_id}"}>
-            <%= transaction.merchant_name.name %>
+            {transaction.merchant_name.name}
           </.link>
         </:col>
         <:col :let={transaction} label="Payment Method" order_col="payment_method_id">
-          <%= transaction.payment_method.name %>
+          {transaction.payment_method.name}
         </:col>
         <:col :let={transaction} label="Category" order_col="category">
           <form phx-change="update_category" id={"transaction-#{transaction.id}-category"}>
@@ -291,18 +291,18 @@ defmodule PurpleWeb.FinanceLive.Index do
                 "focus:ring-zinc-500 focus:border-zinc-500"
               ]}
             >
-              <%= Phoenix.HTML.Form.options_for_select(
+              {Phoenix.HTML.Form.options_for_select(
                 Finance.category_mappings(),
                 transaction.category
-              ) %>
+              )}
             </select>
           </form>
         </:col>
         <:col :let={transaction} label="Description">
-          <%= transaction.description %>
+          {transaction.description}
         </:col>
         <:col :let={transaction} label="Timestamp" order_col="timestamp">
-          <%= Purple.Date.format(transaction.timestamp) %>
+          {Purple.Date.format(transaction.timestamp)}
         </:col>
         <:col :let={transaction} label="Share">
           <.link href="#" phx-click="cycle_share" class="text-xl" phx-value-id={transaction.id}>

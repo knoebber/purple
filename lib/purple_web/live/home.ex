@@ -109,11 +109,11 @@ defmodule PurpleWeb.HomeLive do
             </thead>
             <tbody>
               <tr>
-                <td><%= @last_weather_snapshot.wind_speed_mph %></td>
-                <td><%= @last_weather_snapshot.temperature %>°</td>
-                <td><%= @last_weather_snapshot.humidity %>%</td>
-                <td><%= @last_weather_snapshot.pressure %></td>
-                <td><%= @total_rainfall_inches %></td>
+                <td>{@last_weather_snapshot.wind_speed_mph}</td>
+                <td>{@last_weather_snapshot.temperature}°</td>
+                <td>{@last_weather_snapshot.humidity}%</td>
+                <td>{@last_weather_snapshot.pressure}</td>
+                <td>{@total_rainfall_inches}</td>
               </tr>
             </tbody>
           </table>
@@ -131,7 +131,7 @@ defmodule PurpleWeb.HomeLive do
               id={dom_id}
               class="text-xs text-green-400"
             >
-              <%= raw(log) %>
+              {raw(log)}
             </code>
           </div>
         </div>

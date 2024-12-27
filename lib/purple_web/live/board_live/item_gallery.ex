@@ -23,7 +23,7 @@ defmodule PurpleWeb.BoardLive.ItemGallery do
     <h1>
       Board /
       <.link navigate={~p"/board/item/#{@item}"}>
-        <%= @item.description %>
+        {@item.description}
       </.link>
       / Gallery
     </h1>

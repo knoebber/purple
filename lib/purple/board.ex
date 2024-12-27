@@ -193,8 +193,8 @@ defmodule Purple.Board do
         {:error, entry}
 
       _ ->
-        unless should_set_last_active_at == false and sync_entry_atom == :noop and
-                 Tags.noop?(tag_result) do
+        if !(should_set_last_active_at == false and sync_entry_atom == :noop and
+               Tags.noop?(tag_result)) do
           set_item_last_active_at(entry.item_id)
         end
 

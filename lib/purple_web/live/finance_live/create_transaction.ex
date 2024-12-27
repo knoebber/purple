@@ -34,7 +34,7 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1 class="mb-2"><%= @page_title %></h1>
+    <h1 class="mb-2">{@page_title}</h1>
     <.live_component
       action={:new_transaction}
       class="xl:w-2/3"

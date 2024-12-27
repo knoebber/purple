@@ -58,7 +58,7 @@ defmodule PurpleWeb.FinanceLive.SharedBudgetIndex do
     <ul>
       <li :for={shared_budget <- @shared_budgets}>
         <.link navigate={~p"/finance/shared_budgets/#{shared_budget}"}>
-          <%= shared_budget.name %>
+          {shared_budget.name}
         </.link>
       </li>
     </ul>

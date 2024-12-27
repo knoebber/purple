@@ -73,7 +73,7 @@ defmodule PurpleWeb.BoardLive.Index do
   def render(assigns) do
     ~H"""
     <h1 class="mb-2">
-      <%= @page_title %>
+      {@page_title}
       <.link navigate={~p"/board/new"}>
         ➕
       </.link>
@@ -84,7 +84,7 @@ defmodule PurpleWeb.BoardLive.Index do
         <div class="bg-purple-300 p-2 flex gap-2 items-end">
           <h2>
             <.link :if={user_board.id != nil} navigate={~p"/board/#{user_board.id}"}>
-              <%= user_board.name %>
+              {user_board.name}
             </.link>
             <span :if={user_board.id == nil}>New Board</span>
           </h2>
@@ -119,7 +119,7 @@ defmodule PurpleWeb.BoardLive.Index do
               No tags
             <% else %>
               <div class="flex flex-wrap gap-1">
-                <code :for={tag <- user_board.tags} class="inline">#<%= tag.name %></code>
+                <code :for={tag <- user_board.tags} class="inline">#{tag.name}</code>
               </div>
             <% end %>
           </div>

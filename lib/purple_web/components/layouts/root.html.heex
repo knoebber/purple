@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <.live_title suffix=" · Purple">
-      <%= assigns[:page_title] || "<MISSING TITLE>" %>
+      {assigns[:page_title] || "<MISSING TITLE>"}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}></script>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    </script>
   </head>
   <body class="bg-fuchsia-200">
     <.hamburger_menu selector=".js-main-nav" />
@@ -20,12 +21,12 @@
         <.link navigate={~p"/finance"}>Bean Counter</.link>
         <.link navigate={~p"/feed"}>Feed</.link>
         <.link navigate={~p"/runs"}>Runs</.link>
-        <.link navigate={~p"/users/settings"}><%= @current_user.email %></.link>
+        <.link navigate={~p"/users/settings"}>{@current_user.email}</.link>
         <.link href={~p"/users/log_out"} method="delete">Log out</.link>
       <% else %>
         <.link navigate={~p"/users/log_in"}>Log in</.link>
       <% end %>
     </nav>
-    <%= @inner_content %>
+    {@inner_content}
   </body>
 </html>

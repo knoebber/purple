@@ -37,21 +37,21 @@ defmodule PurpleWeb.FinanceLive.CategoryReport do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1 class="mb-2"><%= @page_title %></h1>
+    <h1 class="mb-2">{@page_title}</h1>
     <.table rows={@report}>
       <:col :let={row} label="Category">
         <.link navigate={~p"/finance?category=#{row.category}"}>
-          <%= Purple.titleize(row.category) %>
+          {Purple.titleize(row.category)}
         </.link>
       </:col>
       <:col :let={row} label="Month">
         <.link navigate={~p"/finance?month=#{row.month}"}>
-          <%= Purple.Date.format(parse_month(row.month), :month) %>
+          {Purple.Date.format(parse_month(row.month), :month)}
         </.link>
       </:col>
       <:col :let={row} label="Total">
         <.link navigate={~p"/finance?category=#{row.category}&month=#{row.month}"}>
-          <%= Finance.Transaction.format_cents(row.cents) %>
+          {Finance.Transaction.format_cents(row.cents)}
         </.link>
       </:col>
     </.table>

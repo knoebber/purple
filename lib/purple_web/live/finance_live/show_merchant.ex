@@ -90,7 +90,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1><%= @page_title %></h1>
+    <h1>{@page_title}</h1>
     <.section class="mt-2 mb-2">
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
@@ -102,7 +102,7 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
             Cancel
           </.link>
           <.link :if={length(@transactions) > 0} navigate={~p"/finance?merchant_id=#{@merchant.id}"}>
-            <%= transactions_string(@transactions) %>
+            {transactions_string(@transactions)}
           </.link>
         </div>
         <.timestamp model={@merchant} />
@@ -125,16 +125,16 @@ defmodule PurpleWeb.FinanceLive.ShowMerchant do
               :if={not name.is_primary}
               class="p-1 bg-purple-100 border-collapse border-purple-400 border rounded"
             >
-              <span>‍️<%= name.name %></span>
+              <span>‍️{name.name}</span>
             </span>
           </div>
           <div :if={!@is_editing}>
-            Category: <%= Purple.titleize(@merchant.category) %>
+            Category: {Purple.titleize(@merchant.category)}
           </div>
-          Transactions <%= PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type() %>
+          Transactions {PurpleWeb.FinanceLive.ShowTransaction.get_fancy_link_type()}
           <div :for={tx <- @transactions}>
             <.link navigate={~p"/finance/transactions/#{tx}"}>
-              <%= Transaction.to_string(tx) %>
+              {Transaction.to_string(tx)}
             </.link>
           </div>
         </.flex_col>

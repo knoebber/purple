@@ -13,8 +13,8 @@ defmodule Purple.Feed do
     datetime =
       Enum.find_value(
         [
-        "{RFC1123}",
-        "{WDshort}, {D} {Mshort} {YYYY} {h24}:{m} {Zabbr}",
+          "{RFC1123}",
+          "{WDshort}, {D} {Mshort} {YYYY} {h24}:{m} {Zabbr}"
         ],
         fn format ->
           case Timex.parse(pub_date, format) do

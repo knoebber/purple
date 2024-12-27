@@ -185,7 +185,7 @@ defmodule PurpleWeb.BoardLive.Board do
       <div class="bg-purple-300">
         <h2 class="ml-2 mb-2 inline">
           <.link navigate={~p"/board/item/#{item.id}"}>
-            <%= item.description %>
+            {item.description}
           </.link>
         </h2>
       </div>
@@ -201,7 +201,7 @@ defmodule PurpleWeb.BoardLive.Board do
       <.link navigate={item_create_path(@user_board.id)}>
         <.button type="button">Add Item</.button>
       </.link>
-      <h1 class="mb-2"><%= @page_title %></h1>
+      <h1 class="mb-2">{@page_title}</h1>
     </div>
     <div
       :if={!@user_board.show_done}

@@ -46,7 +46,7 @@ defmodule PurpleWeb.FeedLive.Index do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1><%= @page_title %></h1>
+    <h1>{@page_title}</h1>
     <.filter_form>
       <.page_links
         filter={@filter}
@@ -58,13 +58,13 @@ defmodule PurpleWeb.FeedLive.Index do
     <div class="w-full overflow-auto">
       <.table rows={@items} get_route={fn filter -> ~p"/feed?#{filter}" end} filter={@filter}>
         <:col :let={item} label="Source">
-          <%= item.source.title %>
+          {item.source.title}
         </:col>
         <:col :let={item} label="Title">
-          <.link href={item.link} target="_blank"><%= item.title %></.link>
+          <.link href={item.link} target="_blank">{item.title}</.link>
         </:col>
         <:col :let={item} label="Published">
-          <%= Purple.Date.format(item.pub_date, :time) %>
+          {Purple.Date.format(item.pub_date, :time)}
         </:col>
       </.table>
       <.page_links

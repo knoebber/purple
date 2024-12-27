@@ -48,14 +48,13 @@ defmodule PurpleWeb.RunLive.Show do
   def render(assigns) do
     ~H"""
     <h1>
-      <.link patch={~p"/runs"}>Runs</.link>
-      / <%= "#{@run.id}" %>
+      <.link patch={~p"/runs"}>Runs</.link> / {"#{@run.id}"}
     </h1>
     <.section class="mt-2 mb-2">
       <div class="flex justify-between bg-purple-300 p-1">
         <div class="inline-links">
           <strong>
-            <%= Run.to_string(@run) %>
+            {Run.to_string(@run)}
           </strong>
           <span>|</span>
           <%= if @live_action == :edit do %>
@@ -71,7 +70,7 @@ defmodule PurpleWeb.RunLive.Show do
           <% end %>
         </div>
         <i>
-          <%= Purple.Date.format(@run.date) %>
+          {Purple.Date.format(@run.date)}
         </i>
       </div>
       <%= if @live_action == :edit do %>
