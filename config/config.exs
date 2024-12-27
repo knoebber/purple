@@ -55,7 +55,7 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :tailwind,
-  version: "3.0.18",
+  version: "3.4.6",
   default: [
     args: ~w(
       --config=tailwind.config.js

@@ -8,7 +8,7 @@ defmodule PurpleWeb.CoreComponents do
   alias Purple.Filter
 
   @select_class ~s"""
-  block w-full py-2 px-3 pr-7 border border-gray-300 bg-white rounded-md shadow-sm 
+  block w-full py-2 px-3 pr-7 border border-gray-300 bg-white rounded-md shadow-sm
   focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm
   """
 
@@ -507,9 +507,11 @@ defmodule PurpleWeb.CoreComponents do
   slot :inner_block
 
   def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+
     assigns
     |> assign(field: nil, id: assigns.id || field.id)
-    |> assign(:errors, Enum.map(field.errors, &translate_error(&1)))
+    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
     |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
     |> assign_new(:value, fn -> field.value end)
     |> input()
@@ -520,7 +522,7 @@ defmodule PurpleWeb.CoreComponents do
       assign_new(assigns, :checked, fn -> Phoenix.HTML.Form.normalize_value("checkbox", value) end)
 
     ~H"""
-    <div phx-feedback-for={@name}>
+    <div>
       <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
         <input type="hidden" name={@name} value="false" />
         <input
@@ -563,7 +565,7 @@ defmodule PurpleWeb.CoreComponents do
           input_border(@errors),
           "block min-h-[6rem] w-full rounded-lg border-zinc-300 py-[7px] px-[11px]",
           "text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-800/5 sm:text-sm sm:leading-6",
-          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
+          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400"
         ]}
         {@rest}
       ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
@@ -585,7 +587,7 @@ defmodule PurpleWeb.CoreComponents do
           input_border(@errors),
           "block w-full rounded-lg border-zinc-300 py-[7px] px-[11px]",
           "text-zinc-900 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
-          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400 phx-no-feedback:focus:ring-zinc-800/5"
+          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400"
         ]}
         {@rest}
       />

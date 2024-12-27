@@ -11,8 +11,6 @@ useful for other parties :) .
 + Upload any kind of file, view images, movies, and PDFs in-app.
 + Custom markdown dialect that dynamically renders other purple resources
 + Automatically import and organize credit card transactions
-+ Renders live weather data from my home - publicly available at
-  https://mypurplewebsite.com
 + And lots of other random stuff that I thought would be fun to implement
 
 * Starting the Server

@@ -70,7 +70,7 @@ defmodule Purple.Feed do
         list_items(%{source_id: source.id}),
         %{},
         fn item, acc ->
-          Map.put(acc, item.link, True)
+          Map.put(acc, item.link, true)
         end
       )
 
