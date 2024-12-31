@@ -87,7 +87,7 @@ defmodule Purple.Gmail do
   end
 
   def get_user_access_token(user_token = %UserOAuthToken{}) do
-    if user_token.access_expires_at < Purple.Date.utc_now() do
+    if user_token.access_expires_at.second < Purple.Date.utc_now().second do
       case refresh_access_token(user_token.refresh_token) do
         {:ok, %{token: new_token}} ->
           Logger.info("refreshing token for user #{user_token.user_id}")

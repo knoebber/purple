@@ -5,6 +5,9 @@ endif
 
 all: deps create_db js compile assets migrate
 
+clean:
+	rm -rf build/ && rm -rf .elixir_ls/
+
 warnings:
 	mix compile --all-warnings
 
@@ -45,7 +48,7 @@ assets:
 migrate:
 	mix ecto.migrate
 
-deploy: test
+deploy: clean test
 	fly deploy
 
 .PHONY: all format test hex rebar deps create_db js compile assets migrate deploy warnings

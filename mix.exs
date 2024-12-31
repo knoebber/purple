@@ -49,6 +49,7 @@ defmodule Purple.MixProject do
       {:phoenix_html, "~> 4.1.1"},
       {:heroicons, "~> 0.5"},
       {:httpoison, "~> 1.8.2"},
+      {:phoenix_html_helpers, "~>1.0.1"},
       {:phoenix_live_dashboard, "~> 0.8"},
       {:phoenix_live_reload, "~> 1.3", only: :dev},
       {:phoenix_live_view, "~> 1.0.1"},
