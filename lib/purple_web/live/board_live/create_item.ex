@@ -63,7 +63,7 @@ defmodule PurpleWeb.BoardLive.CreateItem do
 
     case Board.create_item(params) do
       {:ok, item} ->
-        {:noreply, push_redirect(socket, to: ~p"/board/item/#{item}")}
+        {:noreply, push_navigate(socket, to: ~p"/board/item/#{item}")}
 
       {:error, %Ecto.Changeset{data: %Board.Item{}} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}

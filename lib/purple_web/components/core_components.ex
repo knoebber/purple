@@ -394,7 +394,7 @@ defmodule PurpleWeb.CoreComponents do
         Purple.Date.local_now()
       end
 
-    Phoenix.HTML.Form.datetime_select(
+    PhoenixHTMLHelpers.Form.datetime_select(
       form,
       field,
       [

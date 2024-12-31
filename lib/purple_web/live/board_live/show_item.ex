@@ -172,7 +172,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
       :noreply,
       socket
       |> put_flash(:info, "Deleted item")
-      |> push_redirect(to: ~p"/board", replace: true)
+      |> push_navigate(to: ~p"/board", replace: true)
     }
   end
 
@@ -190,7 +190,7 @@ defmodule PurpleWeb.BoardLive.ShowItem do
 
     {
       :noreply,
-      push_redirect(socket, to: ~p"/board/item/#{socket.assigns.item}", replace: true)
+      push_navigate(socket, to: ~p"/board/item/#{socket.assigns.item}", replace: true)
     }
   end
 

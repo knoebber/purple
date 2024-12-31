@@ -14,7 +14,10 @@ format:
 server:
 	mix phx.server
 
-test:
+compile:
+	mix compile --warnings-as-errors
+
+test: compile
 	mix test
 
 reset_test:
@@ -35,8 +38,6 @@ create_db:
 js:
 	cd assets/; npm i $(NPM_FLAGS)
 
-compile:
-	mix compile
 
 assets:
 	mix assets.deploy

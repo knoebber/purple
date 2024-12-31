@@ -28,7 +28,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransactionFile do
       :noreply,
       socket
       |> put_flash(:info, "Deleted file")
-      |> push_redirect(to: ~p"/finance/transactions/#{socket.assigns.transaction}", replace: true)
+      |> push_navigate(to: ~p"/finance/transactions/#{socket.assigns.transaction}", replace: true)
     }
   end
 

@@ -130,7 +130,7 @@ defmodule PurpleWeb.FinanceLive.ShowSharedBudget do
       :noreply,
       socket
       |> put_flash(:info, "Deleted shared budget")
-      |> push_redirect(to: ~p"/finance/shared_budgets", replace: true)
+      |> push_navigate(to: ~p"/finance/shared_budgets", replace: true)
     }
   end
 

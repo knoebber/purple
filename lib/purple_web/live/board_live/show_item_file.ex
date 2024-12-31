@@ -25,7 +25,7 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
       :noreply,
       socket
       |> put_flash(:info, "Deleted file")
-      |> push_redirect(to: ~p"/board/item/#{socket.assigns.item}", replace: true)
+      |> push_navigate(to: ~p"/board/item/#{socket.assigns.item}", replace: true)
     }
   end
 

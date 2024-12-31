@@ -63,7 +63,7 @@ defmodule PurpleWeb.FinanceLive.ShowTransaction do
       :noreply,
       socket
       |> put_flash(:info, "Transaction deleted")
-      |> push_redirect(to: ~p"/finance", replace: true)
+      |> push_navigate(to: ~p"/finance", replace: true)
     }
   end
 

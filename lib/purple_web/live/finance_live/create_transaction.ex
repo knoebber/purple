@@ -24,7 +24,7 @@ defmodule PurpleWeb.FinanceLive.CreateTransaction do
 
   @impl Phoenix.LiveView
   def handle_info({:redirect, transaction}, socket) do
-    {:noreply, push_redirect(socket, to: ~p"/finance/transactions/#{transaction}")}
+    {:noreply, push_navigate(socket, to: ~p"/finance/transactions/#{transaction}")}
   end
 
   def handle_info({:saved, _}, socket) do
