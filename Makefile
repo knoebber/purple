@@ -6,10 +6,13 @@ endif
 all: deps create_db js compile assets migrate
 
 clean:
-	rm -rf build/ && rm -rf .elixir_ls/
+	rm -rf build/
 
 warnings:
-	mix compile --all-warnings
+	mix compile --all-warnings --warnings-as-errors
+
+compile:
+	mix compile
 
 format:
 	mix format mix.exs "lib/**/*.{ex,exs}" "test/**/*.{ex,exs}"
@@ -17,10 +20,7 @@ format:
 server:
 	mix phx.server
 
-compile:
-	mix compile --warnings-as-errors
-
-test: compile
+test: warnings
 	mix test
 
 reset_test:
