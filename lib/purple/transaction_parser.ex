@@ -1,9 +1,9 @@
 defmodule Purple.TransactionParser do
   @callback label() :: String.t()
-  @callback parse_dollars([Map.t()]) :: String.t()
-  @callback parse_merchant([Map.t()]) :: String.t()
-  @callback parse_last_4([Map.t()]) :: String.t()
-  @callback parse_datetime([Map.t()]) :: DateTime.t() | nil
+  @callback parse_dollars([map()]) :: String.t()
+  @callback parse_merchant([map()]) :: String.t()
+  @callback parse_last_4([map()]) :: String.t()
+  @callback parse_datetime([map()]) :: DateTime.t() | nil
 
   def get_cents(doc, impl) do
     doc
