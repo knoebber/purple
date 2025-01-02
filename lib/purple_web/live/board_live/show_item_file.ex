@@ -1,18 +1,17 @@
 defmodule PurpleWeb.BoardLive.ShowItemFile do
   alias Purple.Uploads
-  alias Purple.Uploads.FileRef
   use PurpleWeb, :live_view
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => item_id, "file_id" => file_id}, _url, socket) do
-    file_ref = Uploads.get_file_ref!(file_id)
+    file_ref = Uploads.get_file_ref(file_id)
 
     {
       :noreply,
       socket
       |> assign(:file_ref, file_ref)
+      |> assign(:page_title, if(file_ref, do: file_ref.title, else: "not found"))
       |> assign(:item, Purple.Board.get_item!(item_id))
-      |> assign(:page_title, FileRef.title(file_ref))
       |> PurpleWeb.BoardLive.Helpers.assign_side_nav()
     }
   end
@@ -50,20 +49,24 @@ defmodule PurpleWeb.BoardLive.ShowItemFile do
       / <.link navigate={~p"/board/item/#{@item}"}>{@item.description}</.link>
       / {@page_title}
     </h1>
-    <.file_ref_header
-      file_ref={@file_ref}
-      edit_url={~p"/board/item/#{@item}/files/#{@file_ref}/edit"}
-    />
-    <.modal
-      :if={@live_action == :edit}
-      id="edit-file-ref-modal"
-      on_cancel={JS.patch(~p"/board/item/#{@item}/files/#{@file_ref}", replace: true)}
-      show
-    >
-      <:title>Update File Reference</:title>
-      <.live_component module={PurpleWeb.UpdateFileRef} id={@file_ref.id} file_ref={@file_ref} />
-    </.modal>
-    <.render_file_ref file_ref={@file_ref} />
+    <%= if @file_ref do %>
+      <.file_ref_header
+        file_ref={@file_ref}
+        edit_url={~p"/board/item/#{@item}/files/#{@file_ref}/edit"}
+      />
+      <.modal
+        :if={@live_action == :edit}
+        id="edit-file-ref-modal"
+        on_cancel={JS.patch(~p"/board/item/#{@item}/files/#{@file_ref}", replace: true)}
+        show
+      >
+        <:title>Update File Reference</:title>
+        <.live_component module={PurpleWeb.UpdateFileRef} id={@file_ref.id} file_ref={@file_ref} />
+      </.modal>
+      <.render_file_ref file_ref={@file_ref} />
+    <% else %>
+      <span>⚠️ File reference not found </span>
+    <% end %>
     """
   end
 end

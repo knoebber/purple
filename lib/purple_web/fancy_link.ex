@@ -2,7 +2,7 @@ defmodule PurpleWeb.FancyLink do
   alias Purple.KeyValue
 
   @callback get_fancy_link_type() :: String.t()
-  @callback get_fancy_link_title(Map.t()) :: String.t() | nil
+  @callback get_fancy_link_title(map()) :: String.t() | nil
 
   defp implemented_by?(module) do
     module.module_info()[:attributes]

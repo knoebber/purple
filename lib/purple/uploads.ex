@@ -267,16 +267,14 @@ defmodule Purple.Uploads do
     # todo: cleanup orphaned files by inspecting all references to model.
   end
 
-  defp set_file_name(file_ref) do
-    Map.put(file_ref, :file_name, FileRef.name(file_ref))
-  end
-
   def get_file_ref(id) do
-    FileRef |> Repo.get(id) |> set_file_name()
+    with ref when not is_nil(ref) <- Repo.get(FileRef, id) do
+      FileRef.set_name_and_title(ref)
+    end
   end
 
   def get_file_ref!(id) do
-    FileRef |> Repo.get!(id) |> set_file_name()
+    %FileRef{} = get_file_ref(id)
   end
 
   defp get_file_refs_by_model_query(%{id: model_id} = model) do

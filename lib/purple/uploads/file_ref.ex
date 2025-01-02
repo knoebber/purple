@@ -12,6 +12,7 @@ defmodule Purple.Uploads.FileRef do
     field :sha_hash, :binary
 
     field :file_name, :string, virtual: true
+    field :file_title, :string, virtual: true
 
     many_to_many :items, Purple.Board.Item,
       join_through: Purple.Uploads.ItemFile,
@@ -40,6 +41,12 @@ defmodule Purple.Uploads.FileRef do
     path
     |> String.split("/")
     |> List.last()
+  end
+
+  def set_name_and_title(%__MODULE__{} = file_ref) do
+    file_ref
+    |> Map.put(:title, title(file_ref))
+    |> Map.put(:file_name, name(file_ref))
   end
 
   def size_string(%__MODULE__{byte_size: byte_size}) do
