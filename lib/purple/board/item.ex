@@ -7,14 +7,13 @@ defmodule Purple.Board.Item do
   import Ecto.Changeset
 
   schema "items" do
-    field :completed_at, :naive_datetime
     field :description, :string
     field :last_active_at, :naive_datetime
     field :show_files, :boolean, default: false
-    field :status, Ecto.Enum, values: [:TODO, :INFO, :DONE], default: :TODO
 
     field :combined_checkbox_map, :map, virtual: true, default: %{}
     field :combined_entry_content, :string, virtual: true, default: nil
+    field :status, Ecto.Enum, values: [:TODO, :INFO, :DONE], virtual: true, default: nil
 
     timestamps()
 
@@ -51,6 +50,28 @@ defmodule Purple.Board.Item do
     )
   end
 
+  def set_status(%__MODULE__{entries: entries}) when is_list(entries) do
+    checkboxes =
+      Enum.reduce(entries, [], fn entry, checkboxes ->
+        if entry.is_collapsed do
+          # checkboxes in collapsed entries aren't considered for status
+          checkboxes
+        else
+          entry.checkboxes <> checkboxes
+        end
+      end)
+
+    if checkboxes == [] do
+      :INFO
+    else
+      if Enum.all?(checkboxes, & &1.is_done?) do
+        :DONE
+      else
+        :TODO
+      end
+    end
+  end
+
   def set_entry_checkbox_maps(%__MODULE__{entries: entries} = item) when is_list(entries) do
     Map.put(
       item,
@@ -77,25 +98,10 @@ defmodule Purple.Board.Item do
     )
   end
 
-  defp set_completed_at(changeset) do
-    case fetch_change(changeset, :status) do
-      {:ok, :DONE} ->
-        put_change(
-          changeset,
-          :completed_at,
-          Purple.Date.utc_now()
-        )
-
-      _ ->
-        changeset
-    end
-  end
-
   def changeset(item, attrs) do
     item
-    |> cast(attrs, [:description, :status])
+    |> cast(attrs, [:description])
     |> cast_assoc(:entries, with: &Purple.Board.ItemEntry.changeset/2)
-    |> validate_required([:description, :status])
-    |> set_completed_at()
+    |> validate_required([:description])
   end
 end

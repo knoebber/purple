@@ -1,6 +1,6 @@
 defmodule Purple.Board do
   @moduledoc """
-  Context for managing boards, items, and entries.
+  Context for managing boards, items, entries, and checkboxes.
   """
 
   alias Ecto.Changeset
@@ -525,10 +525,6 @@ defmodule Purple.Board do
 
   def delete_user_board!(id) when is_integer(id) do
     Repo.delete!(%UserBoard{id: id})
-  end
-
-  def item_status_mappings do
-    Ecto.Enum.mappings(Item, :status)
   end
 
   def delete_item!(%Item{} = item) do
